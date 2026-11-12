@@ -2,11 +2,12 @@ import type { JSX } from "solid-js";
 import { Show } from "solid-js";
 
 export interface DeliveryCounterProps {
+	readonly mode: "build" | "run";
 	readonly canDeliver: boolean;
 	readonly delivered: boolean;
 	readonly stars: number;
-	readonly partCount: number;
-	readonly parSize: number;
+	readonly countValue: number;
+	readonly targetValue: number;
 	readonly note: string;
 	readonly isLastOrder: boolean;
 	readonly onDeliver: () => void;
@@ -18,22 +19,28 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 		<section
 			class={`delivery-counter ${!props.canDeliver && !props.delivered ? "disabled" : ""} ${props.delivered ? "delivered" : ""}`}
 			onClick={() => {
-				if (props.canDeliver && !props.delivered) props.onDeliver();
+				if (props.canDeliver && !props.delivered && props.mode === "build") props.onDeliver();
 			}}
 			onKeyDown={(event) => {
-				if (event.key === "Enter" && props.canDeliver && !props.delivered) props.onDeliver();
+				if (event.key === "Enter" && props.canDeliver && !props.delivered && props.mode === "build") props.onDeliver();
 			}}
 		>
 			<Show
 				when={props.delivered}
 				fallback={
 					<>
-						<span style={{ "font-size": "22px" }}>📦</span>
+						<span style={{ "font-size": "22px" }}>{props.mode === "run" ? "⚡" : "📦"}</span>
 						<span style={{ "font-size": "13px", "font-weight": "600", color: "var(--accent-clay)" }}>
-							{props.canDeliver ? "交货台（点击验货）" : "先填满工作台空槽"}
+							{props.mode === "run"
+								? "点击桌面发光连接进行运转"
+								: props.canDeliver
+									? "交货台（点击验货）"
+									: "先填满工作台空槽"}
 						</span>
 						<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-							当前零件 {props.partCount} / 标准 {props.parSize}
+							{props.mode === "run"
+								? `已用步数 ${props.countValue} / 预算 ${props.targetValue}`
+								: `当前零件 ${props.countValue} / 标准 ${props.targetValue}`}
 						</span>
 					</>
 				}
@@ -42,7 +49,11 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 					{"★".repeat(props.stars)}
 					{"☆".repeat(3 - props.stars)}
 				</div>
-				<span class="delivery-title-ok">客人满意收货！（{props.partCount} 件）</span>
+				<span class="delivery-title-ok">
+					{props.mode === "run"
+						? `运转成功！（共 ${props.countValue} 步）`
+						: `客人满意收货！（${props.countValue} 件）`}
+				</span>
 				<span style={{ "font-size": "11.5px", color: "var(--text-secondary)", "text-align": "center" }}>
 					{props.note}
 				</span>

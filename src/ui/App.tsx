@@ -20,8 +20,8 @@ import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/
 import { judgeOrder } from "../engine/judge";
 import { printTerm } from "../engine/parse";
 import { type StepEvent, redexes, stepAt, stepLeftmost } from "../engine/reduce";
-import type { GadgetId, Path, Term } from "../engine/term";
-import { ORDERS } from "../levels/orders";
+import { type GadgetId, type Path, type Term, termsEqual } from "../engine/term";
+import { ORDERS, type RunOrder } from "../levels/orders";
 import { CompendiumModal } from "./CompendiumModal";
 import { DeliveryCounter } from "./DeliveryCounter";
 import { DraftNode } from "./DraftNode";
@@ -94,23 +94,33 @@ export function App(): JSX.Element {
 	let panStartX = 0;
 	let panStartY = 0;
 
-	// Live step-by-step playback state
+	// Live step-by-step playback state (for both build preview and run mode)
 	const [playTerm, setPlayTerm] = createSignal<Term | null>(null);
+	const [runHistory, setRunHistory] = createSignal<readonly Term[]>([]);
 
 	const currentOrder = createMemo(() => ORDERS[orderIndex()]);
 	const currentScope = createMemo(() => (selectedPath() !== null ? getScopeAt(draft(), selectedPath() as Path) : []));
 	const hasHoles = createMemo(() => findFirstHole(draft(), "") !== null);
 	const partCount = createMemo(() => countDraftSize(draft()));
+	const runSteps = createMemo(() => runHistory().length);
+	const runFailed = createMemo(
+		() =>
+			currentOrder().mode === "run" &&
+			deliveredStars() === null &&
+			runSteps() >= (currentOrder() as RunOrder).stepBudget,
+	);
 
 	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {
-		const box = currentOrder().toolbox;
-		if (box !== "all") return box;
-		return [...registry.keys()].filter((id) => id !== `p:${currentOrder().id}`);
+		const order = currentOrder();
+		if (order.mode !== "build") return [];
+		if (order.toolbox !== "all") return order.toolbox;
+		return [...registry.keys()].filter((id) => id !== `p:${order.id}`);
 	});
 
-	const shelfLockedCount = createMemo(() =>
-		currentOrder().toolbox === "all" ? Math.max(0, ORDERS.length - unlockedList().length) : 0,
-	);
+	const shelfLockedCount = createMemo(() => {
+		const order = currentOrder();
+		return order.mode === "build" && order.toolbox === "all" ? Math.max(0, ORDERS.length - unlockedList().length) : 0;
+	});
 
 	const applyReplacement = (replacement: DraftTerm): void => {
 		const path = selectedPath();
@@ -143,6 +153,15 @@ export function App(): JSX.Element {
 	};
 
 	const undo = (): void => {
+		if (currentOrder().mode === "run") {
+			const pastRuns = runHistory();
+			if (pastRuns.length === 0) return;
+			playUndoSound();
+			setPlayTerm(pastRuns[pastRuns.length - 1]);
+			setRunHistory(pastRuns.slice(0, pastRuns.length - 1));
+			setDeliveredStars(null);
+			return;
+		}
 		const past = history();
 		if (past.length === 0) return;
 		playUndoSound();
@@ -159,6 +178,13 @@ export function App(): JSX.Element {
 	const clearBench = (): void => {
 		playUndoSound();
 		setCombo(0);
+		const order = currentOrder();
+		if (order.mode === "run") {
+			setPlayTerm(order.initialTerm);
+			setRunHistory([]);
+			setDeliveredStars(null);
+			return;
+		}
 		setDraft({ kind: "hole" });
 		setSelectedPath("");
 		setHistory([]);
@@ -169,49 +195,73 @@ export function App(): JSX.Element {
 
 	const selectOrder = (index: number): void => {
 		setOrderIndex(index);
-		clearBench();
+		setRejected(null);
+		setDeliveredStars(null);
+		setCombo(0);
+		const targetOrder = ORDERS[index];
+		if (targetOrder.mode === "run") {
+			setPlayTerm(targetOrder.initialTerm);
+			setRunHistory([]);
+		} else {
+			setDraft({ kind: "hole" });
+			setSelectedPath("");
+			setHistory([]);
+			setPlayTerm(null);
+		}
 		setPanX(0);
 		setPanY(0);
 		setZoom(1);
 	};
 
+	const recordStars = (orderId: string, stars: number): void => {
+		const updatedStars = new Map(clearedStars());
+		const previousBest = updatedStars.get(orderId);
+		if (previousBest === undefined || stars > previousBest) updatedStars.set(orderId, stars);
+		setClearedStars(updatedStars);
+		saveWorkshop(updatedStars, unlockedList());
+	};
+
 	const deliverOrder = (): void => {
-		if (hasHoles()) return;
+		const order = currentOrder();
+		if (order.mode !== "build" || hasHoles()) return;
 		const candidate = draftToTerm(draft(), []);
-		const results = judgeOrder(candidate, currentOrder().tests, registry, 300);
+		const results = judgeOrder(candidate, order.tests, registry, 300);
 		const firstFailIndex = results.findIndex((item) => !item.passed);
 		if (firstFailIndex >= 0) {
 			playFailSound();
-			setRejected({ testCase: currentOrder().tests[firstFailIndex], result: results[firstFailIndex] });
+			setRejected({ testCase: order.tests[firstFailIndex], result: results[firstFailIndex] });
 			return;
 		}
 		playPassSound();
 		setRejected(null);
-		const stars = partCount() <= currentOrder().parSize ? 3 : partCount() <= currentOrder().parSize + 2 ? 2 : 1;
+		const stars = partCount() <= order.parSize ? 3 : partCount() <= order.parSize + 2 ? 2 : 1;
 		setDeliveredStars(stars);
-		const updatedStars = new Map(clearedStars());
-		const previousBest = updatedStars.get(currentOrder().id);
-		if (previousBest === undefined || stars > previousBest) updatedStars.set(currentOrder().id, stars);
-		setClearedStars(updatedStars);
 
-		const newId = `p:${currentOrder().id}`;
-		if (!registry.has(newId) && currentOrder().id !== "first-delivery") {
+		const newId = `p:${order.id}`;
+		if (!registry.has(newId) && order.id !== "first-delivery") {
 			registerGadget(registry, newId, candidate, "level");
 			const updatedNames = new Map(gadgetNames());
-			updatedNames.set(newId, currentOrder().unlocksName);
+			updatedNames.set(newId, order.unlocksName);
 			setGadgetNames(updatedNames);
-			const updatedList = [...unlockedList(), { id: newId, name: currentOrder().unlocksName, def: candidate }];
-			setUnlockedList(updatedList);
-			saveWorkshop(updatedStars, updatedList);
-		} else saveWorkshop(updatedStars, unlockedList());
+			setUnlockedList([...unlockedList(), { id: newId, name: order.unlocksName, def: candidate }]);
+		}
+		recordStars(order.id, stars);
 	};
 
 	const startOrStepPlay = (): void => {
+		const order = currentOrder();
+		if (order.mode === "run") {
+			const paths = activeRedexes();
+			if (paths.length > 0) stepRedexAt(paths[0]);
+			return;
+		}
 		if (hasHoles()) return;
 		const active = playTerm();
 		if (active === null) {
-			const firstTest = currentOrder().tests[0];
-			const applied = firstTest.args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), draftToTerm(draft(), []));
+			const applied = order.tests[0].args.reduce<Term>(
+				(fn, arg) => ({ kind: "app", fn, arg }),
+				draftToTerm(draft(), []),
+			);
 			playMoveSound();
 			setPlayTerm(applied);
 			return;
@@ -226,11 +276,12 @@ export function App(): JSX.Element {
 	};
 
 	const fastForwardPlay = (): void => {
-		if (hasHoles()) return;
+		const order = currentOrder();
+		if (order.mode === "run" || hasHoles()) return;
 		let current =
 			playTerm() !== null
 				? (playTerm() as Term)
-				: currentOrder().tests[0].args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), draftToTerm(draft(), []));
+				: order.tests[0].args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), draftToTerm(draft(), []));
 		for (let step = 0; step < 80; step += 1) {
 			const stepped = stepLeftmost(current, registry, "");
 			if (stepped === null) break;
@@ -243,9 +294,22 @@ export function App(): JSX.Element {
 	const stepRedexAt = (path: Path): void => {
 		const active = playTerm();
 		if (active === null) return;
+		const order = currentOrder();
+		if (order.mode === "run" && (deliveredStars() !== null || runSteps() >= order.stepBudget)) return;
 		const stepped = stepAt(active, path, registry, "");
 		if (stepped === null) return;
 		playStepEventSound(stepped.event);
+		if (order.mode === "run") {
+			const nextRunHistory = [...runHistory(), active];
+			setRunHistory(nextRunHistory);
+			setPlayTerm(stepped.next);
+			if (termsEqual(stepped.next, order.targetTerm) && redexes(stepped.next, registry, "").length === 0) {
+				playPassSound();
+				setDeliveredStars(3);
+				recordStars(order.id, 3);
+			} else if (nextRunHistory.length >= order.stepBudget) playFailSound();
+			return;
+		}
 		setPlayTerm(stepped.next);
 	};
 
@@ -271,17 +335,19 @@ export function App(): JSX.Element {
 	onMount(() => window.addEventListener("keydown", handleKeyDown));
 	onCleanup(() => window.removeEventListener("keydown", handleKeyDown));
 
+	const canUndo = (): boolean => (currentOrder().mode === "run" ? runHistory().length > 0 : history().length > 0);
+
 	return (
 		<div class="workshop-root">
 			<header class="top-bar">
 				<button type="button" class="order-badge-btn" onClick={() => setModalMode("map")}>
-					<span>工坊 · 第 {orderIndex() + 1} 单</span>
+					<span>工坊 · 第 {currentOrder().chapter} 章</span>
 					<span style={{ color: "var(--accent-clay)" }}>{currentOrder().title}</span>
 					<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>▾</span>
 				</button>
 
 				<div class="media-controls">
-					<button type="button" class="icon-btn" onClick={undo} disabled={history().length === 0} title="撤销 (Z)">
+					<button type="button" class="icon-btn" onClick={undo} disabled={!canUndo()} title="撤销 (Z)">
 						<span>↩</span>
 						<span>回退</span>
 					</button>
@@ -289,17 +355,19 @@ export function App(): JSX.Element {
 						type="button"
 						class="icon-btn"
 						onClick={startOrStepPlay}
-						disabled={hasHoles()}
+						disabled={currentOrder().mode === "build" && hasHoles()}
 						title="单步运转 (Space)"
 					>
 						<span>▶</span>
 						<span>{playTerm() === null ? "开动" : "单步"}</span>
 					</button>
-					<button type="button" class="icon-btn" onClick={fastForwardPlay} disabled={hasHoles()} title="快进到底">
-						<span>⏭</span>
-						<span>快进</span>
-					</button>
-					<Show when={playTerm() !== null}>
+					<Show when={currentOrder().mode === "build"}>
+						<button type="button" class="icon-btn" onClick={fastForwardPlay} disabled={hasHoles()} title="快进到底">
+							<span>⏭</span>
+							<span>快进</span>
+						</button>
+					</Show>
+					<Show when={currentOrder().mode === "build" && playTerm() !== null}>
 						<button type="button" class="icon-btn active" onClick={() => setPlayTerm(null)}>
 							<span>■</span>
 							<span>停机</span>
@@ -383,38 +451,58 @@ export function App(): JSX.Element {
 					<div class="xray-pill">透视：{xRayText()}</div>
 				</Show>
 
-				<ShelfRail
-					unlockedIds={shelfUnlockedIds()}
-					lockedCount={shelfLockedCount()}
+				<Show when={currentOrder().mode === "build"}>
+					<ShelfRail
+						unlockedIds={shelfUnlockedIds()}
+						lockedCount={shelfLockedCount()}
+						registry={registry}
+						gadgetNames={gadgetNames()}
+						scopeVariables={currentScope()}
+						atoms={
+							currentOrder().mode === "build" ? (currentOrder() as { readonly atoms: readonly string[] }).atoms : []
+						}
+						allowBlueprint={
+							currentOrder().mode === "build"
+								? (currentOrder() as { readonly allowBlueprint: boolean }).allowBlueprint
+								: false
+						}
+						canAddLam={currentScope().length < VARIABLE_POOL.length}
+						hasSelectedHole={selectedPath() !== null && playTerm() === null}
+						onFillGad={(id) => applyReplacement({ kind: "gad", id })}
+						onFillVar={(name) => applyReplacement({ kind: "var", name })}
+						onFillAtom={(name) => applyReplacement({ kind: "atom", name })}
+						onFillLam={fillLam}
+						onFillApp={() => applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
+					/>
+				</Show>
+
+				<OrderSlip
+					order={currentOrder()}
 					registry={registry}
 					gadgetNames={gadgetNames()}
-					scopeVariables={currentScope()}
-					atoms={currentOrder().atoms}
-					allowBlueprint={currentOrder().allowBlueprint}
-					canAddLam={currentScope().length < VARIABLE_POOL.length}
-					hasSelectedHole={selectedPath() !== null && playTerm() === null}
-					onFillGad={(id) => applyReplacement({ kind: "gad", id })}
-					onFillVar={(name) => applyReplacement({ kind: "var", name })}
-					onFillAtom={(name) => applyReplacement({ kind: "atom", name })}
-					onFillLam={fillLam}
-					onFillApp={() => applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
+					rejected={rejected()}
+					runSteps={runSteps()}
+					runFailed={runFailed()}
 				/>
 
-				<OrderSlip order={currentOrder()} registry={registry} gadgetNames={gadgetNames()} rejected={rejected()} />
-
 				<DeliveryCounter
-					canDeliver={!hasHoles()}
+					mode={currentOrder().mode}
+					canDeliver={currentOrder().mode === "build" && !hasHoles()}
 					delivered={deliveredStars() !== null}
 					stars={deliveredStars() !== null ? (deliveredStars() as number) : 0}
-					partCount={partCount()}
-					parSize={currentOrder().parSize}
+					countValue={currentOrder().mode === "run" ? runSteps() : partCount()}
+					targetValue={
+						currentOrder().mode === "run"
+							? (currentOrder() as RunOrder).stepBudget
+							: (currentOrder() as { readonly parSize: number }).parSize
+					}
 					note={currentOrder().note}
 					isLastOrder={orderIndex() === ORDERS.length - 1}
 					onDeliver={deliverOrder}
 					onNextOrder={() => selectOrder(orderIndex() + 1)}
 				/>
 
-				<div class="zoom-controls">
+				<div class="zoom-controls" style={{ left: currentOrder().mode === "run" ? "16px" : "92px" }}>
 					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))}>
 						＋
 					</button>
@@ -434,7 +522,7 @@ export function App(): JSX.Element {
 						⌖
 					</button>
 					<button type="button" class="icon-btn" onClick={clearBench}>
-						清空桌面
+						{currentOrder().mode === "run" ? "重置残局" : "清空桌面"}
 					</button>
 				</div>
 			</main>

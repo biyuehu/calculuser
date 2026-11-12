@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ORDERS } from "../levels/orders";
 import { createBuiltinRegistry } from "./gadget";
 import { judgeNormalize, judgeOrder } from "./judge";
 import { parseLambda, printTerm } from "./parse";
@@ -57,5 +58,35 @@ describe("Calculuser core engine", () => {
 		expect(results[0].passed).toBe(true);
 		const omega = judgeNormalize(parseLambda("(\\x. x x) (\\x. x x)"), registry, 40);
 		expect(omega.terminated).toBe(false);
+	});
+
+	it("solves the three run-mode puzzles within exact step budgets", () => {
+		const registry = createBuiltinRegistry();
+		const dropStep = stepAt(parseLambda("@K A ((@S @I @I) (@S @I @I))"), "", registry, "");
+		expect(dropStep !== null && termsEqual(dropStep.next, { kind: "atom", name: "A" })).toBe(true);
+
+		let innerTerm = parseLambda("(@S @I @I) (@I A)");
+		for (const path of ["a", "", "f", "a"]) {
+			const res = stepAt(innerTerm, path, registry, "");
+			expect(res).not.toBeNull();
+			if (res !== null) innerTerm = res.next;
+		}
+		expect(termsEqual(innerTerm, parseLambda("A A"))).toBe(true);
+
+		let bossTerm = parseLambda("@K ((@S @I @I) (@I A)) (@I (@I (@I B)))");
+		for (const path of ["", "a", "", "f", "a"]) {
+			const res = stepAt(bossTerm, path, registry, "");
+			expect(res).not.toBeNull();
+			if (res !== null) bossTerm = res.next;
+		}
+		expect(termsEqual(bossTerm, parseLambda("A A"))).toBe(true);
+	});
+
+	it("loads all orders without parse errors", () => {
+		expect(ORDERS.length).toBeGreaterThanOrEqual(27);
+		for (const order of ORDERS) {
+			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
+			else expect(order.stepBudget).toBeGreaterThan(0);
+		}
 	});
 });

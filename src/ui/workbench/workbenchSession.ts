@@ -11,6 +11,15 @@ import {
 	playUndoSound,
 } from "../../audio/synth";
 import {
+	type BuildOrder,
+	CHAPTERS,
+	ORDER_TOOLS,
+	type OrderLevel,
+	type RunOrder,
+	type ToolDefinition,
+	getToolDefinition,
+} from "../../content";
+import {
 	type DraftTerm,
 	countDraftSize,
 	draftToTerm,
@@ -23,8 +32,6 @@ import { judgeOrder } from "../../engine/judge";
 import { PRINT_NAMES, printXRayTerm } from "../../engine/parse";
 import { type StepEvent, redexes, stepAt, stepLeftmost } from "../../engine/reduce";
 import { type GadgetId, type Path, type Term, termsEqual } from "../../engine/term";
-import { type BuildOrder, ORDERS, type OrderLevel, type RunOrder } from "../../levels/orders";
-import { ORDER_TOOLS, type ToolDefinition, getToolDefinition } from "../../theme/world";
 import type { RejectedInfo } from "./OrderSlip";
 
 function playStepEventSound(event: StepEvent, stepCount: number): void {
@@ -109,7 +116,8 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 		if (order.mode !== "build") return [];
 		const forbiddenSet = new Set(order.forbidden);
 		const judgeAll = options.judgeMode();
-		const currentOrderIndex = ORDERS.findIndex((item) => item.id === order.id);
+		const allOrders = CHAPTERS.flatMap((c) => c.levels);
+		const currentOrderIndex = allOrders.findIndex((item) => item.id === order.id);
 		const rawCandidates =
 			order.toolbox === "all"
 				? [
@@ -117,11 +125,14 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 						"K",
 						"S",
 						...ORDER_TOOLS.filter((tool) => {
-							if (tool.orderId === order.id || tool.id === order.id) return false;
-							if (judgeAll || tool.orderId === null) return true;
-							const toolOrderIndex = ORDERS.findIndex((item) => item.id === tool.orderId);
+							if (tool.id === order.id) return false;
+							if (judgeAll) return true;
+							const sourceIndex = allOrders.findIndex(
+								(item) => item.mode === "build" && item.unlocksToolId === tool.id,
+							);
 							return (
-								(toolOrderIndex >= 0 && toolOrderIndex < currentOrderIndex) || options.clearedStars().has(tool.orderId)
+								sourceIndex >= 0 &&
+								(sourceIndex < currentOrderIndex || options.clearedStars().has(allOrders[sourceIndex].id))
 							);
 						}).map((tool) => tool.id),
 					]
@@ -318,10 +329,12 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 		setRejected(null);
 		const stars = partCount() <= order.parSize ? 3 : partCount() <= order.parSize + 2 ? 2 : 1;
 		setDeliveredStars(stars);
-		const canonicalTool = ORDER_TOOLS.find((tool) => tool.orderId === order.id);
-		if (canonicalTool !== undefined && !options.registry.has(canonicalTool.id)) {
-			registerGadget(options.registry, canonicalTool.id, candidate, "level");
-			options.onUnlockCanonicalTool(canonicalTool, candidate);
+		if (order.unlocksToolId !== undefined && !options.registry.has(order.unlocksToolId)) {
+			const canonicalTool = getToolDefinition(order.unlocksToolId);
+			if (canonicalTool !== null) {
+				registerGadget(options.registry, canonicalTool.id, candidate, "level");
+				options.onUnlockCanonicalTool(canonicalTool, candidate);
+			}
 		}
 		options.onRecordStars(order.id, stars);
 	};

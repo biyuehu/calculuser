@@ -1,4 +1,4 @@
-import { BUILTIN_TOOLS, ORDER_TOOLS } from "../theme/world";
+import { BUILTIN_TOOLS, ORDER_TOOLS } from "../content";
 import { parseLambda } from "./parse";
 import { type GadgetId, type Term, isClosed, termFingerprint } from "./term";
 

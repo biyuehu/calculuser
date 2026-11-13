@@ -1,9 +1,8 @@
 import { type JSX, Show, createEffect, createSignal } from "solid-js";
+import { CHAPTERS, type OrderLevel, type RunOrder, type ToolDefinition } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { PRINT_NAMES } from "../../engine/parse";
 import type { Term } from "../../engine/term";
-import type { OrderLevel, RunOrder } from "../../levels/orders";
-import type { ToolDefinition } from "../../theme/world";
 import { DeliveryCounter } from "./DeliveryCounter";
 import { DraftNode } from "./DraftNode";
 import { OrderSlip } from "./OrderSlip";
@@ -54,11 +53,17 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setZoom(1);
 	});
 
+	const currentChapter = () => CHAPTERS.find((c) => c.levels.some((l) => l.id === props.order.id));
+	const currentChapterNumber = () => {
+		const chapter = currentChapter();
+		return chapter !== undefined ? chapter.chapter : 1;
+	};
+
 	return (
 		<div class="workshop-root">
 			<header class="top-bar">
 				<button type="button" class="order-badge-btn" onClick={props.onOpenWorkshop}>
-					<span>工坊 · 第 {props.order.chapter} 章</span>
+					<span>工坊 · 第 {currentChapterNumber()} 章</span>
 					<span style={{ color: "var(--accent-clay)" }}>{props.order.title}</span>
 					<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>▾</span>
 				</button>

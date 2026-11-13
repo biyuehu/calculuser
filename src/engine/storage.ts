@@ -1,4 +1,4 @@
-import { getToolDefinition } from "../theme/world";
+import { getToolDefinition } from "../content";
 import type { SettingsState } from "../ui/modals/SettingsModal";
 import type { Term } from "./term";
 

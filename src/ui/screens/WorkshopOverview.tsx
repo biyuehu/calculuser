@@ -1,11 +1,17 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
+import {
+	BUILTIN_TOOLS,
+	type ChapterDefinition,
+	MONSTER_LIST,
+	ORDER_TOOLS,
+	getGadgetMeta,
+	getToolDefinition,
+} from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { printTerm } from "../../engine/parse";
-import type { OrderLevel } from "../../levels/orders";
-import { BUILTIN_TOOLS, MONSTER_LIST, ORDER_TOOLS, getGadgetMeta } from "../../theme/world";
 
 interface WorkshopOverviewProps {
-	readonly orders: readonly OrderLevel[];
+	readonly chapters: readonly ChapterDefinition[];
 	readonly currentOrderIndex: number;
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly registry: Registry;
@@ -16,30 +22,26 @@ interface WorkshopOverviewProps {
 	readonly onSelectOrder: (index: number) => void;
 }
 
-const CHAPTER_TITLES: readonly { readonly chapter: number; readonly title: string }[] = [
-	{ chapter: 1, title: "第一章 · 合成" },
-	{ chapter: 2, title: "第二章 · 图纸台" },
-	{ chapter: 3, title: "第三章 · 逻辑与布尔" },
-	{ chapter: 4, title: "第四章 · 递归与时钟" },
-];
-
 export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"orders" | "parts">("orders");
 
+	const allOrders = props.chapters.flatMap((c) => c.levels);
+
 	const isUnlocked = (index: number): boolean =>
-		props.judgeMode || index === 0 || props.clearedStars.has(props.orders[index - 1].id);
+		props.judgeMode || index === 0 || props.clearedStars.has(allOrders[index - 1].id);
 
 	const continueIndex = (): number =>
 		Math.max(
 			0,
-			props.orders.findIndex((order) => !props.clearedStars.has(order.id)),
+			allOrders.findIndex((order) => !props.clearedStars.has(order.id)),
 		);
 
 	const continueCode = (): string => {
-		const order = props.orders[continueIndex()];
-		return `${order.chapter}.${
-			props.orders.filter((item) => item.chapter === order.chapter).findIndex((item) => item.id === order.id) + 1
-		}`;
+		const order = allOrders[continueIndex()];
+		const chapter = props.chapters.find((c) => c.levels.some((l) => l.id === order.id));
+		return chapter !== undefined
+			? `${chapter.chapter}.${chapter.levels.findIndex((l) => l.id === order.id) + 1}`
+			: "1.1";
 	};
 
 	return (
@@ -78,18 +80,16 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 			<main class="overview-body">
 				<Show when={activeTab() === "orders"}>
 					<div class="overview-chapters-list">
-						<For each={CHAPTER_TITLES}>
+						<For each={props.chapters}>
 							{(chapterInfo) => {
-								const chapterOrders = props.orders
-									.map((order, globalIndex) => ({ order, globalIndex }))
-									.filter((item) => item.order.chapter === chapterInfo.chapter);
 								return (
 									<div class="chapter-block">
 										<h3 class="chapter-title">{chapterInfo.title}</h3>
 										<div class="orders-card-row">
-											<For each={chapterOrders}>
-												{({ order, globalIndex }, localIndex) => {
-													const code = `${order.chapter}.${localIndex() + 1}`;
+											<For each={chapterInfo.levels}>
+												{(order, localIndex) => {
+													const globalIndex = allOrders.findIndex((item) => item.id === order.id);
+													const code = `${chapterInfo.chapter}.${localIndex() + 1}`;
 													const stars = props.clearedStars.get(order.id);
 													const unlocked = isUnlocked(globalIndex);
 													return (
@@ -99,7 +99,9 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 															class={`order-card-cell ${stars !== undefined ? "ok" : ""} ${
 																unlocked && stars === undefined ? "available" : ""
 															} ${!unlocked ? "locked" : ""} ${
-																localIndex() === chapterOrders.length - 1 && chapterOrders.length > 3 ? "boss" : ""
+																localIndex() === chapterInfo.levels.length - 1 && chapterInfo.levels.length > 3
+																	? "boss"
+																	: ""
 															} ${globalIndex === props.currentOrderIndex ? "current" : ""}`}
 															onClick={() => props.onSelectOrder(globalIndex)}
 															title={`${code} ${order.title}`}
@@ -108,9 +110,13 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 															{(() => {
 																if (!unlocked) return <span class="card-icon">🔒</span>;
 																if (stars !== undefined) {
+																	const unlockedTool =
+																		order.mode === "build" && order.unlocksToolId !== undefined
+																			? getToolDefinition(order.unlocksToolId)
+																			: null;
 																	const meta = getGadgetMeta(
 																		order.id,
-																		order.mode === "build" ? order.unlocksName : order.title,
+																		unlockedTool !== null ? unlockedTool.name : order.title,
 																		order.id,
 																	);
 																	return (
@@ -184,13 +190,19 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 							<div class="compendium-grid">
 								<For each={ORDER_TOOLS}>
 									{(tool) => {
+										const sourceChapter = props.chapters.find((c) =>
+											c.levels.some((l) => l.mode === "build" && l.unlocksToolId === tool.id),
+										);
+										const sourceOrder =
+											sourceChapter !== undefined
+												? sourceChapter.levels.find((l) => l.mode === "build" && l.unlocksToolId === tool.id)
+												: undefined;
 										const isPartUnlocked =
 											props.judgeMode ||
-											(tool.orderId !== null && props.clearedStars.has(tool.orderId)) ||
+											(sourceOrder !== undefined && props.clearedStars.has(sourceOrder.id)) ||
 											props.registry.has(tool.id);
 										const registeredEntry = props.registry.get(tool.id);
 										if (!isPartUnlocked) {
-											const targetOrder = props.orders.find((item) => item.id === tool.orderId);
 											return (
 												<div class="compendium-cell" style={{ opacity: 0.55, "border-style": "dashed" }}>
 													<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
@@ -200,12 +212,12 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 														<div>
 															<div style={{ "font-weight": 600, "font-size": "13px" }}>未封装装置</div>
 															<div style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-																{targetOrder !== undefined ? `第 ${targetOrder.chapter} 章` : "研发图纸"}
+																{sourceChapter !== undefined ? `第 ${sourceChapter.chapter} 章` : "研发图纸"}
 															</div>
 														</div>
 													</div>
 													<div style={{ "font-size": "11px", color: "var(--text-muted)", "margin-top": "6px" }}>
-														通关 [{targetOrder !== undefined ? targetOrder.title : tool.name}] 后收录
+														通关 [{sourceOrder !== undefined ? sourceOrder.title : tool.name}] 后收录
 													</div>
 												</div>
 											);

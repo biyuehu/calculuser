@@ -1,8 +1,8 @@
 import type { JSX } from "solid-js";
+import { resolveGadgetMeta } from "../../content";
 import type { DraftTerm } from "../../engine/draft";
 import type { Registry } from "../../engine/gadget";
 import type { Path } from "../../engine/term";
-import { resolveGadgetMeta } from "../../theme/world";
 
 const VARIABLE_COLORS: Record<string, string> = {
 	x: "var(--var-x)",

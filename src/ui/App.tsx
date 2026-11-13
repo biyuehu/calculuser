@@ -1,5 +1,6 @@
 import { type JSX, Show, createMemo, createSignal } from "solid-js";
 import { setMasterVolume } from "../audio/synth";
+import { CHAPTERS, type ToolDefinition } from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
 import {
 	STORAGE_KEY,
@@ -10,8 +11,6 @@ import {
 	saveWorkshop,
 } from "../engine/storage";
 import type { Term } from "../engine/term";
-import { ORDERS } from "../levels/orders";
-import type { ToolDefinition } from "../theme/world";
 import { AboutModal } from "./modals/AboutModal";
 import { SettingsModal, type SettingsState } from "./modals/SettingsModal";
 import { TitleScreen } from "./screens/TitleScreen";
@@ -43,13 +42,16 @@ export function App(): JSX.Element {
 	const [unlockedList, setUnlockedList] = createSignal<SavedWorkshop["unlocked"]>(saved.unlocked);
 	const [gadgetNames, setGadgetNames] = createSignal<ReadonlyMap<string, string>>(initialNames);
 
-	const currentOrder = createMemo(() => ORDERS[orderIndex()]);
+	const allOrders = CHAPTERS.flatMap((c) => c.levels);
+	const currentOrder = createMemo(() => allOrders[orderIndex()]);
 
 	const continueCode = createMemo((): string => {
-		const firstIncomplete = ORDERS.findIndex((order) => !clearedStars().has(order.id));
-		const target = ORDERS[firstIncomplete >= 0 ? firstIncomplete : 0];
-		const chapterOrders = ORDERS.filter((item) => item.chapter === target.chapter);
-		return `${target.chapter}.${chapterOrders.findIndex((item) => item.id === target.id) + 1}`;
+		const firstIncomplete = allOrders.findIndex((order) => !clearedStars().has(order.id));
+		const target = allOrders[firstIncomplete >= 0 ? firstIncomplete : 0];
+		const chapter = CHAPTERS.find((c) => c.levels.some((l) => l.id === target.id));
+		return chapter !== undefined
+			? `${chapter.chapter}.${chapter.levels.findIndex((l) => l.id === target.id) + 1}`
+			: "1.1";
 	});
 
 	const recordStars = (orderId: string, stars: number): void => {
@@ -87,7 +89,7 @@ export function App(): JSX.Element {
 							<TitleScreen
 								continueOrderCode={continueCode()}
 								onStart={() => {
-									const firstIncomplete = ORDERS.findIndex((order) => !clearedStars().has(order.id));
+									const firstIncomplete = allOrders.findIndex((order) => !clearedStars().has(order.id));
 									setOrderIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
 									setScreen("workbench");
 								}}
@@ -103,7 +105,7 @@ export function App(): JSX.Element {
 					case "workshop": {
 						return (
 							<WorkshopOverview
-								orders={ORDERS}
+								chapters={CHAPTERS}
 								currentOrderIndex={orderIndex()}
 								clearedStars={clearedStars()}
 								registry={registry}
@@ -126,7 +128,7 @@ export function App(): JSX.Element {
 								gadgetNames={gadgetNames()}
 								judgeMode={settings().judgeMode}
 								clearedStars={clearedStars()}
-								isLastOrder={orderIndex() === ORDERS.length - 1}
+								isLastOrder={orderIndex() === allOrders.length - 1}
 								onRecordStars={recordStars}
 								onUnlockCanonicalTool={unlockCanonicalTool}
 								onNextOrder={() => setOrderIndex(orderIndex() + 1)}

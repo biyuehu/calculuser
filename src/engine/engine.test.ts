@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ORDERS } from "../levels/orders";
+import { CHAPTERS } from "../content";
 import { createBuiltinRegistry } from "./gadget";
 import { judgeNormalize, judgeOrder } from "./judge";
 import { parseLambda, printTerm } from "./parse";
@@ -8,8 +8,8 @@ import { termsEqual } from "./term";
 
 describe("Calculuser core engine", () => {
 	it("parses and prints lambda expressions cleanly", () => {
-		expect(printTerm(parseLambda("\\x.\\y. x"), 0)).toBe("λx.λy.x");
-		expect(printTerm(parseLambda("\\f.\\x. f (f x)"), 0)).toBe("λx.λy.x (x y)");
+		expect(printTerm(parseLambda("λx.λy. x"), 0)).toBe("λx.λy.x");
+		expect(printTerm(parseLambda("λf.λx. f (f x)"), 0)).toBe("λx.λy.x (x y)");
 	});
 
 	it("evaluates S K K A -> A via play delta-reduction with copy events", () => {
@@ -28,22 +28,22 @@ describe("Calculuser core engine", () => {
 
 	it("reports exact copies count on beta and delta steps", () => {
 		const registry = createBuiltinRegistry();
-		const dropStep = stepLeftmost(parseLambda("(\\x.\\y. x) A B"), registry, "");
+		const dropStep = stepLeftmost(parseLambda("(λx.λy. x) A B"), registry, "");
 		expect(dropStep !== null && dropStep.event.kind === "beta" && dropStep.event.copies === 1).toBe(true);
-		const zeroCopyStep = stepLeftmost(parseLambda("(\\y. A) B"), registry, "");
+		const zeroCopyStep = stepLeftmost(parseLambda("(λy. A) B"), registry, "");
 		expect(zeroCopyStep !== null && zeroCopyStep.event.kind === "beta" && zeroCopyStep.event.copies === 0).toBe(true);
-		const twoCopyStep = stepLeftmost(parseLambda("(\\x. x x) A"), registry, "");
+		const twoCopyStep = stepLeftmost(parseLambda("(λx. x x) A"), registry, "");
 		expect(twoCopyStep !== null && twoCopyStep.event.kind === "beta" && twoCopyStep.event.copies === 2).toBe(true);
 	});
 
 	it("finds clickable redexes and supports stepAt", () => {
 		const registry = createBuiltinRegistry();
-		const expr = parseLambda("(\\x. x) ((\\y. y) A)");
+		const expr = parseLambda("(λx. x) ((λy. y) A)");
 		const paths = redexes(expr, registry, "");
 		expect(paths).toContain("");
 		expect(paths).toContain("a");
 		const innerReduced = stepAt(expr, "a", registry, "");
-		expect(innerReduced !== null && termsEqual(innerReduced.next, parseLambda("(\\x. x) A"))).toBe(true);
+		expect(innerReduced !== null && termsEqual(innerReduced.next, parseLambda("(λx. x) A"))).toBe(true);
 	});
 
 	it("judges equivalence by inlining gadgets and stops on Omega loop", () => {
@@ -56,7 +56,7 @@ describe("Calculuser core engine", () => {
 			100,
 		);
 		expect(results[0].passed).toBe(true);
-		const omega = judgeNormalize(parseLambda("(\\x. x x) (\\x. x x)"), registry, 40);
+		const omega = judgeNormalize(parseLambda("(λx. x x) (λx. x x)"), registry, 40);
 		expect(omega.terminated).toBe(false);
 	});
 
@@ -83,8 +83,9 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("loads all orders without parse errors", () => {
-		expect(ORDERS.length).toBeGreaterThanOrEqual(27);
-		for (const order of ORDERS) {
+		const allOrders = CHAPTERS.flatMap((c) => c.levels);
+		expect(allOrders.length).toBeGreaterThanOrEqual(27);
+		for (const order of allOrders) {
 			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
 			else expect(order.stepBudget).toBeGreaterThan(0);
 		}

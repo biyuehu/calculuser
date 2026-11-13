@@ -1,15 +1,7 @@
 import type { JSX } from "solid-js";
 import { For, Show } from "solid-js";
+import { CHAPTERS, type OrderLevel, getGadgetMeta } from "../../content";
 import type { Registry } from "../../engine/gadget";
-import type { OrderLevel } from "../../levels/orders";
-import { getGadgetMeta } from "../../theme/world";
-
-const CHAPTER_TITLES: ReadonlyArray<{ readonly chapter: number; readonly label: string }> = [
-	{ chapter: 1, label: "第一章 · 工坊启蒙" },
-	{ chapter: 2, label: "第二章 · 运转掌控与进阶" },
-	{ chapter: 3, label: "第三章 · 数据类型" },
-	{ chapter: 4, label: "第四章 · 数字与列表" },
-];
 
 export interface CompendiumModalProps {
 	readonly mode: "compendium" | "map";
@@ -75,18 +67,15 @@ export function CompendiumModal(props: CompendiumModalProps): JSX.Element {
 
 				<Show when={props.mode === "map"}>
 					<div style={{ display: "flex", "flex-direction": "column", gap: "12px" }}>
-						<For each={CHAPTER_TITLES}>
+						<For each={CHAPTERS}>
 							{(chapterInfo) => (
 								<div style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
-									<div class="chapter-section-title">{chapterInfo.label}</div>
+									<div class="chapter-section-title">{chapterInfo.title}</div>
 									<div class="compendium-grid">
-										<For
-											each={props.orders
-												.map((order, index) => ({ order, index }))
-												.filter((entry) => entry.order.chapter === chapterInfo.chapter)}
-										>
-											{(entry) => {
-												const stars = () => props.clearedStars.get(entry.order.id);
+										<For each={chapterInfo.levels}>
+											{(order) => {
+												const index = props.orders.findIndex((item) => item.id === order.id);
+												const stars = () => props.clearedStars.get(order.id);
 												return (
 													<button
 														type="button"
@@ -95,10 +84,10 @@ export function CompendiumModal(props: CompendiumModalProps): JSX.Element {
 															"text-align": "left",
 															cursor: "pointer",
 															"border-color":
-																entry.index === props.currentOrderIndex ? "var(--accent-clay)" : "var(--border-subtle)",
+																index === props.currentOrderIndex ? "var(--accent-clay)" : "var(--border-subtle)",
 														}}
 														onClick={() => {
-															props.onSelectOrder(entry.index);
+															props.onSelectOrder(index);
 															props.onClose();
 														}}
 													>
@@ -108,16 +97,14 @@ export function CompendiumModal(props: CompendiumModalProps): JSX.Element {
 															<span
 																style={{ "font-size": "12.5px", "font-weight": "700", color: "var(--text-primary)" }}
 															>
-																{entry.order.title}
+																{order.title}
 															</span>
 															<span style={{ color: "#d97706", "font-size": "11px" }}>
 																{stars() !== undefined ? "★".repeat(stars() as number) : ""}
 															</span>
 														</div>
 														<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-															{entry.order.mode === "run"
-																? `预算 ${entry.order.stepBudget} 步`
-																: `标准 ${entry.order.parSize} 件`}
+															{order.mode === "run" ? `预算 ${order.stepBudget} 步` : `标准 ${order.parSize} 件`}
 														</span>
 													</button>
 												);

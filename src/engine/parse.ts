@@ -1,6 +1,6 @@
-import type { Term } from "./term";
+import type { GadgetId, Term } from "./term";
 
-const PRINT_NAMES: readonly string[] = [
+export const PRINT_NAMES: readonly string[] = [
 	"x",
 	"y",
 	"z",
@@ -105,21 +105,52 @@ export function printTerm(term: Term, depth: number): string {
 			const position = depth - 1 - term.index;
 			return position >= 0 && position < PRINT_NAMES.length ? PRINT_NAMES[position] : `v${term.index}`;
 		}
-		case "atom": {
+		case "atom":
 			return term.name;
-		}
-		case "gad": {
-			return `@${term.id}`;
-		}
-		case "lam": {
+		case "gad":
+			return term.id;
+		case "lam":
 			return `λ${depth < PRINT_NAMES.length ? PRINT_NAMES[depth] : `x${depth}`}.${printTerm(term.body, depth + 1)}`;
-		}
 		case "app": {
 			const fnStr = term.fn.kind === "lam" ? `(${printTerm(term.fn, depth)})` : printTerm(term.fn, depth);
 			const argStr =
 				term.arg.kind === "app" || term.arg.kind === "lam"
 					? `(${printTerm(term.arg, depth)})`
 					: printTerm(term.arg, depth);
+			return `${fnStr} ${argStr}`;
+		}
+	}
+}
+
+export function printXRayTerm(
+	term: Term,
+	registry: { readonly get: (id: GadgetId) => { readonly def: Term } | undefined },
+	depth: number,
+): string {
+	switch (term.kind) {
+		case "var": {
+			const position = depth - 1 - term.index;
+			return position >= 0 && position < PRINT_NAMES.length ? PRINT_NAMES[position] : `v${term.index}`;
+		}
+		case "atom":
+			return term.name;
+		case "gad": {
+			if (term.id === "I" || term.id === "K" || term.id === "S") return term.id;
+			const entry = registry.get(term.id);
+			if (entry !== undefined) return `(${printXRayTerm(entry.def, registry, depth)})`;
+			return term.id;
+		}
+		case "lam":
+			return `λ${depth < PRINT_NAMES.length ? PRINT_NAMES[depth] : `x${depth}`}.${printXRayTerm(term.body, registry, depth + 1)}`;
+		case "app": {
+			const fnStr =
+				term.fn.kind === "lam"
+					? `(${printXRayTerm(term.fn, registry, depth)})`
+					: printXRayTerm(term.fn, registry, depth);
+			const argStr =
+				term.arg.kind === "app" || term.arg.kind === "lam"
+					? `(${printXRayTerm(term.arg, registry, depth)})`
+					: printXRayTerm(term.arg, registry, depth);
 			return `${fnStr} ${argStr}`;
 		}
 	}

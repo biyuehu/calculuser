@@ -1,15 +1,33 @@
 let audioContext: AudioContext | null = null;
+let masterGainNode: GainNode | null = null;
+let masterVolume = 1;
+
+const PENTATONIC_SCALE: readonly number[] = [
+	261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0,
+];
 
 function getAudioContext(): AudioContext | null {
 	if (typeof window === "undefined") return null;
-	if (audioContext === null) audioContext = new window.AudioContext();
+	if (audioContext === null) {
+		audioContext = new window.AudioContext();
+		masterGainNode = audioContext.createGain();
+		masterGainNode.gain.setValueAtTime(masterVolume, audioContext.currentTime);
+		masterGainNode.connect(audioContext.destination);
+	}
 	if (audioContext.state === "suspended") void audioContext.resume();
 	return audioContext;
 }
 
+export function setMasterVolume(volume: number): void {
+	masterVolume = Math.max(0, Math.min(1, volume));
+	if (masterGainNode !== null && audioContext !== null)
+		masterGainNode.gain.setValueAtTime(masterVolume, audioContext.currentTime);
+}
+
 function playTone(frequency: number, duration: number, type: OscillatorType, gainPeak: number): void {
+	if (masterVolume <= 0) return;
 	const context = getAudioContext();
-	if (context === null) return;
+	if (context === null || masterGainNode === null) return;
 	const oscillator = context.createOscillator();
 	const gainNode = context.createGain();
 	oscillator.type = type;
@@ -17,7 +35,7 @@ function playTone(frequency: number, duration: number, type: OscillatorType, gai
 	gainNode.gain.setValueAtTime(gainPeak, context.currentTime);
 	gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
 	oscillator.connect(gainNode);
-	gainNode.connect(context.destination);
+	gainNode.connect(masterGainNode);
 	oscillator.start();
 	oscillator.stop(context.currentTime + duration);
 }
@@ -53,4 +71,21 @@ export function playPassSound(): void {
 export function playFailSound(): void {
 	playTone(190, 0.14, "sawtooth", 0.065);
 	setTimeout(() => playTone(145, 0.18, "sawtooth", 0.055), 85);
+}
+
+export function playBetaReductionMelody(stepCount: number): void {
+	playTone(PENTATONIC_SCALE[stepCount % PENTATONIC_SCALE.length], 0.08, "triangle", 0.09);
+}
+
+export function playPopExplosionSound(): void {
+	playTone(90, 0.25, "sawtooth", 0.14);
+	setTimeout(() => playTone(140, 0.18, "triangle", 0.12), 30);
+	setTimeout(() => playTone(70, 0.35, "sine", 0.16), 75);
+}
+
+export function playLoopWarningSound(): void {
+	playTone(440, 0.08, "sawtooth", 0.07);
+	setTimeout(() => playTone(415.3, 0.09, "sawtooth", 0.07), 90);
+	setTimeout(() => playTone(440, 0.08, "sawtooth", 0.07), 180);
+	setTimeout(() => playTone(415.3, 0.11, "sawtooth", 0.08), 270);
 }

@@ -1,3 +1,4 @@
+import { BUILTIN_TOOLS, ORDER_TOOLS } from "../theme/world";
 import { parseLambda } from "./parse";
 import { type GadgetId, type Term, isClosed, termFingerprint } from "./term";
 
@@ -41,8 +42,9 @@ export function registerGadget(
 
 export function createBuiltinRegistry(): Registry {
 	const registry: Registry = new Map();
-	registerGadget(registry, "I", parseLambda("\\x. x"), "builtin");
-	registerGadget(registry, "K", parseLambda("\\x.\\y. x"), "builtin");
-	registerGadget(registry, "S", parseLambda("\\x.\\y.\\z. x z (y z)"), "builtin");
+	for (const tool of [...BUILTIN_TOOLS, ...ORDER_TOOLS]) {
+		if (tool.defText !== null && !registry.has(tool.id))
+			registerGadget(registry, tool.id, parseLambda(tool.defText), "builtin");
+	}
 	return registry;
 }

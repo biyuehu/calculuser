@@ -12,11 +12,11 @@ import {
 import type { Term } from "../engine/term";
 import { ORDERS } from "../levels/orders";
 import type { ToolDefinition } from "../theme/world";
-import { AboutModal } from "./AboutModal";
-import { SettingsModal, type SettingsState } from "./SettingsModal";
-import { TitleScreen } from "./TitleScreen";
-import { WorkbenchView } from "./WorkbenchView";
-import { WorkshopOverview } from "./WorkshopOverview";
+import { AboutModal } from "./modals/AboutModal";
+import { SettingsModal, type SettingsState } from "./modals/SettingsModal";
+import { TitleScreen } from "./screens/TitleScreen";
+import { WorkshopOverview } from "./screens/WorkshopOverview";
+import { WorkbenchView } from "./workbench/WorkbenchView";
 
 export function App(): JSX.Element {
 	const saved = loadWorkshop();

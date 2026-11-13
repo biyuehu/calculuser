@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { setMasterVolume } from "../audio/synth";
+import { setMasterVolume } from "../../audio/synth";
 
 export interface SettingsState {
 	readonly volume: number;

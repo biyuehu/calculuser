@@ -1,5 +1,5 @@
 import { type JSX, Show, createSignal } from "solid-js";
-import { playPassSound, playSnapSound } from "../audio/synth";
+import { playPassSound, playSnapSound } from "../../audio/synth";
 
 interface TitleScreenProps {
 	readonly continueOrderCode: string;

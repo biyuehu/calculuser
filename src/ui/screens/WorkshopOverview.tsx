@@ -1,8 +1,8 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
-import type { Registry } from "../engine/gadget";
-import { printTerm } from "../engine/parse";
-import type { OrderLevel } from "../levels/orders";
-import { BUILTIN_TOOLS, MONSTER_LIST, ORDER_TOOLS, getGadgetMeta } from "../theme/world";
+import type { Registry } from "../../engine/gadget";
+import { printTerm } from "../../engine/parse";
+import type { OrderLevel } from "../../levels/orders";
+import { BUILTIN_TOOLS, MONSTER_LIST, ORDER_TOOLS, getGadgetMeta } from "../../theme/world";
 
 interface WorkshopOverviewProps {
 	readonly orders: readonly OrderLevel[];

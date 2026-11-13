@@ -9,7 +9,7 @@ import {
 	playSnapSound,
 	playSplitSound,
 	playUndoSound,
-} from "../audio/synth";
+} from "../../audio/synth";
 import {
 	type DraftTerm,
 	countDraftSize,
@@ -17,14 +17,14 @@ import {
 	findFirstHole,
 	getScopeAt,
 	setDraftAtPath,
-} from "../engine/draft";
-import { type Registry, registerGadget } from "../engine/gadget";
-import { judgeOrder } from "../engine/judge";
-import { PRINT_NAMES, printXRayTerm } from "../engine/parse";
-import { type StepEvent, redexes, stepAt, stepLeftmost } from "../engine/reduce";
-import { type GadgetId, type Path, type Term, termsEqual } from "../engine/term";
-import { type BuildOrder, ORDERS, type OrderLevel, type RunOrder } from "../levels/orders";
-import { ORDER_TOOLS, type ToolDefinition, getToolDefinition } from "../theme/world";
+} from "../../engine/draft";
+import { type Registry, registerGadget } from "../../engine/gadget";
+import { judgeOrder } from "../../engine/judge";
+import { PRINT_NAMES, printXRayTerm } from "../../engine/parse";
+import { type StepEvent, redexes, stepAt, stepLeftmost } from "../../engine/reduce";
+import { type GadgetId, type Path, type Term, termsEqual } from "../../engine/term";
+import { type BuildOrder, ORDERS, type OrderLevel, type RunOrder } from "../../levels/orders";
+import { ORDER_TOOLS, type ToolDefinition, getToolDefinition } from "../../theme/world";
 import type { RejectedInfo } from "./OrderSlip";
 
 function playStepEventSound(event: StepEvent, stepCount: number): void {

@@ -1,8 +1,8 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
-import type { Registry } from "../engine/gadget";
-import type { JudgeTestCase, JudgeTestResult } from "../engine/judge";
-import type { Term } from "../engine/term";
-import type { OrderLevel } from "../levels/orders";
+import type { Registry } from "../../engine/gadget";
+import type { JudgeTestCase, JudgeTestResult } from "../../engine/judge";
+import type { Term } from "../../engine/term";
+import type { OrderLevel } from "../../levels/orders";
 import { TermVisual } from "./TermVisual";
 
 export interface RejectedInfo {

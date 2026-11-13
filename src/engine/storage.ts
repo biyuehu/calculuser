@@ -1,5 +1,5 @@
 import { getToolDefinition } from "../theme/world";
-import type { SettingsState } from "../ui/SettingsModal";
+import type { SettingsState } from "../ui/modals/SettingsModal";
 import type { Term } from "./term";
 
 export const STORAGE_KEY = "calculuser_workshop_v2";

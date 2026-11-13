@@ -1,9 +1,9 @@
 import { type JSX, Show, createEffect, createSignal } from "solid-js";
-import type { Registry } from "../engine/gadget";
-import { PRINT_NAMES } from "../engine/parse";
-import type { Term } from "../engine/term";
-import type { OrderLevel, RunOrder } from "../levels/orders";
-import type { ToolDefinition } from "../theme/world";
+import type { Registry } from "../../engine/gadget";
+import { PRINT_NAMES } from "../../engine/parse";
+import type { Term } from "../../engine/term";
+import type { OrderLevel, RunOrder } from "../../levels/orders";
+import type { ToolDefinition } from "../../theme/world";
 import { DeliveryCounter } from "./DeliveryCounter";
 import { DraftNode } from "./DraftNode";
 import { OrderSlip } from "./OrderSlip";

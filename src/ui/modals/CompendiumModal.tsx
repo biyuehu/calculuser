@@ -1,8 +1,8 @@
 import type { JSX } from "solid-js";
 import { For, Show } from "solid-js";
-import type { Registry } from "../engine/gadget";
-import type { OrderLevel } from "../levels/orders";
-import { getGadgetMeta } from "../theme/world";
+import type { Registry } from "../../engine/gadget";
+import type { OrderLevel } from "../../levels/orders";
+import { getGadgetMeta } from "../../theme/world";
 
 const CHAPTER_TITLES: ReadonlyArray<{ readonly chapter: number; readonly label: string }> = [
 	{ chapter: 1, label: "第一章 · 工坊启蒙" },

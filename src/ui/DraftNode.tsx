@@ -2,7 +2,7 @@ import type { JSX } from "solid-js";
 import type { DraftTerm } from "../engine/draft";
 import type { Registry } from "../engine/gadget";
 import type { Path } from "../engine/term";
-import { getGadgetMeta } from "../theme/world";
+import { resolveGadgetMeta } from "../theme/world";
 
 const VARIABLE_COLORS: Record<string, string> = {
 	x: "var(--var-x)",
@@ -21,8 +21,29 @@ export interface DraftNodeProps {
 	readonly onDismantle: (path: Path) => void;
 }
 
+const VARIABLE_PALETTE: readonly string[] = [
+	"var(--var-x)",
+	"var(--var-y)",
+	"var(--var-z)",
+	"var(--var-w)",
+	"#06b6d4",
+	"#8b5cf6",
+	"#ec4899",
+	"#10b981",
+	"#f59e0b",
+	"#3b82f6",
+	"#6366f1",
+	"#14b8a6",
+	"#f97316",
+	"#84cc16",
+	"#e11d48",
+	"#0284c7",
+];
+
 function getVariableColor(name: string): string {
-	return VARIABLE_COLORS[name] !== undefined ? VARIABLE_COLORS[name] : "#94a3b8";
+	const direct = VARIABLE_COLORS[name];
+	if (direct !== undefined) return direct;
+	return VARIABLE_PALETTE[name.charCodeAt(0) % VARIABLE_PALETTE.length];
 }
 
 export function DraftNode(props: DraftNodeProps): JSX.Element {
@@ -70,17 +91,11 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 						);
 					}
 					case "gad": {
-						const gadget = props.registry.get(node.id);
-						const customName = props.gadgetNames.get(node.id);
-						const meta = getGadgetMeta(
-							node.id,
-							customName !== undefined ? customName : node.id,
-							gadget !== undefined ? gadget.fingerprint : node.id,
-						);
+						const meta = resolveGadgetMeta(node.id, props.registry, props.gadgetNames);
 						return (
 							<span class="gadget-token" title="右键拆回空槽" onContextMenu={handleDismantle}>
 								<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
-									{node.id.length <= 2 ? node.id : "★"}
+									{meta.symbol}
 								</span>
 								<span>{meta.name}</span>
 							</span>

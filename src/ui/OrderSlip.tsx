@@ -21,9 +21,39 @@ export interface OrderSlipProps {
 
 export function OrderSlip(props: OrderSlipProps): JSX.Element {
 	const [collapsed, setCollapsed] = createSignal<boolean>(false);
+	const [width, setWidth] = createSignal<number>(290);
+
+	const handleResize = (downEvent: PointerEvent): void => {
+		downEvent.preventDefault();
+		downEvent.stopPropagation();
+		const handle = downEvent.currentTarget as HTMLElement;
+		handle.setPointerCapture(downEvent.pointerId);
+		const startX = downEvent.clientX;
+		const startWidth = width();
+
+		const onPointerMove = (moveEvent: PointerEvent): void => {
+			setWidth(Math.max(260, Math.min(720, startWidth - (moveEvent.clientX - startX))));
+		};
+		const onPointerUp = (upEvent: PointerEvent): void => {
+			handle.releasePointerCapture(upEvent.pointerId);
+			handle.removeEventListener("pointermove", onPointerMove);
+			handle.removeEventListener("pointerup", onPointerUp);
+			window.removeEventListener("pointermove", onPointerMove);
+			window.removeEventListener("pointerup", onPointerUp);
+		};
+		handle.addEventListener("pointermove", onPointerMove);
+		handle.addEventListener("pointerup", onPointerUp);
+		window.addEventListener("pointermove", onPointerMove);
+		window.addEventListener("pointerup", onPointerUp);
+	};
 
 	return (
-		<section class="order-slip" style={{ height: collapsed() ? "42px" : "auto" }}>
+		<section
+			class="order-slip"
+			style={{ width: `${width()}px`, height: collapsed() ? "42px" : "auto" }}
+			onWheel={(event) => event.stopPropagation()}
+		>
+			<div class="order-resize-handle" onPointerDown={handleResize} title="拖动调整订单栏宽度" />
 			<div class="order-slip-header">
 				<span>{props.order.mode === "run" ? "运转试炼" : "客人的订单"}</span>
 				<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>

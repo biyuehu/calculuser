@@ -59,7 +59,7 @@ export function CompendiumModal(props: CompendiumModalProps): JSX.Element {
 									<div class="compendium-cell">
 										<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
 											<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
-												{gadget.id.length <= 2 ? gadget.id : "★"}
+												{meta.symbol}
 											</span>
 											<span style={{ "font-size": "13px", "font-weight": "700" }}>{meta.name}</span>
 										</div>

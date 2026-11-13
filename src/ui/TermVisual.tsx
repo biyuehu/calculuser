@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import type { Registry } from "../engine/gadget";
 import type { Path, Term } from "../engine/term";
-import { getGadgetMeta } from "../theme/world";
+import { resolveGadgetMeta } from "../theme/world";
 
 const DEPTH_COLORS: readonly string[] = ["var(--var-x)", "var(--var-y)", "var(--var-z)", "var(--var-w)"];
 
@@ -33,17 +33,11 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 						return <span class="atom-token">{node.name}</span>;
 					}
 					case "gad": {
-						const gadget = props.registry.get(node.id);
-						const customName = props.gadgetNames.get(node.id);
-						const meta = getGadgetMeta(
-							node.id,
-							customName !== undefined ? customName : node.id,
-							gadget !== undefined ? gadget.fingerprint : node.id,
-						);
+						const meta = resolveGadgetMeta(node.id, props.registry, props.gadgetNames);
 						return (
 							<span class="gadget-token">
 								<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
-									{node.id.length <= 2 ? node.id : "★"}
+									{meta.symbol}
 								</span>
 								<span>{meta.name}</span>
 							</span>

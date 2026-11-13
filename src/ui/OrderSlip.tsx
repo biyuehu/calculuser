@@ -130,7 +130,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 
 				<Show when={props.runFailed}>
 					<div class="order-reject-box">
-						<span style={{ "font-weight": "700" }}>步数预算已耗尽！</span>
+						<span style={{ "font-weight": "700" }}>步数预算已耗尽（仍可继续演练探索，但本轮无法交货）！</span>
 						<span class="order-reject-hint">{props.order.hintOnFail}</span>
 					</div>
 				</Show>

@@ -113,8 +113,10 @@ export function App(): JSX.Element {
 	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {
 		const order = currentOrder();
 		if (order.mode !== "build") return [];
-		if (order.toolbox !== "all") return order.toolbox;
-		return [...registry.keys()].filter((id) => id !== `p:${order.id}`);
+		const forbiddenSet = new Set(order.forbidden);
+		const candidates =
+			order.toolbox === "all" ? [...registry.keys()].filter((id) => id !== `p:${order.id}`) : order.toolbox;
+		return candidates.filter((id) => !forbiddenSet.has(id));
 	});
 
 	const shelfLockedCount = createMemo(() => {
@@ -295,7 +297,6 @@ export function App(): JSX.Element {
 		const active = playTerm();
 		if (active === null) return;
 		const order = currentOrder();
-		if (order.mode === "run" && (deliveredStars() !== null || runSteps() >= order.stepBudget)) return;
 		const stepped = stepAt(active, path, registry, "");
 		if (stepped === null) return;
 		playStepEventSound(stepped.event);
@@ -303,7 +304,11 @@ export function App(): JSX.Element {
 			const nextRunHistory = [...runHistory(), active];
 			setRunHistory(nextRunHistory);
 			setPlayTerm(stepped.next);
-			if (termsEqual(stepped.next, order.targetTerm) && redexes(stepped.next, registry, "").length === 0) {
+			if (
+				nextRunHistory.length <= order.stepBudget &&
+				termsEqual(stepped.next, order.targetTerm) &&
+				redexes(stepped.next, registry, "").length === 0
+			) {
 				playPassSound();
 				setDeliveredStars(3);
 				recordStars(order.id, 3);
@@ -326,7 +331,7 @@ export function App(): JSX.Element {
 	const handleKeyDown = (event: KeyboardEvent): void => {
 		if ((event.key === "z" || event.key === "Z") && (event.ctrlKey || !event.metaKey)) undo();
 		if (event.key === "x" || event.key === "X") setIsXRay(!isXRay());
-		if (event.key === " ") {
+		if (event.key === " " && currentOrder().mode === "build") {
 			event.preventDefault();
 			startOrStepPlay();
 		}
@@ -351,27 +356,27 @@ export function App(): JSX.Element {
 						<span>↩</span>
 						<span>回退</span>
 					</button>
-					<button
-						type="button"
-						class="icon-btn"
-						onClick={startOrStepPlay}
-						disabled={currentOrder().mode === "build" && hasHoles()}
-						title="单步运转 (Space)"
-					>
-						<span>▶</span>
-						<span>{playTerm() === null ? "开动" : "单步"}</span>
-					</button>
 					<Show when={currentOrder().mode === "build"}>
+						<button
+							type="button"
+							class="icon-btn"
+							onClick={startOrStepPlay}
+							disabled={hasHoles()}
+							title="单步试机 (Space)"
+						>
+							<span>▶</span>
+							<span>{playTerm() === null ? "开动" : "单步"}</span>
+						</button>
 						<button type="button" class="icon-btn" onClick={fastForwardPlay} disabled={hasHoles()} title="快进到底">
 							<span>⏭</span>
 							<span>快进</span>
 						</button>
-					</Show>
-					<Show when={currentOrder().mode === "build" && playTerm() !== null}>
-						<button type="button" class="icon-btn active" onClick={() => setPlayTerm(null)}>
-							<span>■</span>
-							<span>停机</span>
-						</button>
+						<Show when={playTerm() !== null}>
+							<button type="button" class="icon-btn active" onClick={() => setPlayTerm(null)} title="停止试机">
+								<span>■</span>
+								<span>停机</span>
+							</button>
+						</Show>
 					</Show>
 					<button
 						type="button"

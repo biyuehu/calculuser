@@ -10,7 +10,7 @@ export interface StepResult {
 	readonly event: StepEvent;
 }
 
-export function spine(term: Term): { readonly head: Term; readonly args: readonly Term[] } {
+function spine(term: Term): { readonly head: Term; readonly args: readonly Term[] } {
 	const args: Term[] = [];
 	let current = term;
 	while (current.kind === "app") {
@@ -42,8 +42,26 @@ function isDeltaRedex(term: Term, registry: Registry): Gadget | null {
 	const { head, args } = spine(term);
 	if (head.kind !== "gad") return null;
 	const gadget = registry.get(head.id);
-	if (gadget === undefined) return null;
+	if (gadget === void 0) return null;
 	return args.length === Math.max(1, gadget.arity) ? gadget : null;
+}
+
+function reduceAppRedex(term: Term, registry: Registry, path: Path): StepResult | null {
+	if (term.kind !== "app") return null;
+	if (term.fn.kind === "lam")
+		return {
+			next: betaLam(term.fn.body, term.arg),
+			event: { kind: "beta", path, copies: countCopies(term.fn.body, 0) },
+		};
+	const deltaGadget = isDeltaRedex(term, registry);
+	if (deltaGadget !== null) {
+		const expanded = deltaExpand(deltaGadget, spine(term).args);
+		return {
+			next: expanded.next,
+			event: { kind: "delta", path, gadget: deltaGadget.id, copies: expanded.copies },
+		};
+	}
+	return null;
 }
 
 export function redexes(term: Term, registry: Registry, path: Path): readonly Path[] {
@@ -59,19 +77,8 @@ export function redexes(term: Term, registry: Registry, path: Path): readonly Pa
 
 export function stepLeftmost(term: Term, registry: Registry, path: Path): StepResult | null {
 	if (term.kind === "app") {
-		if (term.fn.kind === "lam")
-			return {
-				next: betaLam(term.fn.body, term.arg),
-				event: { kind: "beta", path, copies: countCopies(term.fn.body, 0) },
-			};
-		const deltaGadget = isDeltaRedex(term, registry);
-		if (deltaGadget !== null) {
-			const expanded = deltaExpand(deltaGadget, spine(term).args);
-			return {
-				next: expanded.next,
-				event: { kind: "delta", path, gadget: deltaGadget.id, copies: expanded.copies },
-			};
-		}
+		const redex = reduceAppRedex(term, registry, path);
+		if (redex !== null) return redex;
 		const fnStep = stepLeftmost(term.fn, registry, `${path}f`);
 		if (fnStep !== null) return { next: { kind: "app", fn: fnStep.next, arg: term.arg }, event: fnStep.event };
 		const argStep = stepLeftmost(term.arg, registry, `${path}a`);
@@ -86,22 +93,7 @@ export function stepLeftmost(term: Term, registry: Registry, path: Path): StepRe
 }
 
 export function stepAt(term: Term, targetPath: Path, registry: Registry, currentPath: Path): StepResult | null {
-	if (currentPath === targetPath) {
-		if (term.kind === "app" && term.fn.kind === "lam")
-			return {
-				next: betaLam(term.fn.body, term.arg),
-				event: { kind: "beta", path: currentPath, copies: countCopies(term.fn.body, 0) },
-			};
-		const deltaGadget = isDeltaRedex(term, registry);
-		if (deltaGadget !== null) {
-			const expanded = deltaExpand(deltaGadget, spine(term).args);
-			return {
-				next: expanded.next,
-				event: { kind: "delta", path: currentPath, gadget: deltaGadget.id, copies: expanded.copies },
-			};
-		}
-		return null;
-	}
+	if (currentPath === targetPath) return reduceAppRedex(term, registry, currentPath);
 	const segment = targetPath[currentPath.length];
 	if (term.kind === "lam" && segment === "b") {
 		const res = stepAt(term.body, targetPath, registry, `${currentPath}b`);

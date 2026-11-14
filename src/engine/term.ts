@@ -8,6 +8,8 @@ export type Term =
 	| { readonly kind: "gad"; readonly id: GadgetId }
 	| { readonly kind: "atom"; readonly name: string };
 
+export const atom = (name: string): Term => ({ kind: "atom", name });
+
 export function shift(term: Term, delta: number, cutoff: number): Term {
 	switch (term.kind) {
 		case "var": {
@@ -106,26 +108,6 @@ export function countCopies(term: Term, targetIndex: number): number {
 		case "gad":
 		case "atom": {
 			return 0;
-		}
-	}
-}
-
-export function termFingerprint(term: Term): string {
-	switch (term.kind) {
-		case "var": {
-			return `v${term.index}`;
-		}
-		case "atom": {
-			return `'${term.name}`;
-		}
-		case "gad": {
-			return `@${term.id}`;
-		}
-		case "lam": {
-			return `(${termFingerprint(term.body)})`;
-		}
-		case "app": {
-			return `[${termFingerprint(term.fn)} ${termFingerprint(term.arg)}]`;
 		}
 	}
 }

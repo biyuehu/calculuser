@@ -1,4 +1,5 @@
-import type { GadgetId, Term } from "./term";
+import type { Registry } from "./gadget";
+import type { Term } from "./term";
 
 export const PRINT_NAMES: readonly string[] = [
 	"x",
@@ -122,11 +123,7 @@ export function printTerm(term: Term, depth: number): string {
 	}
 }
 
-export function printXRayTerm(
-	term: Term,
-	registry: { readonly get: (id: GadgetId) => { readonly def: Term } | undefined },
-	depth: number,
-): string {
+export function printXRayTerm(term: Term, registry: Registry, depth: number): string {
 	switch (term.kind) {
 		case "var": {
 			const position = depth - 1 - term.index;
@@ -137,7 +134,7 @@ export function printXRayTerm(
 		case "gad": {
 			if (term.id === "I" || term.id === "K" || term.id === "S") return term.id;
 			const entry = registry.get(term.id);
-			if (entry !== undefined) return `(${printXRayTerm(entry.def, registry, depth)})`;
+			if (entry !== void 0) return `(${printXRayTerm(entry.def, registry, depth)})`;
 			return term.id;
 		}
 		case "lam":

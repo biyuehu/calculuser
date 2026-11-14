@@ -82,10 +82,3 @@ export function playPopExplosionSound(): void {
 	setTimeout(() => playTone(140, 0.18, "triangle", 0.12), 30);
 	setTimeout(() => playTone(70, 0.35, "sine", 0.16), 75);
 }
-
-export function playLoopWarningSound(): void {
-	playTone(440, 0.08, "sawtooth", 0.07);
-	setTimeout(() => playTone(415.3, 0.09, "sawtooth", 0.07), 90);
-	setTimeout(() => playTone(440, 0.08, "sawtooth", 0.07), 180);
-	setTimeout(() => playTone(415.3, 0.11, "sawtooth", 0.08), 270);
-}

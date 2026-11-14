@@ -13,7 +13,7 @@ export interface JudgeTestResult {
 	readonly steps: number;
 }
 
-export function inlineGadgets(term: Term, registry: Registry, cache: Map<GadgetId, Term>): Term {
+function inlineGadgets(term: Term, registry: Registry, cache: Map<GadgetId, Term>): Term {
 	switch (term.kind) {
 		case "var":
 		case "atom": {
@@ -21,9 +21,9 @@ export function inlineGadgets(term: Term, registry: Registry, cache: Map<GadgetI
 		}
 		case "gad": {
 			const cached = cache.get(term.id);
-			if (cached !== undefined) return cached;
+			if (cached !== void 0) return cached;
 			const gadget = registry.get(term.id);
-			if (gadget === undefined) throw new Error(`Unknown gadget: ${term.id}`);
+			if (gadget === void 0) throw new Error(`Unknown gadget: ${term.id}`);
 			const expanded = inlineGadgets(gadget.def, registry, cache);
 			cache.set(term.id, expanded);
 			return expanded;

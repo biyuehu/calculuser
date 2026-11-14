@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import { Show } from "solid-js";
 
-export interface DeliveryCounterProps {
+interface DeliveryCounterProps {
 	readonly mode: "build" | "run";
 	readonly canDeliver: boolean;
 	readonly delivered: boolean;

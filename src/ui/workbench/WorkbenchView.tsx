@@ -1,8 +1,8 @@
 import { type JSX, Show, createEffect, createSignal } from "solid-js";
-import { CHAPTERS, type OrderLevel, type RunOrder } from "../../content";
+import type { OrderLevel } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { PRINT_NAMES } from "../../engine/parse";
-import type { Term } from "../../engine/term";
+import { useWorkbenchSession } from "../../utils/hooks/useWorkbenchSession";
 import { DeliveryCounter } from "./DeliveryCounter";
 import { DraftNode } from "./DraftNode";
 import { OrderSlip } from "./OrderSlip";
@@ -10,12 +10,10 @@ import { PressureGauge } from "./PressureGauge";
 import { ShelfRail } from "./ShelfRail";
 import { TapeTimeline } from "./TapeTimeline";
 import { TermVisual } from "./TermVisual";
-import { createWorkbenchSession } from "./workbenchSession";
 
-export interface WorkbenchViewProps {
+interface WorkbenchViewProps {
 	readonly order: OrderLevel;
 	readonly registry: Registry;
-	readonly gadgetNames: ReadonlyMap<string, string>;
 	readonly judgeMode: boolean;
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly isLastOrder: boolean;
@@ -27,10 +25,9 @@ export interface WorkbenchViewProps {
 }
 
 export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
-	const session = createWorkbenchSession({
+	const session = useWorkbenchSession({
 		order: () => props.order,
 		registry: props.registry,
-		gadgetNames: () => props.gadgetNames,
 		judgeMode: () => props.judgeMode,
 		clearedStars: () => props.clearedStars,
 		onRecordStars: props.onRecordStars,
@@ -51,17 +48,11 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setZoom(1);
 	});
 
-	const currentChapter = () => CHAPTERS.find((c) => c.levels.some((l) => l.id === props.order.id));
-	const currentChapterNumber = () => {
-		const chapter = currentChapter();
-		return chapter !== undefined ? chapter.chapter : 1;
-	};
-
 	return (
 		<div class="workshop-root">
 			<header class="top-bar">
 				<button type="button" class="order-badge-btn" onClick={props.onOpenWorkshop}>
-					<span>工坊 · 第 {currentChapterNumber()} 章</span>
+					<span>工坊 · 第 {props.order.chapter} 章</span>
 					<span style={{ color: "var(--accent-clay)" }}>{props.order.title}</span>
 					<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>▾</span>
 				</button>
@@ -126,7 +117,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				onWheel={(event) => {
 					if (
 						(event.target as HTMLElement).closest(
-							".shelf-rail, .order-slip, .delivery-counter, .tape-timeline, .compendium-modal, .about-modal, .settings-card",
+							".shelf-rail, .order-slip, .delivery-counter, .tape-timeline, .about-modal, .settings-card",
 						)
 					)
 						return;
@@ -154,28 +145,26 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				>
 					<div class="workbench-assembly">
 						<Show
-							when={session.playTerm() !== null}
+							when={session.playTerm()}
 							fallback={
 								<DraftNode
 									draft={session.draft()}
 									path=""
 									selectedPath={session.selectedPath()}
-									registry={props.registry}
-									gadgetNames={props.gadgetNames}
 									onSelectHole={session.selectHole}
 									onDismantle={session.dismantleAtPath}
 								/>
 							}
 						>
-							<TermVisual
-								term={session.playTerm() as Term}
-								depth={0}
-								path=""
-								registry={props.registry}
-								gadgetNames={props.gadgetNames}
-								redexPaths={session.activeRedexes()}
-								onStepRedex={session.stepRedexAt}
-							/>
+							{(term) => (
+								<TermVisual
+									term={term()}
+									depth={0}
+									path=""
+									redexPaths={session.activeRedexes()}
+									onStepRedex={session.stepRedexAt}
+								/>
+							)}
 						</Show>
 					</div>
 				</div>
@@ -186,44 +175,40 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					</div>
 				</Show>
 
-				<Show when={props.order.mode === "build"}>
-					<ShelfRail
-						width={shelfWidth()}
-						onResize={setShelfWidth}
-						unlockedIds={session.shelfUnlockedIds()}
-						lockedCount={session.shelfLockedCount()}
-						registry={props.registry}
-						gadgetNames={props.gadgetNames}
-						scopeVariables={session.currentScope()}
-						atoms={props.order.mode === "build" ? (props.order as { readonly atoms: readonly string[] }).atoms : []}
-						allowBlueprint={
-							props.order.mode === "build"
-								? (props.order as { readonly allowBlueprint: boolean }).allowBlueprint
-								: false
-						}
-						canAddLam={session.currentScope().length < PRINT_NAMES.length}
-						hasSelectedHole={session.selectedPath() !== null && session.playTerm() === null}
-						onFillGad={(id) => session.applyReplacement({ kind: "gad", id })}
-						onFillVar={(name) => session.applyReplacement({ kind: "var", name })}
-						onFillAtom={(name) => session.applyReplacement({ kind: "atom", name })}
-						onFillLam={session.fillLam}
-						onFillApp={() => session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
-					/>
+				<Show when={props.order.mode === "build" ? props.order : null}>
+					{(buildOrder) => (
+						<ShelfRail
+							width={shelfWidth()}
+							onResize={setShelfWidth}
+							unlockedIds={session.shelfUnlockedIds()}
+							lockedCount={session.shelfLockedCount()}
+							scopeVariables={session.currentScope()}
+							atoms={buildOrder().atoms}
+							allowBlueprint={buildOrder().allowBlueprint}
+							canAddLam={session.currentScope().length < PRINT_NAMES.length}
+							hasSelectedHole={session.selectedPath() !== null && session.playTerm() === null}
+							onFillGad={(id) => session.applyReplacement({ kind: "gad", id })}
+							onFillVar={(name) => session.applyReplacement({ kind: "var", name })}
+							onFillAtom={(name) => session.applyReplacement({ kind: "atom", name })}
+							onFillLam={session.fillLam}
+							onFillApp={() => session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
+						/>
+					)}
 				</Show>
 
-				<Show when={props.order.mode === "run"}>
-					<PressureGauge
-						currentSteps={session.runSteps()}
-						maxBudget={(props.order as RunOrder).stepBudget}
-						hasExploded={session.runFailed()}
-						onReset={session.clearBench}
-					/>
+				<Show when={props.order.mode === "run" ? props.order : null}>
+					{(runOrder) => (
+						<PressureGauge
+							currentSteps={session.runSteps()}
+							maxBudget={runOrder().stepBudget}
+							hasExploded={session.runFailed()}
+							onReset={session.clearBench}
+						/>
+					)}
 				</Show>
 
 				<OrderSlip
 					order={props.order}
-					registry={props.registry}
-					gadgetNames={props.gadgetNames}
 					rejected={session.rejected()}
 					runSteps={session.runSteps()}
 					runFailed={session.runFailed()}
@@ -233,13 +218,9 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					mode={props.order.mode}
 					canDeliver={props.order.mode === "build" && !session.hasHoles()}
 					delivered={session.deliveredStars() !== null}
-					stars={session.deliveredStars() !== null ? (session.deliveredStars() as number) : 0}
+					stars={session.deliveredStars() ?? 0}
 					countValue={props.order.mode === "run" ? session.runSteps() : session.partCount()}
-					targetValue={
-						props.order.mode === "run"
-							? (props.order as RunOrder).stepBudget
-							: (props.order as { readonly parSize: number }).parSize
-					}
+					targetValue={props.order.mode === "run" ? props.order.stepBudget : props.order.parSize}
 					note={props.order.note}
 					isLastOrder={props.isLastOrder}
 					onDeliver={session.deliverOrder}

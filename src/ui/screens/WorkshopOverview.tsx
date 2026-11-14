@@ -1,21 +1,21 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
 import {
 	BUILTIN_TOOLS,
-	type ChapterDefinition,
-	MONSTER_LIST,
+	CHAPTERS,
+	LEVELS,
 	ORDER_TOOLS,
+	getContinueOrderIndex,
 	getGadgetMeta,
-	getToolDefinition,
+	getOrderCode,
+	getToolSource,
 } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { printTerm } from "../../engine/parse";
 
 interface WorkshopOverviewProps {
-	readonly chapters: readonly ChapterDefinition[];
 	readonly currentOrderIndex: number;
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly registry: Registry;
-	readonly gadgetNames: ReadonlyMap<string, string>;
 	readonly judgeMode: boolean;
 	readonly origin: "title" | "workbench";
 	readonly onBack: () => void;
@@ -25,24 +25,12 @@ interface WorkshopOverviewProps {
 export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"orders" | "parts">("orders");
 
-	const allOrders = props.chapters.flatMap((c) => c.levels);
-
 	const isUnlocked = (index: number): boolean =>
-		props.judgeMode || index === 0 || props.clearedStars.has(allOrders[index - 1].id);
+		props.judgeMode || index === 0 || props.clearedStars.has(LEVELS[index - 1].id);
 
-	const continueIndex = (): number =>
-		Math.max(
-			0,
-			allOrders.findIndex((order) => !props.clearedStars.has(order.id)),
-		);
+	const continueIndex = (): number => getContinueOrderIndex(props.clearedStars);
 
-	const continueCode = (): string => {
-		const order = allOrders[continueIndex()];
-		const chapter = props.chapters.find((c) => c.levels.some((l) => l.id === order.id));
-		return chapter !== undefined
-			? `${chapter.chapter}.${chapter.levels.findIndex((l) => l.id === order.id) + 1}`
-			: "1.1";
-	};
+	const continueCode = (): string => getOrderCode(LEVELS[continueIndex()].id);
 
 	return (
 		<div class="workshop-overview-container">
@@ -80,60 +68,65 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 			<main class="overview-body">
 				<Show when={activeTab() === "orders"}>
 					<div class="overview-chapters-list">
-						<For each={props.chapters}>
+						<For each={CHAPTERS}>
 							{(chapterInfo) => {
 								return (
 									<div class="chapter-block">
-										<h3 class="chapter-title">{chapterInfo.title}</h3>
+										<div style={{ display: "flex", "align-items": "baseline", gap: "8px" }}>
+											<h3 class="chapter-title">{chapterInfo.title}</h3>
+											<span style={{ "font-size": "11.5px", color: "var(--text-muted)" }}>{chapterInfo.subtitle}</span>
+										</div>
 										<div class="orders-card-row">
-											<For each={chapterInfo.levels}>
-												{(order, localIndex) => {
-													const globalIndex = allOrders.findIndex((item) => item.id === order.id);
-													const code = `${chapterInfo.chapter}.${localIndex() + 1}`;
-													const stars = props.clearedStars.get(order.id);
-													const unlocked = isUnlocked(globalIndex);
-													return (
-														<button
-															type="button"
-															disabled={!unlocked}
-															class={`order-card-cell ${stars !== undefined ? "ok" : ""} ${
-																unlocked && stars === undefined ? "available" : ""
-															} ${!unlocked ? "locked" : ""} ${
-																localIndex() === chapterInfo.levels.length - 1 && chapterInfo.levels.length > 3
-																	? "boss"
-																	: ""
-															} ${globalIndex === props.currentOrderIndex ? "current" : ""}`}
-															onClick={() => props.onSelectOrder(globalIndex)}
-															title={`${code} ${order.title}`}
-														>
-															<span class="card-code">{code}</span>
-															{(() => {
-																if (!unlocked) return <span class="card-icon">🔒</span>;
-																if (stars !== undefined) {
-																	const unlockedTool =
-																		order.mode === "build" && order.unlocksToolId !== undefined
-																			? getToolDefinition(order.unlocksToolId)
-																			: null;
-																	const meta = getGadgetMeta(
-																		order.id,
-																		unlockedTool !== null ? unlockedTool.name : order.title,
-																		order.id,
-																	);
-																	return (
-																		<>
-																			<span class={`gadget-glyph sm ${meta.shape}`} style={{ background: meta.accent }}>
-																				{meta.symbol}
-																			</span>
-																			<span class="card-stars">{"★".repeat(stars)}</span>
-																		</>
-																	);
-																}
-																return <span class="card-mode-tag">{order.mode === "build" ? "造" : "解"}</span>;
-															})()}
-														</button>
-													);
-												}}
-											</For>
+											{(() => {
+												const chapterLevels = LEVELS.filter((l) => l.chapter === chapterInfo.chapter);
+												return (
+													<For each={chapterLevels}>
+														{(order, localIndex) => {
+															const globalIndex = LEVELS.findIndex((item) => item.id === order.id);
+															const code = order.code;
+															const stars = props.clearedStars.get(order.id);
+															const unlocked = isUnlocked(globalIndex);
+															return (
+																<button
+																	type="button"
+																	disabled={!unlocked}
+																	class={`order-card-cell ${stars !== void 0 ? "ok" : ""} ${
+																		unlocked && stars === void 0 ? "available" : ""
+																	} ${!unlocked ? "locked" : ""} ${
+																		localIndex() === chapterLevels.length - 1 && chapterLevels.length > 3 ? "boss" : ""
+																	} ${globalIndex === props.currentOrderIndex ? "current" : ""}`}
+																	onClick={() => props.onSelectOrder(globalIndex)}
+																	title={`${code} ${order.title}`}
+																>
+																	<span class="card-code">{code}</span>
+																	{(() => {
+																		if (!unlocked) return <span class="card-icon">🔒</span>;
+																		if (stars !== void 0) {
+																			const meta = getGadgetMeta(
+																				order.mode === "build" && order.unlocksToolId !== void 0
+																					? order.unlocksToolId
+																					: order.id,
+																			);
+																			return (
+																				<>
+																					<span
+																						class={`gadget-glyph sm ${meta.shape}`}
+																						style={{ background: meta.accent }}
+																					>
+																						{meta.symbol}
+																					</span>
+																					<span class="card-stars">{"★".repeat(stars)}</span>
+																				</>
+																			);
+																		}
+																		return <span class="card-mode-tag">{order.mode === "build" ? "造" : "解"}</span>;
+																	})()}
+																</button>
+															);
+														}}
+													</For>
+												);
+											})()}
 										</div>
 									</div>
 								);
@@ -190,17 +183,10 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 							<div class="compendium-grid">
 								<For each={ORDER_TOOLS}>
 									{(tool) => {
-										const sourceChapter = props.chapters.find((c) =>
-											c.levels.some((l) => l.mode === "build" && l.unlocksToolId === tool.id),
-										);
-										const sourceOrder =
-											sourceChapter !== undefined
-												? sourceChapter.levels.find((l) => l.mode === "build" && l.unlocksToolId === tool.id)
-												: undefined;
+										const sourceOrderId = getToolSource(tool.id);
 										const isPartUnlocked =
-											props.judgeMode || (sourceOrder !== undefined && props.clearedStars.has(sourceOrder.id));
+											props.judgeMode || (sourceOrderId !== null && props.clearedStars.has(sourceOrderId));
 										const registeredEntry = props.registry.get(tool.id);
-										const customName = props.gadgetNames.get(tool.id);
 										return (
 											<div
 												class={`compendium-cell ${!isPartUnlocked ? "locked" : ""}`}
@@ -214,13 +200,11 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 														{tool.symbol}
 													</span>
 													<div>
-														<div style={{ "font-weight": 700, "font-size": "13px" }}>
-															{customName !== undefined ? customName : tool.name}
-														</div>
+														<div style={{ "font-weight": 700, "font-size": "13px" }}>{tool.name}</div>
 														<div style={{ "font-size": "11px", color: "var(--text-muted)" }}>
 															{!isPartUnlocked
 																? "未解锁"
-																: registeredEntry !== undefined
+																: registeredEntry !== void 0
 																	? `元数: ${registeredEntry.arity}`
 																	: `元数: ${tool.arity}`}
 														</div>
@@ -238,7 +222,7 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 															"border-radius": "4px",
 														}}
 													>
-														{registeredEntry !== undefined ? printTerm(registeredEntry.def, 0) : tool.schematic}
+														{registeredEntry !== void 0 ? printTerm(registeredEntry.def, 0) : tool.schematic}
 													</div>
 												</Show>
 												<div style={{ "font-size": "11px", color: "var(--text-secondary)", "line-height": "1.4" }}>
@@ -247,49 +231,6 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 											</div>
 										);
 									}}
-								</For>
-							</div>
-						</div>
-
-						<div class="chapter-block">
-							<h3 class="chapter-title" style={{ color: "var(--accent-danger)" }}>
-								危险品与奇异点图鉴（Monsters）
-							</h3>
-							<div class="compendium-grid">
-								<For each={MONSTER_LIST}>
-									{(monster) => (
-										<div class="hazard-cell">
-											<span class="hazard-badge">{monster.dangerLevel}</span>
-											<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-												<span class="gadget-glyph lg hex" style={{ background: "var(--accent-danger)" }}>
-													{monster.symbol}
-												</span>
-												<div>
-													<div style={{ "font-weight": 700, "font-size": "13px", color: "var(--accent-danger)" }}>
-														{monster.name}
-													</div>
-													<div style={{ "font-size": "11px", color: "var(--text-muted)" }}>发散/递归原型</div>
-												</div>
-											</div>
-											<div
-												class="code-blueprint"
-												style={{
-													"font-family": "var(--font-mono)",
-													"font-size": "11px",
-													"margin-top": "4px",
-													background: "#ffffff",
-													padding: "4px 8px",
-													"border-radius": "4px",
-													border: "1px solid #fecaca",
-												}}
-											>
-												{monster.termText}
-											</div>
-											<div style={{ "font-size": "11px", color: "var(--text-secondary)", "line-height": "1.4" }}>
-												{monster.note}
-											</div>
-										</div>
-									)}
 								</For>
 							</div>
 						</div>

@@ -1,5 +1,6 @@
 import { type JSX, Show, createSignal } from "solid-js";
 import { playPassSound, playSnapSound } from "../../audio/synth";
+import { getGadgetMeta } from "../../content";
 
 interface TitleScreenProps {
 	readonly continueOrderCode: string;
@@ -45,12 +46,17 @@ export function TitleScreen(props: TitleScreenProps): JSX.Element {
 								</>
 							}
 						>
-							<span class="gadget-token">
-								<span class="gadget-glyph square" style={{ background: "var(--accent-warning)" }}>
-									K
-								</span>
-								<span>截留闸</span>
-							</span>
+							{(() => {
+								const kMeta = getGadgetMeta("K");
+								return (
+									<span class="gadget-token">
+										<span class={`gadget-glyph ${kMeta.shape}`} style={{ background: kMeta.accent }}>
+											{kMeta.symbol}
+										</span>
+										<span>{kMeta.name}</span>
+									</span>
+								);
+							})()}
 							<span class="atom-token">A</span>
 							<span class="atom-token">B</span>
 						</Show>

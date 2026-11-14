@@ -10,14 +10,7 @@ import {
 	playSplitSound,
 	playUndoSound,
 } from "../../audio/synth";
-import {
-	type BuildOrder,
-	CHAPTERS,
-	ORDER_TOOLS,
-	type OrderLevel,
-	type RunOrder,
-	getToolDefinition,
-} from "../../content";
+import { BUILTIN_TOOLS, LEVELS, ORDER_TOOLS, type OrderLevel, getToolDefinition, getToolSource } from "../../content";
 import {
 	type DraftTerm,
 	countDraftSize,
@@ -31,7 +24,7 @@ import { judgeOrder } from "../../engine/judge";
 import { PRINT_NAMES, printXRayTerm } from "../../engine/parse";
 import { type StepEvent, redexes, stepAt, stepLeftmost } from "../../engine/reduce";
 import { type GadgetId, type Path, type Term, termsEqual } from "../../engine/term";
-import type { RejectedInfo } from "./OrderSlip";
+import type { RejectedInfo } from "../../ui/workbench/OrderSlip";
 
 function playStepEventSound(event: StepEvent, stepCount: number): void {
 	const count = event.kind === "beta" ? event.copies : event.copies.length > 0 ? event.copies[0] : 1;
@@ -43,16 +36,15 @@ function playStepEventSound(event: StepEvent, stepCount: number): void {
 	}
 }
 
-export interface WorkbenchSessionOptions {
+interface WorkbenchSessionOptions {
 	readonly order: Accessor<OrderLevel>;
 	readonly registry: Registry;
-	readonly gadgetNames: Accessor<ReadonlyMap<string, string>>;
 	readonly judgeMode: Accessor<boolean>;
 	readonly clearedStars: Accessor<ReadonlyMap<string, number>>;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
 }
 
-export interface WorkbenchSession {
+interface WorkbenchSession {
 	readonly draft: Accessor<DraftTerm>;
 	readonly selectedPath: Accessor<Path | null>;
 	readonly playTerm: Accessor<Term | null>;
@@ -86,7 +78,7 @@ export interface WorkbenchSession {
 	readonly deliverOrder: () => void;
 }
 
-export function createWorkbenchSession(options: WorkbenchSessionOptions): WorkbenchSession {
+export function useWorkbenchSession(options: WorkbenchSessionOptions): WorkbenchSession {
 	const [draft, setDraft] = createSignal<DraftTerm>({ kind: "hole" });
 	const [selectedPath, setSelectedPath] = createSignal<Path | null>("");
 	const [history, setHistory] = createSignal<readonly DraftTerm[]>([]);
@@ -98,40 +90,35 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 	const [tape, setTape] = createSignal<readonly Term[]>([]);
 	const [tapeIndex, setTapeIndex] = createSignal<number>(0);
 
-	const currentScope = createMemo(() => (selectedPath() !== null ? getScopeAt(draft(), selectedPath() as Path) : []));
+	const currentScope = createMemo(() => {
+		const path = selectedPath();
+		return path !== null ? getScopeAt(draft(), path) : [];
+	});
 	const hasHoles = createMemo(() => findFirstHole(draft(), "") !== null);
 	const partCount = createMemo(() => countDraftSize(draft()));
 	const runSteps = createMemo(() => tapeIndex());
-	const runFailed = createMemo(
-		() =>
-			options.order().mode === "run" &&
-			deliveredStars() === null &&
-			tapeIndex() >= (options.order() as RunOrder).stepBudget,
-	);
+	const runFailed = createMemo(() => {
+		const order = options.order();
+		return order.mode === "run" && deliveredStars() === null && tapeIndex() >= order.stepBudget;
+	});
 
 	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {
 		const order = options.order();
 		if (order.mode !== "build") return [];
 		const forbiddenSet = new Set(order.forbidden);
 		const judgeAll = options.judgeMode();
-		const allOrders = CHAPTERS.flatMap((c) => c.levels);
-		const currentOrderIndex = allOrders.findIndex((item) => item.id === order.id);
+		const currentOrderIndex = LEVELS.findIndex((item) => item.id === order.id);
 		const rawCandidates =
 			order.toolbox === "all"
 				? [
-						"I",
-						"K",
-						"S",
+						...BUILTIN_TOOLS.map((tool) => tool.id),
 						...ORDER_TOOLS.filter((tool) => {
 							if (tool.id === order.id) return false;
 							if (judgeAll) return true;
-							const sourceIndex = allOrders.findIndex(
-								(item) => item.mode === "build" && item.unlocksToolId === tool.id,
-							);
-							return (
-								sourceIndex >= 0 &&
-								(sourceIndex < currentOrderIndex || options.clearedStars().has(allOrders[sourceIndex].id))
-							);
+							const sourceOrderId = getToolSource(tool.id);
+							if (sourceOrderId === null) return false;
+							const sourceIndex = LEVELS.findIndex((item) => item.id === sourceOrderId);
+							return sourceIndex >= 0 && (sourceIndex < currentOrderIndex || options.clearedStars().has(sourceOrderId));
 						}).map((tool) => tool.id),
 					]
 				: order.toolbox;
@@ -147,7 +134,7 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 
 	const shelfLockedCount = createMemo(() => {
 		const order = options.order();
-		return order.mode === "build" && (order as BuildOrder).toolbox === "all"
+		return order.mode === "build" && order.toolbox === "all"
 			? Math.max(0, ORDER_TOOLS.length - options.clearedStars().size)
 			: 0;
 	});
@@ -183,7 +170,7 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 
 	const fillLam = (): void => {
 		const available = PRINT_NAMES.find((candidate) => !currentScope().includes(candidate));
-		if (available !== undefined) applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });
+		if (available !== void 0) applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });
 	};
 
 	const jumpToTapeIndex = (targetIndex: number): void => {
@@ -256,9 +243,10 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 		}
 	};
 
-	const activeRedexes = createMemo(() =>
-		playTerm() !== null ? redexes(playTerm() as Term, options.registry, "") : [],
-	);
+	const activeRedexes = createMemo(() => {
+		const term = playTerm();
+		return term !== null ? redexes(term, options.registry, "") : [];
+	});
 
 	const startOrStepPlay = (): void => {
 		const order = options.order();
@@ -295,9 +283,10 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 	const fastForwardPlay = (): void => {
 		const order = options.order();
 		if (order.mode === "run" || hasHoles()) return;
+		const term = playTerm();
 		let current =
-			playTerm() !== null
-				? (playTerm() as Term)
+			term !== null
+				? term
 				: order.tests[0].args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), draftToTerm(draft(), []));
 		const recorded = tape().length > 0 ? [...tape().slice(0, tapeIndex() + 1)] : [current];
 		for (let step = 0; step < 80; step += 1) {
@@ -327,7 +316,7 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 		setRejected(null);
 		const stars = partCount() <= order.parSize ? 3 : partCount() <= order.parSize + 2 ? 2 : 1;
 		setDeliveredStars(stars);
-		if (order.unlocksToolId !== undefined && !options.registry.has(order.unlocksToolId)) {
+		if (order.unlocksToolId !== void 0 && !options.registry.has(order.unlocksToolId)) {
 			const canonicalTool = getToolDefinition(order.unlocksToolId);
 			if (canonicalTool !== null) registerGadget(options.registry, canonicalTool.id, candidate, "level");
 		}
@@ -336,7 +325,8 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 
 	const xRayText = createMemo((): string => {
 		try {
-			return printXRayTerm(playTerm() !== null ? (playTerm() as Term) : draftToTerm(draft(), []), options.registry, 0);
+			const term = playTerm();
+			return printXRayTerm(term !== null ? term : draftToTerm(draft(), []), options.registry, 0);
 		} catch {
 			return "装置尚有空槽未填满";
 		}

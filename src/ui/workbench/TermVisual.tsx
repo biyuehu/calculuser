@@ -1,22 +1,14 @@
 import type { JSX } from "solid-js";
-import { resolveGadgetMeta } from "../../content";
-import type { Registry } from "../../engine/gadget";
+import { getGadgetMeta } from "../../content";
 import type { Path, Term } from "../../engine/term";
+import { getColorAtDepth } from "../../styles";
 
-const DEPTH_COLORS: readonly string[] = ["var(--var-x)", "var(--var-y)", "var(--var-z)", "var(--var-w)"];
-
-export interface TermVisualProps {
+interface TermVisualProps {
 	readonly term: Term;
 	readonly depth: number;
 	readonly path: Path;
-	readonly registry: Registry;
-	readonly gadgetNames: ReadonlyMap<string, string>;
 	readonly redexPaths: readonly Path[];
 	readonly onStepRedex: ((path: Path) => void) | null;
-}
-
-function getColorAtDepth(index: number): string {
-	return index >= 0 && index < DEPTH_COLORS.length ? DEPTH_COLORS[index] : "#94a3b8";
 }
 
 export function TermVisual(props: TermVisualProps): JSX.Element {
@@ -33,7 +25,7 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 						return <span class="atom-token">{node.name}</span>;
 					}
 					case "gad": {
-						const meta = resolveGadgetMeta(node.id, props.registry, props.gadgetNames);
+						const meta = getGadgetMeta(node.id);
 						return (
 							<span class="gadget-token">
 								<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
@@ -55,8 +47,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 										term={node.body}
 										depth={props.depth + 1}
 										path={`${props.path}b`}
-										registry={props.registry}
-										gadgetNames={props.gadgetNames}
 										redexPaths={props.redexPaths}
 										onStepRedex={props.onStepRedex}
 									/>
@@ -87,8 +77,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 									term={node.fn}
 									depth={props.depth}
 									path={`${props.path}f`}
-									registry={props.registry}
-									gadgetNames={props.gadgetNames}
 									redexPaths={props.redexPaths}
 									onStepRedex={props.onStepRedex}
 								/>
@@ -97,8 +85,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 									term={node.arg}
 									depth={props.depth}
 									path={`${props.path}a`}
-									registry={props.registry}
-									gadgetNames={props.gadgetNames}
 									redexPaths={props.redexPaths}
 									onStepRedex={props.onStepRedex}
 								/>

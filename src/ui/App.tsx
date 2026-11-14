@@ -1,9 +1,9 @@
 import { type JSX, Show, createMemo, createSignal } from "solid-js";
 import { setMasterVolume } from "../audio/synth";
-import { CHAPTERS, getToolDefinition } from "../content";
+import { LEVELS, getContinueOrderIndex, getOrderCode, getToolDefinition } from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
 import { parseLambda } from "../engine/parse";
-import { STORAGE_KEY, loadSettings, loadWorkshop, saveSettings, saveWorkshop } from "../engine/storage";
+import { clearWorkshop, loadSettings, loadWorkshop, saveSettings, saveWorkshop } from "../engine/storage";
 import { AboutModal } from "./modals/AboutModal";
 import { SettingsModal, type SettingsState } from "./modals/SettingsModal";
 import { TitleScreen } from "./screens/TitleScreen";
@@ -26,12 +26,9 @@ export function App(): JSX.Element {
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
 	);
-	const [gadgetNames, setGadgetNames] = createSignal<ReadonlyMap<string, string>>(new Map());
 
-	const allOrders = CHAPTERS.flatMap((c) => c.levels);
-
-	for (const order of allOrders) {
-		if (order.mode === "build" && order.unlocksToolId !== undefined && clearedStars().has(order.id)) {
+	for (const order of LEVELS) {
+		if (order.mode === "build" && order.unlocksToolId !== void 0 && clearedStars().has(order.id)) {
 			const tool = getToolDefinition(order.unlocksToolId);
 			if (tool !== null && tool.defText !== null && !registry.has(tool.id)) {
 				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
@@ -39,29 +36,22 @@ export function App(): JSX.Element {
 		}
 	}
 
-	const currentOrder = createMemo(() => allOrders[orderIndex()]);
+	const currentOrder = createMemo(() => LEVELS[orderIndex()]);
 
-	const continueCode = createMemo((): string => {
-		const firstIncomplete = allOrders.findIndex((order) => !clearedStars().has(order.id));
-		const target = allOrders[firstIncomplete >= 0 ? firstIncomplete : 0];
-		const chapter = CHAPTERS.find((c) => c.levels.some((l) => l.id === target.id));
-		return chapter !== undefined
-			? `${chapter.chapter}.${chapter.levels.findIndex((l) => l.id === target.id) + 1}`
-			: "1.1";
-	});
+	const continueIndex = createMemo(() => getContinueOrderIndex(clearedStars()));
+	const continueCode = createMemo((): string => getOrderCode(LEVELS[continueIndex()].id));
 
 	const recordStars = (orderId: string, stars: number): void => {
 		const updatedStars = new Map(clearedStars());
 		const previousBest = updatedStars.get(orderId);
-		if (previousBest === undefined || stars > previousBest) updatedStars.set(orderId, stars);
+		if (previousBest === void 0 || stars > previousBest) updatedStars.set(orderId, stars);
 		setClearedStars(updatedStars);
 		saveWorkshop(updatedStars);
 	};
 
 	const resetWorkshopData = (): void => {
-		localStorage.removeItem(STORAGE_KEY);
+		clearWorkshop();
 		setClearedStars(new Map());
-		setGadgetNames(new Map());
 		setShowSettings(false);
 		setOrderIndex(0);
 	};
@@ -75,8 +65,7 @@ export function App(): JSX.Element {
 							<TitleScreen
 								continueOrderCode={continueCode()}
 								onStart={() => {
-									const firstIncomplete = allOrders.findIndex((order) => !clearedStars().has(order.id));
-									setOrderIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
+									setOrderIndex(continueIndex());
 									setScreen("workbench");
 								}}
 								onOpenWorkshop={() => {
@@ -91,11 +80,9 @@ export function App(): JSX.Element {
 					case "workshop": {
 						return (
 							<WorkshopOverview
-								chapters={CHAPTERS}
 								currentOrderIndex={orderIndex()}
 								clearedStars={clearedStars()}
 								registry={registry}
-								gadgetNames={gadgetNames()}
 								judgeMode={settings().judgeMode}
 								origin={workshopOrigin()}
 								onBack={() => setScreen(workshopOrigin())}
@@ -111,10 +98,9 @@ export function App(): JSX.Element {
 							<WorkbenchView
 								order={currentOrder()}
 								registry={registry}
-								gadgetNames={gadgetNames()}
 								judgeMode={settings().judgeMode}
 								clearedStars={clearedStars()}
-								isLastOrder={orderIndex() === allOrders.length - 1}
+								isLastOrder={orderIndex() === LEVELS.length - 1}
 								onRecordStars={recordStars}
 								onNextOrder={() => setOrderIndex(orderIndex() + 1)}
 								onOpenWorkshop={() => {

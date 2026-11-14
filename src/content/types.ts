@@ -31,6 +31,7 @@ export interface MonsterMeta {
 	readonly termText: string;
 	readonly note: string;
 	readonly dangerLevel: string;
+	readonly requiredOrderId: string;
 }
 
 export interface ChapterDefinition {
@@ -52,7 +53,7 @@ export interface BuildOrder {
 	readonly atoms: readonly string[];
 	readonly parSize: number;
 	readonly tests: readonly JudgeTestCase[];
-	readonly unlocksToolId?: GadgetId;
+	readonly unlocksToolId: GadgetId | null;
 	readonly note: string;
 }
 

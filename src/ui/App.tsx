@@ -1,16 +1,9 @@
 import { type JSX, Show, createMemo, createSignal } from "solid-js";
 import { setMasterVolume } from "../audio/synth";
-import { CHAPTERS, type ToolDefinition } from "../content";
+import { CHAPTERS, getToolDefinition } from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
-import {
-	STORAGE_KEY,
-	type SavedWorkshop,
-	loadSettings,
-	loadWorkshop,
-	saveSettings,
-	saveWorkshop,
-} from "../engine/storage";
-import type { Term } from "../engine/term";
+import { parseLambda } from "../engine/parse";
+import { STORAGE_KEY, loadSettings, loadWorkshop, saveSettings, saveWorkshop } from "../engine/storage";
 import { AboutModal } from "./modals/AboutModal";
 import { SettingsModal, type SettingsState } from "./modals/SettingsModal";
 import { TitleScreen } from "./screens/TitleScreen";
@@ -23,12 +16,6 @@ export function App(): JSX.Element {
 	setMasterVolume(initialSettings.volume);
 
 	const registry: Registry = createBuiltinRegistry();
-	const initialNames = new Map<string, string>();
-	for (const item of saved.unlocked) {
-		if (registry.has(item.id)) continue;
-		registerGadget(registry, item.id, item.def, "level");
-		initialNames.set(item.id, item.name);
-	}
 
 	const [screen, setScreen] = createSignal<"title" | "workshop" | "workbench">("title");
 	const [workshopOrigin, setWorkshopOrigin] = createSignal<"title" | "workbench">("title");
@@ -39,10 +26,19 @@ export function App(): JSX.Element {
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
 	);
-	const [unlockedList, setUnlockedList] = createSignal<SavedWorkshop["unlocked"]>(saved.unlocked);
-	const [gadgetNames, setGadgetNames] = createSignal<ReadonlyMap<string, string>>(initialNames);
+	const [gadgetNames, setGadgetNames] = createSignal<ReadonlyMap<string, string>>(new Map());
 
 	const allOrders = CHAPTERS.flatMap((c) => c.levels);
+
+	for (const order of allOrders) {
+		if (order.mode === "build" && order.unlocksToolId !== undefined && clearedStars().has(order.id)) {
+			const tool = getToolDefinition(order.unlocksToolId);
+			if (tool !== null && tool.defText !== null && !registry.has(tool.id)) {
+				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
+			}
+		}
+	}
+
 	const currentOrder = createMemo(() => allOrders[orderIndex()]);
 
 	const continueCode = createMemo((): string => {
@@ -59,22 +55,12 @@ export function App(): JSX.Element {
 		const previousBest = updatedStars.get(orderId);
 		if (previousBest === undefined || stars > previousBest) updatedStars.set(orderId, stars);
 		setClearedStars(updatedStars);
-		saveWorkshop(updatedStars, unlockedList());
-	};
-
-	const unlockCanonicalTool = (tool: ToolDefinition, def: Term): void => {
-		const updatedNames = new Map(gadgetNames());
-		updatedNames.set(tool.id, tool.name);
-		setGadgetNames(updatedNames);
-		const nextList = [...unlockedList(), { id: tool.id, name: tool.name, def }];
-		setUnlockedList(nextList);
-		saveWorkshop(clearedStars(), nextList);
+		saveWorkshop(updatedStars);
 	};
 
 	const resetWorkshopData = (): void => {
 		localStorage.removeItem(STORAGE_KEY);
 		setClearedStars(new Map());
-		setUnlockedList([]);
 		setGadgetNames(new Map());
 		setShowSettings(false);
 		setOrderIndex(0);
@@ -130,7 +116,6 @@ export function App(): JSX.Element {
 								clearedStars={clearedStars()}
 								isLastOrder={orderIndex() === allOrders.length - 1}
 								onRecordStars={recordStars}
-								onUnlockCanonicalTool={unlockCanonicalTool}
 								onNextOrder={() => setOrderIndex(orderIndex() + 1)}
 								onOpenWorkshop={() => {
 									setWorkshopOrigin("workbench");

@@ -1,32 +1,26 @@
-import { getToolDefinition } from "../content";
 import type { SettingsState } from "../ui/modals/SettingsModal";
-import type { Term } from "./term";
 
 export const STORAGE_KEY = "calculuser_workshop_v2";
 export const SETTINGS_KEY = "calculuser_settings_v1";
 
 export interface SavedWorkshop {
 	readonly stars: Record<string, number>;
-	readonly unlocked: readonly { readonly id: string; readonly name: string; readonly def: Term }[];
 }
 
 export function loadWorkshop(): SavedWorkshop {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
-		if (raw === null) return { stars: {}, unlocked: [] };
+		if (raw === null) return { stars: {} };
 		const parsed = JSON.parse(raw) as SavedWorkshop;
-		const validUnlocked = (parsed.unlocked !== undefined ? parsed.unlocked : []).filter(
-			(item) => getToolDefinition(item.id) !== null,
-		);
-		return { stars: parsed.stars !== undefined ? parsed.stars : {}, unlocked: validUnlocked };
+		return { stars: parsed.stars !== undefined ? parsed.stars : {} };
 	} catch {
-		return { stars: {}, unlocked: [] };
+		return { stars: {} };
 	}
 }
 
-export function saveWorkshop(stars: ReadonlyMap<string, number>, unlocked: SavedWorkshop["unlocked"]): void {
+export function saveWorkshop(stars: ReadonlyMap<string, number>): void {
 	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify({ stars: Object.fromEntries(stars), unlocked }));
+		localStorage.setItem(STORAGE_KEY, JSON.stringify({ stars: Object.fromEntries(stars) }));
 	} catch {}
 }
 

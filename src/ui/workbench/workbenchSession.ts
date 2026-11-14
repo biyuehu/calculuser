@@ -16,7 +16,6 @@ import {
 	ORDER_TOOLS,
 	type OrderLevel,
 	type RunOrder,
-	type ToolDefinition,
 	getToolDefinition,
 } from "../../content";
 import {
@@ -51,7 +50,6 @@ export interface WorkbenchSessionOptions {
 	readonly judgeMode: Accessor<boolean>;
 	readonly clearedStars: Accessor<ReadonlyMap<string, number>>;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
-	readonly onUnlockCanonicalTool: (tool: ToolDefinition, def: Term) => void;
 }
 
 export interface WorkbenchSession {
@@ -331,10 +329,7 @@ export function createWorkbenchSession(options: WorkbenchSessionOptions): Workbe
 		setDeliveredStars(stars);
 		if (order.unlocksToolId !== undefined && !options.registry.has(order.unlocksToolId)) {
 			const canonicalTool = getToolDefinition(order.unlocksToolId);
-			if (canonicalTool !== null) {
-				registerGadget(options.registry, canonicalTool.id, candidate, "level");
-				options.onUnlockCanonicalTool(canonicalTool, candidate);
-			}
+			if (canonicalTool !== null) registerGadget(options.registry, canonicalTool.id, candidate, "level");
 		}
 		options.onRecordStars(order.id, stars);
 	};

@@ -1,5 +1,5 @@
 import { type JSX, Show, createEffect, createSignal } from "solid-js";
-import { CHAPTERS, type OrderLevel, type RunOrder, type ToolDefinition } from "../../content";
+import { CHAPTERS, type OrderLevel, type RunOrder } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { PRINT_NAMES } from "../../engine/parse";
 import type { Term } from "../../engine/term";
@@ -20,7 +20,6 @@ export interface WorkbenchViewProps {
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly isLastOrder: boolean;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
-	readonly onUnlockCanonicalTool: (tool: ToolDefinition, def: Term) => void;
 	readonly onNextOrder: () => void;
 	readonly onOpenWorkshop: () => void;
 	readonly onOpenSettings: () => void;
@@ -35,7 +34,6 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		judgeMode: () => props.judgeMode,
 		clearedStars: () => props.clearedStars,
 		onRecordStars: props.onRecordStars,
-		onUnlockCanonicalTool: props.onUnlockCanonicalTool,
 	});
 
 	const [zoom, setZoom] = createSignal<number>(1);

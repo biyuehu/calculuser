@@ -13,8 +13,7 @@ export const ORDER_TOOLS: readonly ToolDefinition[] = COMBINATORS.slice(BUILTIN_
 export const ALL_TOOLS: readonly ToolDefinition[] = COMBINATORS;
 
 export function getToolSource(toolId: string): string | null {
-	const level = LEVELS.find((item) => item.mode === "build" && item.unlocksToolId === toolId);
-	return level !== void 0 ? level.id : null;
+	return LEVELS.find((item) => item.mode === "build" && item.unlocksToolId === toolId)?.id ?? null;
 }
 
 export function getContinueOrderIndex(clearedStars: ReadonlyMap<string, number>): number {
@@ -23,8 +22,7 @@ export function getContinueOrderIndex(clearedStars: ReadonlyMap<string, number>)
 }
 
 export function getOrderCode(orderId: string): string {
-	const level = LEVELS.find((item) => item.id === orderId);
-	return level !== void 0 ? level.code : "1.1";
+	return LEVELS.find((item) => item.id === orderId)?.code ?? "1.1";
 }
 
 export function getToolDefinition(id: string): ToolDefinition | null {

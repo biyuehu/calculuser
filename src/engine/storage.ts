@@ -1,4 +1,8 @@
-import type { SettingsState } from "../ui/modals/SettingsModal";
+export interface SettingsState {
+	readonly volume: number;
+	readonly reducedMotion: boolean;
+	readonly judgeMode: boolean;
+}
 
 const STORAGE_KEY = "calculuser_workshop_v2";
 const SETTINGS_KEY = "calculuser_settings_v1";

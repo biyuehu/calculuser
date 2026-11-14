@@ -3,11 +3,17 @@ import { setMasterVolume } from "../audio/synth";
 import { LEVELS, getContinueOrderIndex, getOrderCode, getToolDefinition } from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
 import { parseLambda } from "../engine/parse";
-import { clearWorkshop, loadSettings, loadWorkshop, saveSettings, saveWorkshop } from "../engine/storage";
-import { AboutModal } from "./modals/AboutModal";
-import { SettingsModal, type SettingsState } from "./modals/SettingsModal";
+import {
+	type SettingsState,
+	clearWorkshop,
+	loadSettings,
+	loadWorkshop,
+	saveSettings,
+	saveWorkshop,
+} from "../engine/storage";
+import { MachineryPanel } from "./overlays/MachineryPanel";
+import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { TitleScreen } from "./screens/TitleScreen";
-import { WorkshopOverview } from "./screens/WorkshopOverview";
 import { WorkbenchView } from "./workbench/WorkbenchView";
 
 export function App(): JSX.Element {
@@ -17,10 +23,11 @@ export function App(): JSX.Element {
 
 	const registry: Registry = createBuiltinRegistry();
 
-	const [screen, setScreen] = createSignal<"title" | "workshop" | "workbench">("title");
-	const [workshopOrigin, setWorkshopOrigin] = createSignal<"title" | "workbench">("title");
-	const [showSettings, setShowSettings] = createSignal<boolean>(false);
-	const [showAbout, setShowAbout] = createSignal<boolean>(false);
+	const [screen, setScreen] = createSignal<"title" | "workbench">("title");
+	const [showFolio, setShowFolio] = createSignal<boolean>(false);
+	const [folioTab, setFolioTab] = createSignal<"orders" | "parts">("orders");
+	const [showMachinery, setShowMachinery] = createSignal<boolean>(false);
+	const [machineryTab, setMachineryTab] = createSignal<"settings" | "about">("settings");
 	const [settings, setSettings] = createSignal<SettingsState>(initialSettings);
 	const [orderIndex, setOrderIndex] = createSignal<number>(0);
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
@@ -52,71 +59,69 @@ export function App(): JSX.Element {
 	const resetWorkshopData = (): void => {
 		clearWorkshop();
 		setClearedStars(new Map());
-		setShowSettings(false);
+		setShowMachinery(false);
 		setOrderIndex(0);
+	};
+
+	const openFolio = (tab: "orders" | "parts"): void => {
+		setFolioTab(tab);
+		setShowFolio(true);
+	};
+
+	const openMachinery = (tab: "settings" | "about"): void => {
+		setMachineryTab(tab);
+		setShowMachinery(true);
 	};
 
 	return (
 		<div class={`workshop-root ${settings().reducedMotion ? "reduced-motion" : ""}`}>
-			{(() => {
-				switch (screen()) {
-					case "title": {
-						return (
-							<TitleScreen
-								continueOrderCode={continueCode()}
-								onStart={() => {
-									setOrderIndex(continueIndex());
-									setScreen("workbench");
-								}}
-								onOpenWorkshop={() => {
-									setWorkshopOrigin("title");
-									setScreen("workshop");
-								}}
-								onOpenSettings={() => setShowSettings(true)}
-								onOpenAbout={() => setShowAbout(true)}
-							/>
-						);
-					}
-					case "workshop": {
-						return (
-							<WorkshopOverview
-								currentOrderIndex={orderIndex()}
-								clearedStars={clearedStars()}
-								registry={registry}
-								judgeMode={settings().judgeMode}
-								origin={workshopOrigin()}
-								onBack={() => setScreen(workshopOrigin())}
-								onSelectOrder={(index) => {
-									setOrderIndex(index);
-									setScreen("workbench");
-								}}
-							/>
-						);
-					}
-					case "workbench": {
-						return (
-							<WorkbenchView
-								order={currentOrder()}
-								registry={registry}
-								judgeMode={settings().judgeMode}
-								clearedStars={clearedStars()}
-								isLastOrder={orderIndex() === LEVELS.length - 1}
-								onRecordStars={recordStars}
-								onNextOrder={() => setOrderIndex(orderIndex() + 1)}
-								onOpenWorkshop={() => {
-									setWorkshopOrigin("workbench");
-									setScreen("workshop");
-								}}
-								onOpenSettings={() => setShowSettings(true)}
-								onBackToTitle={() => setScreen("title")}
-							/>
-						);
-					}
+			<Show
+				when={screen() === "workbench"}
+				fallback={
+					<TitleScreen
+						continueOrderCode={continueCode()}
+						onStart={() => {
+							setOrderIndex(continueIndex());
+							setScreen("workbench");
+						}}
+						onOpenWorkshop={() => openFolio("orders")}
+						onOpenSettings={() => openMachinery("settings")}
+						onOpenAbout={() => openMachinery("about")}
+					/>
 				}
-			})()}
+			>
+				<WorkbenchView
+					order={currentOrder()}
+					registry={registry}
+					judgeMode={settings().judgeMode}
+					clearedStars={clearedStars()}
+					isLastOrder={orderIndex() === LEVELS.length - 1}
+					onRecordStars={recordStars}
+					onNextOrder={() => setOrderIndex(orderIndex() + 1)}
+					onOpenWorkshop={() => openFolio("orders")}
+					onOpenSettings={() => openMachinery("settings")}
+					onBackToTitle={() => setScreen("title")}
+				/>
+			</Show>
 
-			<Show when={showSettings()}>
-				<SettingsModal
+			<Show when={showFolio()}>
+				<WorkshopFolio
+					initialTab={folioTab()}
+					currentOrderIndex={orderIndex()}
+					clearedStars={clearedStars()}
+					registry={registry}
+					judgeMode={settings().judgeMode}
+					onSelectOrder={(index) => {
+						setOrderIndex(index);
+						setScreen("workbench");
+					}}
+					onClose={() => setShowFolio(false)}
+				/>
+			</Show>
+
+			<Show when={showMachinery()}>
+				<MachineryPanel
+					initialTab={machineryTab()}
 					settings={settings()}
 					onUpdateSettings={(updater) => {
 						const updated = updater(settings());
@@ -124,12 +129,8 @@ export function App(): JSX.Element {
 						saveSettings(updated);
 					}}
 					onResetData={resetWorkshopData}
-					onClose={() => setShowSettings(false)}
+					onClose={() => setShowMachinery(false)}
 				/>
-			</Show>
-
-			<Show when={showAbout()}>
-				<AboutModal onClose={() => setShowAbout(false)} />
 			</Show>
 		</div>
 	);

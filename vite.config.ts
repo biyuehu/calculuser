@@ -8,7 +8,7 @@ export default defineConfig({
 		environment: "node",
 	},
 	server: {
-		port: 3000,
+		port: 3000, // TODO
 	},
 	build: {
 		target: "esnext",

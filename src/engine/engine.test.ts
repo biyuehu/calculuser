@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHAPTERS } from "../content";
+import { LEVELS } from "../content";
 import { createBuiltinRegistry } from "./gadget";
 import { judgeNormalize, judgeOrder } from "./judge";
 import { parseLambda, printTerm } from "./parse";
@@ -83,9 +83,8 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("loads all orders without parse errors", () => {
-		const allOrders = CHAPTERS.flatMap((c) => c.levels);
-		expect(allOrders.length).toBeGreaterThanOrEqual(27);
-		for (const order of allOrders) {
+		expect(LEVELS.length).toBeGreaterThanOrEqual(27);
+		for (const order of LEVELS) {
 			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
 			else expect(order.stepBudget).toBeGreaterThan(0);
 		}

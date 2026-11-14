@@ -24,26 +24,17 @@ export interface GadgetMeta {
 	readonly note: string;
 }
 
-export interface MonsterMeta {
-	readonly id: string;
-	readonly symbol: string;
-	readonly name: string;
-	readonly termText: string;
-	readonly note: string;
-	readonly dangerLevel: string;
-	readonly requiredOrderId: string;
-}
-
 export interface ChapterDefinition {
 	readonly chapter: number;
 	readonly title: string;
 	readonly subtitle: string;
-	readonly levels: readonly OrderLevel[];
 }
 
 export interface BuildOrder {
 	readonly mode: "build";
 	readonly id: string;
+	readonly chapter: number;
+	readonly code: string;
 	readonly title: string;
 	readonly guestLine: string;
 	readonly hintOnFail: string;
@@ -53,13 +44,15 @@ export interface BuildOrder {
 	readonly atoms: readonly string[];
 	readonly parSize: number;
 	readonly tests: readonly JudgeTestCase[];
-	readonly unlocksToolId: GadgetId | null;
+	readonly unlocksToolId?: GadgetId;
 	readonly note: string;
 }
 
 export interface RunOrder {
 	readonly mode: "run";
 	readonly id: string;
+	readonly chapter: number;
+	readonly code: string;
 	readonly title: string;
 	readonly guestLine: string;
 	readonly hintOnFail: string;

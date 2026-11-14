@@ -198,35 +198,19 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 												? sourceChapter.levels.find((l) => l.mode === "build" && l.unlocksToolId === tool.id)
 												: undefined;
 										const isPartUnlocked =
-											props.judgeMode ||
-											(sourceOrder !== undefined && props.clearedStars.has(sourceOrder.id)) ||
-											props.registry.has(tool.id);
+											props.judgeMode || (sourceOrder !== undefined && props.clearedStars.has(sourceOrder.id));
 										const registeredEntry = props.registry.get(tool.id);
-										if (!isPartUnlocked) {
-											return (
-												<div class="compendium-cell" style={{ opacity: 0.55, "border-style": "dashed" }}>
-													<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-														<span class="gadget-glyph lg square" style={{ background: "var(--border-strong)" }}>
-															🔒
-														</span>
-														<div>
-															<div style={{ "font-weight": 600, "font-size": "13px" }}>未封装装置</div>
-															<div style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-																{sourceChapter !== undefined ? `第 ${sourceChapter.chapter} 章` : "研发图纸"}
-															</div>
-														</div>
-													</div>
-													<div style={{ "font-size": "11px", color: "var(--text-muted)", "margin-top": "6px" }}>
-														通关 [{sourceOrder !== undefined ? sourceOrder.title : tool.name}] 后收录
-													</div>
-												</div>
-											);
-										}
 										const customName = props.gadgetNames.get(tool.id);
 										return (
-											<div class="compendium-cell">
+											<div
+												class={`compendium-cell ${!isPartUnlocked ? "locked" : ""}`}
+												style={!isPartUnlocked ? { opacity: 0.45, filter: "grayscale(1)" } : {}}
+											>
 												<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-													<span class={`gadget-glyph lg ${tool.shape}`} style={{ background: tool.accent }}>
+													<span
+														class={`gadget-glyph lg ${tool.shape}`}
+														style={{ background: !isPartUnlocked ? "var(--border-strong)" : tool.accent }}
+													>
 														{tool.symbol}
 													</span>
 													<div>
@@ -234,23 +218,29 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 															{customName !== undefined ? customName : tool.name}
 														</div>
 														<div style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-															{registeredEntry !== undefined ? `元数: ${registeredEntry.arity}` : `元数: ${tool.arity}`}
+															{!isPartUnlocked
+																? "未解锁"
+																: registeredEntry !== undefined
+																	? `元数: ${registeredEntry.arity}`
+																	: `元数: ${tool.arity}`}
 														</div>
 													</div>
 												</div>
-												<div
-													class="code-blueprint"
-													style={{
-														"font-family": "var(--font-mono)",
-														"font-size": "11px",
-														"margin-top": "4px",
-														background: "var(--surface-1)",
-														padding: "4px 8px",
-														"border-radius": "4px",
-													}}
-												>
-													{registeredEntry !== undefined ? printTerm(registeredEntry.def, 0) : tool.schematic}
-												</div>
+												<Show when={isPartUnlocked}>
+													<div
+														class="code-blueprint"
+														style={{
+															"font-family": "var(--font-mono)",
+															"font-size": "11px",
+															"margin-top": "4px",
+															background: "var(--surface-1)",
+															padding: "4px 8px",
+															"border-radius": "4px",
+														}}
+													>
+														{registeredEntry !== undefined ? printTerm(registeredEntry.def, 0) : tool.schematic}
+													</div>
+												</Show>
 												<div style={{ "font-size": "11px", color: "var(--text-secondary)", "line-height": "1.4" }}>
 													{tool.note}
 												</div>

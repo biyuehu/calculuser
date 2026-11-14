@@ -1,4 +1,4 @@
-import { BUILTIN_TOOLS, ORDER_TOOLS } from "../content";
+import { BUILTIN_TOOLS } from "../content";
 import { parseLambda } from "./parse";
 import { type GadgetId, type Term, isClosed, termFingerprint } from "./term";
 
@@ -42,7 +42,7 @@ export function registerGadget(
 
 export function createBuiltinRegistry(): Registry {
 	const registry: Registry = new Map();
-	for (const tool of [...BUILTIN_TOOLS, ...ORDER_TOOLS]) {
+	for (const tool of BUILTIN_TOOLS) {
 		if (tool.defText !== null && !registry.has(tool.id))
 			registerGadget(registry, tool.id, parseLambda(tool.defText), "builtin");
 	}

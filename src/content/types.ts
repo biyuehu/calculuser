@@ -33,7 +33,7 @@ export interface ChapterDefinition {
 export interface BuildOrder {
 	readonly mode: "build";
 	readonly id: string;
-	readonly chapter: number;
+	readonly chapter?: number;
 	readonly code: string;
 	readonly title: string;
 	readonly guestLine: string;
@@ -51,7 +51,7 @@ export interface BuildOrder {
 export interface RunOrder {
 	readonly mode: "run";
 	readonly id: string;
-	readonly chapter: number;
+	readonly chapter?: number;
 	readonly code: string;
 	readonly title: string;
 	readonly guestLine: string;

@@ -22,6 +22,21 @@ interface WorkshopOverviewProps {
 	readonly onSelectOrder: (index: number) => void;
 }
 
+const CHAPTER_GROUPS = [
+	...CHAPTERS.map((chapterInfo) => ({
+		title: chapterInfo.title,
+		subtitle: chapterInfo.subtitle,
+		levels: LEVELS.filter((level) => level.chapter === chapterInfo.chapter),
+		isBossEligible: true,
+	})),
+	{
+		title: "其它",
+		subtitle: "",
+		levels: LEVELS.filter((level) => !level.chapter),
+		isBossEligible: false,
+	},
+].filter((group) => group.levels.length > 0);
+
 export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"orders" | "parts">("orders");
 
@@ -68,69 +83,65 @@ export function WorkshopOverview(props: WorkshopOverviewProps): JSX.Element {
 			<main class="overview-body">
 				<Show when={activeTab() === "orders"}>
 					<div class="overview-chapters-list">
-						<For each={CHAPTERS}>
-							{(chapterInfo) => {
-								return (
-									<div class="chapter-block">
-										<div style={{ display: "flex", "align-items": "baseline", gap: "8px" }}>
-											<h3 class="chapter-title">{chapterInfo.title}</h3>
-											<span style={{ "font-size": "11.5px", color: "var(--text-muted)" }}>{chapterInfo.subtitle}</span>
-										</div>
-										<div class="orders-card-row">
-											{(() => {
-												const chapterLevels = LEVELS.filter((l) => l.chapter === chapterInfo.chapter);
-												return (
-													<For each={chapterLevels}>
-														{(order, localIndex) => {
-															const globalIndex = LEVELS.findIndex((item) => item.id === order.id);
-															const code = order.code;
-															const stars = props.clearedStars.get(order.id);
-															const unlocked = isUnlocked(globalIndex);
-															return (
-																<button
-																	type="button"
-																	disabled={!unlocked}
-																	class={`order-card-cell ${stars !== void 0 ? "ok" : ""} ${
-																		unlocked && stars === void 0 ? "available" : ""
-																	} ${!unlocked ? "locked" : ""} ${
-																		localIndex() === chapterLevels.length - 1 && chapterLevels.length > 3 ? "boss" : ""
-																	} ${globalIndex === props.currentOrderIndex ? "current" : ""}`}
-																	onClick={() => props.onSelectOrder(globalIndex)}
-																	title={`${code} ${order.title}`}
-																>
-																	<span class="card-code">{code}</span>
-																	{(() => {
-																		if (!unlocked) return <span class="card-icon">🔒</span>;
-																		if (stars !== void 0) {
-																			const meta = getGadgetMeta(
-																				order.mode === "build" && order.unlocksToolId !== void 0
-																					? order.unlocksToolId
-																					: order.id,
-																			);
-																			return (
-																				<>
-																					<span
-																						class={`gadget-glyph sm ${meta.shape}`}
-																						style={{ background: meta.accent }}
-																					>
-																						{meta.symbol}
-																					</span>
-																					<span class="card-stars">{"★".repeat(stars)}</span>
-																				</>
-																			);
-																		}
-																		return <span class="card-mode-tag">{order.mode === "build" ? "造" : "解"}</span>;
-																	})()}
-																</button>
-															);
-														}}
-													</For>
-												);
-											})()}
-										</div>
+						<For each={CHAPTER_GROUPS}>
+							{(group) => (
+								<div class="chapter-block">
+									<div style={{ display: "flex", "align-items": "baseline", gap: "8px" }}>
+										<h3 class="chapter-title">{group.title}</h3>
+										<Show when={group.subtitle}>
+											<span style={{ "font-size": "11.5px", color: "var(--text-muted)" }}>{group.subtitle}</span>
+										</Show>
 									</div>
-								);
-							}}
+									<div class="orders-card-row">
+										<For each={group.levels}>
+											{(order, localIndex) => {
+												const globalIndex = LEVELS.findIndex((item) => item.id === order.id);
+												const code = order.code;
+												const stars = props.clearedStars.get(order.id);
+												const unlocked = isUnlocked(globalIndex);
+												return (
+													<button
+														type="button"
+														disabled={!unlocked}
+														class={`order-card-cell ${stars !== void 0 ? "ok" : ""} ${
+															unlocked && stars === void 0 ? "available" : ""
+														} ${!unlocked ? "locked" : ""} ${
+															group.isBossEligible &&
+															localIndex() === group.levels.length - 1 &&
+															group.levels.length > 3
+																? "boss"
+																: ""
+														} ${globalIndex === props.currentOrderIndex ? "current" : ""}`}
+														onClick={() => props.onSelectOrder(globalIndex)}
+														title={`${code} ${order.title}`}
+													>
+														<span class="card-code">{code}</span>
+														{(() => {
+															if (!unlocked) return <span class="card-icon">🔒</span>;
+															if (stars !== void 0) {
+																const meta = getGadgetMeta(
+																	order.mode === "build" && order.unlocksToolId !== void 0
+																		? order.unlocksToolId
+																		: order.id,
+																);
+																return (
+																	<>
+																		<span class={`gadget-glyph sm ${meta.shape}`} style={{ background: meta.accent }}>
+																			{meta.symbol}
+																		</span>
+																		<span class="card-stars">{"★".repeat(stars)}</span>
+																	</>
+																);
+															}
+															return <span class="card-mode-tag">{order.mode === "build" ? "造" : "解"}</span>;
+														})()}
+													</button>
+												);
+											}}
+										</For>
+									</div>
+								</div>
+							)}
 						</For>
 					</div>
 				</Show>

@@ -38,6 +38,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 	const [zoom, setZoom] = createSignal<number>(1);
 	const [panX, setPanX] = createSignal<number>(0);
 	const [panY, setPanY] = createSignal<number>(0);
+	const [levelTransitioning, setLevelTransitioning] = createSignal<boolean>(false);
 	let isPanning = false;
 	let panStartX = 0;
 	let panStartY = 0;
@@ -47,12 +48,18 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setPanX(0);
 		setPanY(0);
 		setZoom(1);
+		setLevelTransitioning(true);
+		setTimeout(() => setLevelTransitioning(false), 260);
 	});
 
 	return (
 		<div class="workshop-root">
 			<header class="top-bar">
-				<button type="button" class="order-badge-btn" onClick={props.onOpenWorkshop}>
+				<button
+					type="button"
+					class={`order-badge-btn ${levelTransitioning() ? "level-transitioning" : ""}`}
+					onClick={props.onOpenWorkshop}
+				>
 					<span>工坊 · {props.order.chapter ? `第 ${props.order.chapter} 章` : "其它"}</span>
 					<span style={{ color: "var(--accent-clay)" }}>{props.order.title}</span>
 					<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>▾</span>
@@ -144,7 +151,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					class="canvas-transform-layer"
 					style={{ transform: `translate(${panX()}px, ${panY()}px) scale(${zoom()})` }}
 				>
-					<div class="workbench-assembly">
+					<div class={`workbench-assembly ${levelTransitioning() ? "level-transitioning" : ""}`}>
 						<Show
 							when={session.playTerm()}
 							fallback={
@@ -213,6 +220,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					rejected={session.rejected()}
 					runSteps={session.runSteps()}
 					runFailed={session.runFailed()}
+					transitioning={levelTransitioning()}
 				/>
 
 				<DeliveryCounter

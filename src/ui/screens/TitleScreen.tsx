@@ -12,6 +12,7 @@ interface TitleScreenProps {
 
 export function TitleScreen(props: TitleScreenProps): JSX.Element {
 	const [toyState, setToyState] = createSignal<number>(0);
+	const [isStarting, setIsStarting] = createSignal<boolean>(false);
 
 	const clickToy = (): void => {
 		if (toyState() === 0) {
@@ -23,9 +24,16 @@ export function TitleScreen(props: TitleScreenProps): JSX.Element {
 		setToyState(0);
 	};
 
+	const handleStart = (): void => {
+		if (isStarting()) return;
+		setIsStarting(true);
+		playSnapSound(2);
+		setTimeout(props.onStart, 220);
+	};
+
 	return (
-		<div class="title-screen-container">
-			<div class="title-card">
+		<div class={`title-screen-container ${isStarting() ? "title-exit" : ""}`}>
+			<div class={`title-card ${isStarting() ? "title-exit" : ""}`}>
 				<header style={{ "text-align": "center" }}>
 					<h1 style={{ "font-size": "26px", "font-weight": 700, "letter-spacing": "-0.5px" }}>Calculuser · 装置工坊</h1>
 					<p style={{ "font-size": "13px", color: "var(--text-muted)", "margin-top": "4px" }}>
@@ -65,7 +73,7 @@ export function TitleScreen(props: TitleScreenProps): JSX.Element {
 				</div>
 
 				<div class="title-actions">
-					<button type="button" class="title-primary-btn" onClick={props.onStart}>
+					<button type="button" class="title-primary-btn" onClick={handleStart} disabled={isStarting()}>
 						<span>▶</span>
 						<span>{props.continueOrderCode === "1.1" ? "开始体验" : `继续关卡 · ${props.continueOrderCode}`}</span>
 					</button>

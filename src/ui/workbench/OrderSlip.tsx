@@ -15,6 +15,7 @@ interface OrderSlipProps {
 	readonly rejected: RejectedInfo | null;
 	readonly runSteps: number;
 	readonly runFailed: boolean;
+	readonly transitioning: boolean;
 }
 
 export function OrderSlip(props: OrderSlipProps): JSX.Element {
@@ -25,7 +26,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 
 	return (
 		<section
-			class="order-slip"
+			class={`order-slip ${props.transitioning ? "level-transitioning" : ""}`}
 			style={{ width: `${ui.orderSlipWidth()}px`, height: ui.orderSlipCollapsed() ? "42px" : "auto" }}
 			onWheel={(event) => event.stopPropagation()}
 		>

@@ -23,6 +23,7 @@ import { type Registry, registerGadget } from "../../engine/gadget";
 import { judgeOrder } from "../../engine/judge";
 import { PRINT_NAMES, printXRayTerm } from "../../engine/parse";
 import { type StepEvent, redexes, stepAt, stepLeftmost } from "../../engine/reduce";
+import { clearLevelDraft, loadLevelDrafts, saveLevelDraft } from "../../engine/storage";
 import { type GadgetId, type Path, type Term, termsEqual } from "../../engine/term";
 import type { RejectedInfo } from "../../ui/workbench/OrderSlip";
 
@@ -43,6 +44,35 @@ interface WorkbenchSessionOptions {
 	readonly clearedStars: Accessor<ReadonlyMap<string, number>>;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
 }
+
+const createDebouncedDraftSaver = (
+	delayMs: number,
+): {
+	readonly schedule: (orderId: string, draft: DraftTerm) => void;
+	readonly flush: () => void;
+} => {
+	let timer: ReturnType<typeof setTimeout> | null = null;
+	let pendingOrderId: string | null = null;
+	let pendingDraft: DraftTerm | null = null;
+	const flush = (): void => {
+		if (timer !== null && pendingOrderId !== null && pendingDraft !== null) {
+			clearTimeout(timer);
+			saveLevelDraft(pendingOrderId, pendingDraft);
+			timer = null;
+			pendingOrderId = null;
+			pendingDraft = null;
+		}
+	};
+	return {
+		schedule: (orderId: string, draft: DraftTerm): void => {
+			pendingOrderId = orderId;
+			pendingDraft = draft;
+			if (timer !== null) clearTimeout(timer);
+			timer = setTimeout(flush, delayMs);
+		},
+		flush,
+	};
+};
 
 interface WorkbenchSession {
 	readonly draft: Accessor<DraftTerm>;
@@ -79,6 +109,7 @@ interface WorkbenchSession {
 }
 
 export function useWorkbenchSession(options: WorkbenchSessionOptions): WorkbenchSession {
+	const draftSaver = createDebouncedDraftSaver(200);
 	const [draft, setDraft] = createSignal<DraftTerm>({ kind: "hole" });
 	const [selectedPath, setSelectedPath] = createSignal<Path | null>("");
 	const [history, setHistory] = createSignal<readonly DraftTerm[]>([]);
@@ -152,6 +183,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		const updated = setDraftAtPath(draft(), path, replacement);
 		setDraft(updated);
 		setSelectedPath(findFirstHole(updated, ""));
+		draftSaver.schedule(options.order().id, updated);
 		setRejected(null);
 		setDeliveredStars(null);
 		setPlayTerm(null);
@@ -163,8 +195,10 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		playUndoSound();
 		setCombo(0);
 		setHistory([...history(), draft()]);
-		setDraft(setDraftAtPath(draft(), path, { kind: "hole" }));
+		const updated = setDraftAtPath(draft(), path, { kind: "hole" });
+		setDraft(updated);
 		setSelectedPath(path);
+		draftSaver.schedule(options.order().id, updated);
 		setRejected(null);
 		setDeliveredStars(null);
 		setPlayTerm(null);
@@ -198,6 +232,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		setHistory(past.slice(0, past.length - 1));
 		setDraft(previous);
 		setSelectedPath(findFirstHole(previous, ""));
+		draftSaver.schedule(options.order().id, previous);
 		setRejected(null);
 		setDeliveredStars(null);
 	};
@@ -213,6 +248,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 			setDeliveredStars(null);
 			return;
 		}
+		clearLevelDraft(order.id);
 		setDraft({ kind: "hole" });
 		setSelectedPath("");
 		setHistory([]);
@@ -325,6 +361,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 			if (canonicalTool !== null) registerGadget(options.registry, canonicalTool.id, candidate, "level");
 		}
 		options.onRecordStars(order.id, stars);
+		saveLevelDraft(order.id, draft());
 	};
 
 	const xRayText = createMemo((): string => {
@@ -337,6 +374,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	});
 
 	createEffect(() => {
+		draftSaver.flush();
 		const order = options.order();
 		setRejected(null);
 		setDeliveredStars(null);
@@ -346,8 +384,10 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 			setTape([order.initialTerm]);
 			setTapeIndex(0);
 		} else {
-			setDraft({ kind: "hole" });
-			setSelectedPath("");
+			const saved = loadLevelDrafts()[order.id];
+			const initialDraft = saved ?? { kind: "hole" };
+			setDraft(initialDraft);
+			setSelectedPath(findFirstHole(initialDraft, ""));
 			setHistory([]);
 			setPlayTerm(null);
 			setTape([]);
@@ -364,8 +404,15 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		}
 	};
 
-	onMount(() => window.addEventListener("keydown", handleKeyDown));
-	onCleanup(() => window.removeEventListener("keydown", handleKeyDown));
+	onMount(() => {
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("beforeunload", draftSaver.flush);
+	});
+	onCleanup(() => {
+		window.removeEventListener("keydown", handleKeyDown);
+		window.removeEventListener("beforeunload", draftSaver.flush);
+		draftSaver.flush();
+	});
 
 	return {
 		draft,

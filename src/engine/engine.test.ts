@@ -4,7 +4,17 @@ import { createBuiltinRegistry } from "./gadget";
 import { judgeNormalize, judgeOrder } from "./judge";
 import { parseLambda, printTerm } from "./parse";
 import { redexes, stepAt, stepLeftmost } from "./reduce";
-import { DEFAULT_UI_PREFS, loadUiPreferences, saveUiPreferences } from "./storage";
+import {
+	DEFAULT_UI_PREFS,
+	clearLevelDraft,
+	clearLevelDrafts,
+	loadLevelDrafts,
+	loadSession,
+	loadUiPreferences,
+	saveLevelDraft,
+	saveSession,
+	saveUiPreferences,
+} from "./storage";
 import { termsEqual } from "./term";
 
 describe("Calculuser core engine", () => {
@@ -122,5 +132,43 @@ describe("Calculuser core engine", () => {
 		const sanitized = loadUiPreferences();
 		expect(sanitized.shelfWidth).toBe(DEFAULT_UI_PREFS.shelfWidth);
 		expect(sanitized.orderSlipWidth).toBe(DEFAULT_UI_PREFS.orderSlipWidth);
+	});
+
+	it("persists session navigation state cleanly", () => {
+		const initial = loadSession();
+		expect(initial.lastOrderId).toBeNull();
+		expect(initial.screen).toBe("title");
+
+		saveSession({ lastOrderId: "1.2", screen: "workbench" });
+		const loaded = loadSession();
+		expect(loaded.lastOrderId).toBe("1.2");
+		expect(loaded.screen).toBe("workbench");
+	});
+
+	it("persists, validates and clears level draft terms", () => {
+		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
+
+		saveLevelDraft("1.1", { kind: "gad", id: "I" });
+		saveLevelDraft("1.2", {
+			kind: "app",
+			fn: { kind: "lam", param: "x", body: { kind: "var", name: "x" } },
+			arg: { kind: "atom", name: "A" },
+		});
+
+		const drafts = loadLevelDrafts();
+		expect(drafts["1.1"]).toEqual({ kind: "gad", id: "I" });
+		expect(drafts["1.2"]).toEqual({
+			kind: "app",
+			fn: { kind: "lam", param: "x", body: { kind: "var", name: "x" } },
+			arg: { kind: "atom", name: "A" },
+		});
+
+		clearLevelDraft("1.1");
+		const afterClearSingle = loadLevelDrafts();
+		expect(afterClearSingle["1.1"]).toBeUndefined();
+		expect(afterClearSingle["1.2"]).toBeDefined();
+
+		clearLevelDrafts();
+		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
 	});
 });

@@ -6,8 +6,10 @@ import { parseLambda } from "../engine/parse";
 import {
 	type SettingsState,
 	clearWorkshop,
+	loadSession,
 	loadSettings,
 	loadWorkshop,
+	saveSession,
 	saveSettings,
 	saveWorkshop,
 } from "../engine/storage";
@@ -19,17 +21,22 @@ import { WorkbenchView } from "./workbench/WorkbenchView";
 export function App(): JSX.Element {
 	const saved = loadWorkshop();
 	const initialSettings = loadSettings();
+	const initialSession = loadSession();
 	setMasterVolume(initialSettings.volume);
 
 	const registry: Registry = createBuiltinRegistry();
 
-	const [screen, setScreen] = createSignal<"title" | "workbench">("title");
+	const savedOrderIndex =
+		initialSession.lastOrderId !== null ? LEVELS.findIndex((item) => item.id === initialSession.lastOrderId) : -1;
+	const [screen, setScreen] = createSignal<"title" | "workbench">(
+		savedOrderIndex >= 0 ? initialSession.screen : "title",
+	);
 	const [showFolio, setShowFolio] = createSignal<boolean>(false);
 	const [folioTab, setFolioTab] = createSignal<"orders" | "parts">("orders");
 	const [showMachinery, setShowMachinery] = createSignal<boolean>(false);
 	const [machineryTab, setMachineryTab] = createSignal<"settings" | "about">("settings");
 	const [settings, setSettings] = createSignal<SettingsState>(initialSettings);
-	const [orderIndex, setOrderIndex] = createSignal<number>(0);
+	const [orderIndex, setOrderIndex] = createSignal<number>(savedOrderIndex >= 0 ? savedOrderIndex : 0);
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
 	);
@@ -45,8 +52,15 @@ export function App(): JSX.Element {
 
 	const currentOrder = createMemo(() => LEVELS[orderIndex()]);
 
-	const continueIndex = createMemo(() => getContinueOrderIndex(clearedStars()));
+	const continueIndex = createMemo((): number =>
+		savedOrderIndex >= 0 ? savedOrderIndex : getContinueOrderIndex(clearedStars()),
+	);
 	const continueCode = createMemo((): string => getOrderCode(LEVELS[continueIndex()].id));
+
+	const selectOrder = (index: number): void => {
+		setOrderIndex(index);
+		saveSession({ lastOrderId: LEVELS[index].id, screen: "workbench" });
+	};
 
 	const recordStars = (orderId: string, stars: number): void => {
 		const updatedStars = new Map(clearedStars());
@@ -61,6 +75,7 @@ export function App(): JSX.Element {
 		setClearedStars(new Map());
 		setShowMachinery(false);
 		setOrderIndex(0);
+		setScreen("title");
 	};
 
 	const openFolio = (tab: "orders" | "parts"): void => {
@@ -81,7 +96,7 @@ export function App(): JSX.Element {
 					<TitleScreen
 						continueOrderCode={continueCode()}
 						onStart={() => {
-							setOrderIndex(continueIndex());
+							selectOrder(continueIndex());
 							setScreen("workbench");
 						}}
 						onOpenWorkshop={() => openFolio("orders")}
@@ -97,10 +112,13 @@ export function App(): JSX.Element {
 					clearedStars={clearedStars()}
 					isLastOrder={orderIndex() === LEVELS.length - 1}
 					onRecordStars={recordStars}
-					onNextOrder={() => setOrderIndex(orderIndex() + 1)}
+					onNextOrder={() => selectOrder(orderIndex() + 1)}
 					onOpenWorkshop={() => openFolio("orders")}
 					onOpenSettings={() => openMachinery("settings")}
-					onBackToTitle={() => setScreen("title")}
+					onBackToTitle={() => {
+						saveSession({ lastOrderId: LEVELS[orderIndex()].id, screen: "title" });
+						setScreen("title");
+					}}
 				/>
 			</Show>
 
@@ -112,7 +130,7 @@ export function App(): JSX.Element {
 					registry={registry}
 					judgeMode={settings().judgeMode}
 					onSelectOrder={(index) => {
-						setOrderIndex(index);
+						selectOrder(index);
 						setScreen("workbench");
 					}}
 					onClose={() => setShowFolio(false)}

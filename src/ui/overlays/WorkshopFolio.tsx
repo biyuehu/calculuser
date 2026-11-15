@@ -1,7 +1,7 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
 import { BUILTIN_COUNT, CHAPTERS, COMBINATORS, LEVELS, getGadgetMeta, getToolSource } from "../../content";
 import type { Registry } from "../../engine/gadget";
-import { printTerm } from "../../engine/parse";
+import { transitionView } from "../../utils/transition";
 
 interface WorkshopFolioProps {
 	readonly initialTab?: "orders" | "parts";
@@ -103,8 +103,10 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 																	: ""
 															} ${globalIndex === props.currentOrderIndex ? "current" : ""}`}
 															onClick={() => {
-																props.onSelectOrder(globalIndex);
-																props.onClose();
+																transitionView(() => {
+																	props.onSelectOrder(globalIndex);
+																	props.onClose();
+																});
 															}}
 															title={`${code} ${order.title}`}
 														>
@@ -192,7 +194,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 												props.judgeMode ||
 												(sourceOrderId !== null && props.clearedStars.has(sourceOrderId)) ||
 												props.registry.has(tool.id);
-											const reg = props.registry.get(tool.id);
 											return (
 												<div
 													class={`compendium-cell ${!isUnlockedPart ? "locked-cell" : ""}`}
@@ -236,22 +237,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 														>
 															{tool.defText}
 														</div>
-														<Show when={reg}>
-															{(entry) => (
-																<div
-																	style={{
-																		"font-family": "var(--font-mono)",
-																		"font-size": "10.5px",
-																		color: "var(--accent-success)",
-																		background: "var(--surface-1)",
-																		padding: "3px 6px",
-																		"border-radius": "4px",
-																	}}
-																>
-																	实机项: {printTerm(entry().def, 0)}
-																</div>
-															)}
-														</Show>
 													</Show>
 												</div>
 											);

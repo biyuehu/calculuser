@@ -34,11 +34,11 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 			<div class="order-slip-header">
 				<span>{props.order.mode === "run" ? "运转试炼" : "客人的订单"}</span>
 				<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
-					<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>
-						{props.order.mode === "run"
-							? `步数 ${props.runSteps} / ${props.order.stepBudget}`
-							: `标准 ${props.order.parSize} 件`}
-					</span>
+					<Show when={props.order.mode === "build" ? props.order : null}>
+						{(buildOrder) => (
+							<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>标准 {buildOrder().parSize} 件</span>
+						)}
+					</Show>
 					<button
 						type="button"
 						class="icon-btn"

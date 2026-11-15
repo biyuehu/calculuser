@@ -49,11 +49,11 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setPanY(0);
 		setZoom(1);
 		setLevelTransitioning(true);
-		setTimeout(() => setLevelTransitioning(false), 260);
+		setTimeout(() => setLevelTransitioning(false), 380);
 	});
 
 	return (
-		<div class="workshop-root">
+		<div class={`workshop-root ${session.deliveredStars() !== null ? "level-cleared-celebration" : ""}`}>
 			<header class="top-bar">
 				<button
 					type="button"
@@ -210,6 +210,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							currentSteps={session.runSteps()}
 							maxBudget={runOrder().stepBudget}
 							hasExploded={session.runFailed()}
+							rightOffset={ui.orderSlipWidth() + 24}
 							onReset={session.clearBench}
 						/>
 					)}
@@ -232,6 +233,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					targetValue={props.order.mode === "run" ? props.order.stepBudget : props.order.parSize}
 					note={props.order.note}
 					isLastOrder={props.isLastOrder}
+					rejected={session.rejected() !== null}
+					unlocksToolId={
+						props.order.mode === "build" && props.order.unlocksToolId !== void 0 ? props.order.unlocksToolId : null
+					}
 					onDeliver={session.deliverOrder}
 					onNextOrder={props.onNextOrder}
 				/>

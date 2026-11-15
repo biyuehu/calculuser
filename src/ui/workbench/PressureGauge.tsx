@@ -4,6 +4,7 @@ interface PressureGaugeProps {
 	readonly currentSteps: number;
 	readonly maxBudget: number;
 	readonly hasExploded: boolean;
+	readonly rightOffset: number;
 	readonly onReset: () => void;
 }
 
@@ -11,7 +12,7 @@ export function PressureGauge(props: PressureGaugeProps): JSX.Element {
 	const ratio = createMemo(() => Math.min(1.2, props.currentSteps / Math.max(1, props.maxBudget)));
 
 	return (
-		<div class="pressure-gauge-container">
+		<div class="pressure-gauge-container" style={{ right: `${props.rightOffset}px` }}>
 			<div
 				class={`gauge-dial ${ratio() >= 0.75 && ratio() < 1 ? "warning" : ""} ${
 					ratio() >= 1 || props.hasExploded ? "danger shaking" : ""

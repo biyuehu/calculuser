@@ -2,6 +2,7 @@ import { type JSX, Show, createEffect, createSignal } from "solid-js";
 import type { OrderLevel } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { PRINT_NAMES } from "../../engine/parse";
+import { useUiPreferences } from "../../utils/hooks/useUiPreferences";
 import { useWorkbenchSession } from "../../utils/hooks/useWorkbenchSession";
 import { DeliveryCounter } from "./DeliveryCounter";
 import { DraftNode } from "./DraftNode";
@@ -33,10 +34,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		onRecordStars: props.onRecordStars,
 	});
 
+	const ui = useUiPreferences();
 	const [zoom, setZoom] = createSignal<number>(1);
 	const [panX, setPanX] = createSignal<number>(0);
 	const [panY, setPanY] = createSignal<number>(0);
-	const [shelfWidth, setShelfWidth] = createSignal<number>(76);
 	let isPanning = false;
 	let panStartX = 0;
 	let panStartY = 0;
@@ -170,7 +171,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				</div>
 
 				<Show when={session.isXRay()}>
-					<div class="xray-pill" style={{ left: props.order.mode === "build" ? `${shelfWidth() + 24}px` : "16px" }}>
+					<div class="xray-pill" style={{ left: props.order.mode === "build" ? `${ui.shelfWidth() + 24}px` : "16px" }}>
 						透视：{session.xRayText()}
 					</div>
 				</Show>
@@ -178,8 +179,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				<Show when={props.order.mode === "build" ? props.order : null}>
 					{(buildOrder) => (
 						<ShelfRail
-							width={shelfWidth()}
-							onResize={setShelfWidth}
+							width={ui.shelfWidth()}
+							onResize={ui.setShelfWidth}
 							unlockedIds={session.shelfUnlockedIds()}
 							lockedCount={session.shelfLockedCount()}
 							scopeVariables={session.currentScope()}
@@ -227,7 +228,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					onNextOrder={props.onNextOrder}
 				/>
 
-				<div class="zoom-controls" style={{ left: props.order.mode === "build" ? `${shelfWidth() + 24}px` : "16px" }}>
+				<div
+					class="zoom-controls"
+					style={{ left: props.order.mode === "build" ? `${ui.shelfWidth() + 24}px` : "16px" }}
+				>
 					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))}>
 						＋
 					</button>

@@ -4,6 +4,7 @@ import { createBuiltinRegistry } from "./gadget";
 import { judgeNormalize, judgeOrder } from "./judge";
 import { parseLambda, printTerm } from "./parse";
 import { redexes, stepAt, stepLeftmost } from "./reduce";
+import { DEFAULT_UI_PREFS, loadUiPreferences, saveUiPreferences } from "./storage";
 import { termsEqual } from "./term";
 
 describe("Calculuser core engine", () => {
@@ -88,5 +89,38 @@ describe("Calculuser core engine", () => {
 			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
 			else expect(order.stepBudget).toBeGreaterThan(0);
 		}
+	});
+
+	it("loads, saves, and sanitizes UI preferences", () => {
+		const store = new Map<string, string>();
+		const mockStorage = {
+			getItem: (k: string): string | null => store.get(k) ?? null,
+			setItem: (k: string, v: string): void => {
+				store.set(k, v);
+			},
+			removeItem: (k: string): void => {
+				store.delete(k);
+			},
+			clear: (): void => store.clear(),
+			key: (_index: number): string | null => null,
+			length: 0,
+		};
+		Object.defineProperty(globalThis, "localStorage", { value: mockStorage, configurable: true, writable: true });
+
+		const initial = loadUiPreferences();
+		expect(initial.shelfWidth).toBe(DEFAULT_UI_PREFS.shelfWidth);
+		expect(initial.orderSlipWidth).toBe(DEFAULT_UI_PREFS.orderSlipWidth);
+		expect(initial.orderSlipCollapsed).toBe(DEFAULT_UI_PREFS.orderSlipCollapsed);
+
+		saveUiPreferences({ shelfWidth: 160, orderSlipWidth: 400, orderSlipCollapsed: true });
+		const loaded = loadUiPreferences();
+		expect(loaded.shelfWidth).toBe(160);
+		expect(loaded.orderSlipWidth).toBe(400);
+		expect(loaded.orderSlipCollapsed).toBe(true);
+
+		saveUiPreferences({ shelfWidth: 9999, orderSlipWidth: 10, orderSlipCollapsed: false });
+		const sanitized = loadUiPreferences();
+		expect(sanitized.shelfWidth).toBe(DEFAULT_UI_PREFS.shelfWidth);
+		expect(sanitized.orderSlipWidth).toBe(DEFAULT_UI_PREFS.orderSlipWidth);
 	});
 });

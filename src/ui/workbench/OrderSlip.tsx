@@ -1,7 +1,8 @@
-import { For, type JSX, Show, createSignal } from "solid-js";
+import { For, type JSX, Show } from "solid-js";
 import type { OrderLevel } from "../../content";
 import type { JudgeTestCase, JudgeTestResult } from "../../engine/judge";
 import { startDragResize } from "../../utils/dragResize";
+import { useUiPreferences } from "../../utils/hooks/useUiPreferences";
 import { TermVisual } from "./TermVisual";
 
 export interface RejectedInfo {
@@ -17,15 +18,15 @@ interface OrderSlipProps {
 }
 
 export function OrderSlip(props: OrderSlipProps): JSX.Element {
-	const [collapsed, setCollapsed] = createSignal<boolean>(false);
-	const [width, setWidth] = createSignal<number>(290);
+	const ui = useUiPreferences();
 
-	const handleResize = (downEvent: PointerEvent): void => startDragResize(downEvent, width(), -1, 260, 720, setWidth);
+	const handleResize = (downEvent: PointerEvent): void =>
+		startDragResize(downEvent, ui.orderSlipWidth(), -1, 260, 720, ui.setOrderSlipWidth);
 
 	return (
 		<section
 			class="order-slip"
-			style={{ width: `${width()}px`, height: collapsed() ? "42px" : "auto" }}
+			style={{ width: `${ui.orderSlipWidth()}px`, height: ui.orderSlipCollapsed() ? "42px" : "auto" }}
 			onWheel={(event) => event.stopPropagation()}
 		>
 			<div class="order-resize-handle" onPointerDown={handleResize} title="拖动调整订单栏宽度" />
@@ -41,14 +42,14 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 						type="button"
 						class="icon-btn"
 						style={{ height: "22px", padding: "0 6px", "font-size": "11px" }}
-						onClick={() => setCollapsed(!collapsed())}
+						onClick={() => ui.setOrderSlipCollapsed(!ui.orderSlipCollapsed())}
 					>
-						{collapsed() ? "展开" : "收起"}
+						{ui.orderSlipCollapsed() ? "展开" : "收起"}
 					</button>
 				</div>
 			</div>
 
-			<Show when={!collapsed()}>
+			<Show when={!ui.orderSlipCollapsed()}>
 				<p class="order-guest-line">{props.order.guestLine}</p>
 
 				<Show when={props.order.mode === "build" ? props.order : null}>

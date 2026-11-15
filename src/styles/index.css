@@ -155,7 +155,7 @@ body {
 	top: 12px;
 	bottom: 12px;
 	min-width: 72px;
-	max-width: 420px;
+	max-width: 480px;
 	background: rgba(255, 255, 255, 0.94);
 	backdrop-filter: blur(8px);
 	border: 1px solid var(--border-subtle);

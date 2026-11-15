@@ -10,7 +10,7 @@ import {
 	playSplitSound,
 	playUndoSound,
 } from "../../audio/synth";
-import { BUILTIN_TOOLS, LEVELS, ORDER_TOOLS, type OrderLevel, getToolDefinition, getToolSource } from "../../content";
+import { BUILTIN_COUNT, COMBINATORS, LEVELS, type OrderLevel, getToolDefinition, getToolSource } from "../../content";
 import {
 	type DraftTerm,
 	countDraftSize,
@@ -111,15 +111,19 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		const rawCandidates =
 			order.toolbox === "all"
 				? [
-						...BUILTIN_TOOLS.map((tool) => tool.id),
-						...ORDER_TOOLS.filter((tool) => {
-							if (tool.id === order.id) return false;
-							if (judgeAll) return true;
-							const sourceOrderId = getToolSource(tool.id);
-							if (sourceOrderId === null) return false;
-							const sourceIndex = LEVELS.findIndex((item) => item.id === sourceOrderId);
-							return sourceIndex >= 0 && (sourceIndex < currentOrderIndex || options.clearedStars().has(sourceOrderId));
-						}).map((tool) => tool.id),
+						...COMBINATORS.slice(0, BUILTIN_COUNT).map((tool) => tool.id),
+						...COMBINATORS.slice(BUILTIN_COUNT)
+							.filter((tool) => {
+								if (tool.id === order.id) return false;
+								if (judgeAll) return true;
+								const sourceOrderId = getToolSource(tool.id);
+								if (sourceOrderId === null) return false;
+								const sourceIndex = LEVELS.findIndex((item) => item.id === sourceOrderId);
+								return (
+									sourceIndex >= 0 && (sourceIndex < currentOrderIndex || options.clearedStars().has(sourceOrderId))
+								);
+							})
+							.map((tool) => tool.id),
 					]
 				: order.toolbox;
 		const seen = new Set<string>();
@@ -135,7 +139,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	const shelfLockedCount = createMemo(() => {
 		const order = options.order();
 		return order.mode === "build" && order.toolbox === "all"
-			? Math.max(0, ORDER_TOOLS.length - options.clearedStars().size)
+			? Math.max(0, COMBINATORS.length - BUILTIN_COUNT - options.clearedStars().size)
 			: 0;
 	});
 

@@ -25,9 +25,8 @@ export interface GadgetMeta {
 }
 
 export interface ChapterDefinition {
-	readonly chapter: number;
+	readonly id: number;
 	readonly title: string;
-	readonly subtitle: string;
 }
 
 export interface BuildOrder {

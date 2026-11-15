@@ -1,4 +1,4 @@
-import { BUILTIN_TOOLS } from "../content";
+import { BUILTIN_COUNT, COMBINATORS } from "../content";
 import { parseLambda } from "./parse";
 import { type GadgetId, type Term, isClosed } from "./term";
 
@@ -35,7 +35,7 @@ export function registerGadget(registry: Registry, id: GadgetId, def: Term, orig
 
 export function createBuiltinRegistry(): Registry {
 	const registry: Registry = new Map();
-	for (const tool of BUILTIN_TOOLS) {
+	for (const tool of COMBINATORS.slice(0, BUILTIN_COUNT)) {
 		if (tool.defText !== null && !registry.has(tool.id))
 			registerGadget(registry, tool.id, parseLambda(tool.defText), "builtin");
 	}

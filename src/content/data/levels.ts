@@ -3,10 +3,10 @@ import { atom } from "../../engine/term";
 import type { ChapterDefinition, OrderLevel } from "../types";
 
 export const CHAPTERS: readonly ChapterDefinition[] = [
-	{ chapter: 1, title: "第一章 · 工坊启蒙", subtitle: "现成件、早期开槽与 S 登场" },
-	{ chapter: 2, title: "第二章 · 进阶开槽与运转试炼", subtitle: "图纸台与进阶组合子" },
-	{ chapter: 3, title: "第三章 · 逻辑与序对封装", subtitle: "数据类型、逻辑门与序对" },
-	{ chapter: 4, title: "第四章 · 算术递归与奇异点", subtitle: "邱奇数、折叠与不动点递归" },
+	{ id: 1, title: "第一章 · 工坊启蒙" },
+	{ id: 2, title: "第二章 · 进阶开槽与运转试炼" },
+	{ id: 3, title: "第三章 · 逻辑与序对封装" },
+	{ id: 4, title: "第四章 · 算术递归与奇异点" },
 ];
 
 export const LEVELS: readonly OrderLevel[] = [

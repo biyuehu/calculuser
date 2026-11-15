@@ -1,5 +1,7 @@
 import type { ToolDefinition } from "../types";
 
+export const BUILTIN_COUNT = 3;
+
 export const COMBINATORS: readonly ToolDefinition[] = [
 	{
 		id: "I",

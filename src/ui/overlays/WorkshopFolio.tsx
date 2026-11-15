@@ -1,5 +1,5 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
-import { BUILTIN_TOOLS, CHAPTERS, LEVELS, ORDER_TOOLS, getGadgetMeta, getToolSource } from "../../content";
+import { BUILTIN_COUNT, CHAPTERS, COMBINATORS, LEVELS, getGadgetMeta, getToolSource } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { printTerm } from "../../engine/parse";
 
@@ -16,13 +16,11 @@ interface WorkshopFolioProps {
 const CHAPTER_GROUPS = [
 	...CHAPTERS.map((chapterInfo) => ({
 		title: chapterInfo.title,
-		subtitle: chapterInfo.subtitle,
-		levels: LEVELS.filter((level) => level.chapter === chapterInfo.chapter),
+		levels: LEVELS.filter((level) => level.chapter === chapterInfo.id),
 		isBossEligible: true,
 	})),
 	{
 		title: "其它",
-		subtitle: "",
 		levels: LEVELS.filter((level) => !level.chapter),
 		isBossEligible: false,
 	},
@@ -83,9 +81,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 									<div class="chapter-block">
 										<div style={{ display: "flex", "align-items": "baseline", gap: "8px" }}>
 											<h3 class="chapter-title">{group.title}</h3>
-											<Show when={group.subtitle}>
-												<span style={{ "font-size": "11.5px", color: "var(--text-muted)" }}>{group.subtitle}</span>
-											</Show>
 										</div>
 										<div class="orders-card-row">
 											<For each={group.levels}>
@@ -147,12 +142,12 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 					<Show when={activeTab() === "parts"}>
 						<div class="overview-parts-section">
 							<div class="chapter-block" style={{ "margin-bottom": "20px" }}>
-								<h3 class="chapter-title">基础组合子（公理工具）</h3>
+								<h3 class="chapter-title">基础工具（公理工具）</h3>
 								<div
 									class="compendium-grid"
 									style={{ "grid-template-columns": "repeat(auto-fill, minmax(240px, 1fr))" }}
 								>
-									<For each={BUILTIN_TOOLS}>
+									<For each={COMBINATORS.slice(0, BUILTIN_COUNT)}>
 										{(tool) => (
 											<div class="compendium-cell">
 												<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
@@ -178,18 +173,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 												<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
 													{tool.note}
 												</div>
-												<div
-													style={{
-														"font-family": "var(--font-mono)",
-														"font-size": "10.5px",
-														color: "var(--text-muted)",
-														background: "var(--surface-1)",
-														padding: "3px 6px",
-														"border-radius": "4px",
-													}}
-												>
-													{tool.defText}
-												</div>
 											</div>
 										)}
 									</For>
@@ -202,7 +185,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 									class="compendium-grid"
 									style={{ "grid-template-columns": "repeat(auto-fill, minmax(240px, 1fr))" }}
 								>
-									<For each={ORDER_TOOLS}>
+									<For each={COMBINATORS.slice(BUILTIN_COUNT)}>
 										{(tool) => {
 											const sourceOrderId = getToolSource(tool.id);
 											const isUnlockedPart =
@@ -213,7 +196,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 											return (
 												<div
 													class={`compendium-cell ${!isUnlockedPart ? "locked-cell" : ""}`}
-													style={{ opacity: isUnlockedPart ? 1 : 0.6 }}
+													style={!isUnlockedPart ? { opacity: 0.45, filter: "grayscale(1)" } : {}}
 												>
 													<div style={{ display: "flex", "justify-content": "space-between", "align-items": "center" }}>
 														<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
@@ -223,13 +206,10 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 															<div>
 																<div style={{ "font-weight": 700, "font-size": "13px" }}>{tool.name}</div>
 																<div style={{ "font-size": "10.5px", color: "var(--text-muted)" }}>
-																	{isUnlockedPart ? `元数 ${tool.arity}` : "未在订单中研发"}
+																	元数 {tool.arity}
 																</div>
 															</div>
 														</div>
-														<Show when={!isUnlockedPart}>
-															<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>🔒</span>
-														</Show>
 													</div>
 													<div
 														style={{
@@ -243,21 +223,35 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
 														{tool.note}
 													</div>
-													<Show when={reg}>
-														{(entry) => (
-															<div
-																style={{
-																	"font-family": "var(--font-mono)",
-																	"font-size": "10.5px",
-																	color: "var(--accent-success)",
-																	background: "var(--surface-1)",
-																	padding: "3px 6px",
-																	"border-radius": "4px",
-																}}
-															>
-																实机项: {printTerm(entry().def, 0)}
-															</div>
-														)}
+													<Show when={isUnlockedPart}>
+														<div
+															style={{
+																"font-family": "var(--font-mono)",
+																"font-size": "10.5px",
+																color: "var(--text-muted)",
+																background: "var(--surface-1)",
+																padding: "3px 6px",
+																"border-radius": "4px",
+															}}
+														>
+															{tool.defText}
+														</div>
+														<Show when={reg}>
+															{(entry) => (
+																<div
+																	style={{
+																		"font-family": "var(--font-mono)",
+																		"font-size": "10.5px",
+																		color: "var(--accent-success)",
+																		background: "var(--surface-1)",
+																		padding: "3px 6px",
+																		"border-radius": "4px",
+																	}}
+																>
+																	实机项: {printTerm(entry().def, 0)}
+																</div>
+															)}
+														</Show>
 													</Show>
 												</div>
 											);

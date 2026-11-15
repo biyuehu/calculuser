@@ -13,6 +13,7 @@ import {
 	saveSettings,
 	saveWorkshop,
 } from "../engine/storage";
+import { transitionView } from "../utils/transition";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { TitleScreen } from "./screens/TitleScreen";
@@ -96,8 +97,10 @@ export function App(): JSX.Element {
 					<TitleScreen
 						continueOrderCode={continueCode()}
 						onStart={() => {
-							selectOrder(continueIndex());
-							setScreen("workbench");
+							transitionView(() => {
+								selectOrder(continueIndex());
+								setScreen("workbench");
+							}, "forward");
 						}}
 						onOpenWorkshop={() => openFolio("orders")}
 						onOpenSettings={() => openMachinery("settings")}
@@ -112,12 +115,14 @@ export function App(): JSX.Element {
 					clearedStars={clearedStars()}
 					isLastOrder={orderIndex() === LEVELS.length - 1}
 					onRecordStars={recordStars}
-					onNextOrder={() => selectOrder(orderIndex() + 1)}
+					onNextOrder={() => transitionView(() => selectOrder(orderIndex() + 1), "forward")}
 					onOpenWorkshop={() => openFolio("orders")}
 					onOpenSettings={() => openMachinery("settings")}
 					onBackToTitle={() => {
-						saveSession({ lastOrderId: LEVELS[orderIndex()].id, screen: "title" });
-						setScreen("title");
+						transitionView(() => {
+							saveSession({ lastOrderId: LEVELS[orderIndex()].id, screen: "title" });
+							setScreen("title");
+						}, "backward");
 					}}
 				/>
 			</Show>
@@ -130,8 +135,11 @@ export function App(): JSX.Element {
 					registry={registry}
 					judgeMode={settings().judgeMode}
 					onSelectOrder={(index) => {
-						selectOrder(index);
-						setScreen("workbench");
+						const dir = index >= orderIndex() ? "forward" : "backward";
+						transitionView(() => {
+							selectOrder(index);
+							setScreen("workbench");
+						}, dir);
 					}}
 					onClose={() => setShowFolio(false)}
 				/>

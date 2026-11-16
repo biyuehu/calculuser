@@ -1,19 +1,29 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
 import { setMasterVolume } from "../audio/synth";
-import { LEVELS, getContinueOrderIndex, getOrderCode, getToolDefinition } from "../content";
+import {
+	type DialogueBeat,
+	LEVELS,
+	LEVEL_DIALOGUES,
+	getContinueOrderIndex,
+	getOrderCode,
+	getToolDefinition,
+} from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
 import { parseLambda } from "../engine/parse";
 import {
 	type SettingsState,
 	clearWorkshop,
+	loadSeenDialogues,
 	loadSession,
 	loadSettings,
 	loadWorkshop,
+	markDialogueSeen,
 	saveSession,
 	saveSettings,
 	saveWorkshop,
 } from "../engine/storage";
 import { transitionView } from "../utils/transition";
+import { CounterView } from "./counter/CounterView";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { TitleScreen } from "./screens/TitleScreen";
@@ -47,6 +57,8 @@ export function App(): JSX.Element {
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
 	);
+	const [activeBeat, setActiveBeat] = createSignal<DialogueBeat | null>(null);
+	const [cameraView, setCameraView] = createSignal<"bench" | "counter">("bench");
 
 	for (const order of LEVELS) {
 		if (order.mode === "build" && order.unlocksToolId !== void 0 && clearedStars().has(order.id)) {
@@ -90,6 +102,31 @@ export function App(): JSX.Element {
 		setShowFolio(true);
 	};
 
+	const handleNextOrderAdvance = (): void => {
+		const beat = LEVEL_DIALOGUES[currentOrder().id];
+		if (beat !== void 0 && (!settings().autoSkipRead || !loadSeenDialogues().has(beat.id))) {
+			setActiveBeat(beat);
+			setCameraView("counter");
+			return;
+		}
+		if (orderIndex() < LEVELS.length - 1) transitionView(() => selectOrder(orderIndex() + 1), "forward");
+	};
+
+	const toggleAutoSkipRead = (): void => {
+		const updated = { ...settings(), autoSkipRead: !settings().autoSkipRead };
+		setSettings(updated);
+		saveSettings(updated);
+	};
+
+	const dismissCounter = (): void => {
+		const beat = activeBeat();
+		if (beat !== null) markDialogueSeen(beat.id);
+		setActiveBeat(null);
+		setCameraView("bench");
+		if (orderIndex() < LEVELS.length - 1)
+			setTimeout(() => transitionView(() => selectOrder(orderIndex() + 1), "forward"), 360);
+	};
+
 	const openMachinery = (tab: "settings" | "about"): void => {
 		setMachineryTab(tab);
 		setShowMachinery(true);
@@ -97,24 +134,40 @@ export function App(): JSX.Element {
 
 	return (
 		<div class={`workshop-root ${settings().reducedMotion ? "reduced-motion" : ""}`}>
-			<div class="workbench-layer-container" style={{ "pointer-events": screen() === "title" ? "none" : "auto" }}>
-				<WorkbenchView
-					order={currentOrder()}
-					registry={registry}
-					judgeMode={settings().judgeMode}
-					clearedStars={clearedStars()}
-					isLastOrder={orderIndex() === LEVELS.length - 1}
-					onRecordStars={recordStars}
-					onNextOrder={() => transitionView(() => selectOrder(orderIndex() + 1), "forward")}
-					onOpenWorkshop={() => openFolio("orders")}
-					onOpenSettings={() => openMachinery("settings")}
-					onBackToTitle={() => {
-						transitionView(() => {
-							saveSession({ lastOrderId: LEVELS[orderIndex()].id, screen: "title" });
-							setScreen("title");
-						}, "backward");
-					}}
-				/>
+			<div
+				class={`workshop-camera-viewport camera-${cameraView()}`}
+				style={{ "pointer-events": screen() === "title" ? "none" : "auto" }}
+			>
+				<div class="camera-world-stage">
+					<div class="camera-counter-slot">
+						<CounterView
+							beat={activeBeat()}
+							autoSkipRead={settings().autoSkipRead}
+							onToggleAutoSkipRead={toggleAutoSkipRead}
+							onComplete={dismissCounter}
+							onSkip={dismissCounter}
+						/>
+					</div>
+					<div class="camera-bench-slot">
+						<WorkbenchView
+							order={currentOrder()}
+							registry={registry}
+							judgeMode={settings().judgeMode}
+							clearedStars={clearedStars()}
+							isLastOrder={orderIndex() === LEVELS.length - 1}
+							onRecordStars={recordStars}
+							onNextOrder={handleNextOrderAdvance}
+							onOpenWorkshop={() => openFolio("orders")}
+							onOpenSettings={() => openMachinery("settings")}
+							onBackToTitle={() => {
+								transitionView(() => {
+									saveSession({ lastOrderId: LEVELS[orderIndex()].id, screen: "title" });
+									setScreen("title");
+								}, "backward");
+							}}
+						/>
+					</div>
+				</div>
 			</div>
 
 			<Show when={screen() === "title"}>

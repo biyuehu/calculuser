@@ -4,6 +4,7 @@ import { LEVELS } from "./data/levels";
 import type { GadgetMeta, ToolDefinition } from "./types";
 
 export * from "./types";
+export * from "./dialogue";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 

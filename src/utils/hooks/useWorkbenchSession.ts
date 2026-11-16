@@ -378,22 +378,28 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		const order = options.order();
 		const stars = options.clearedStars().get(order.id);
 		setRejected(null);
-		setDeliveredStars(stars !== void 0 ? stars : null);
 		setCombo(0);
 		if (order.mode === "run") {
 			setPlayTerm(order.initialTerm);
 			setTape([order.initialTerm]);
 			setTapeIndex(0);
-		} else {
-			const saved = loadLevelDrafts()[order.id];
-			const initialDraft = saved ?? { kind: "hole" };
-			setDraft(initialDraft);
-			setSelectedPath(findFirstHole(initialDraft, ""));
-			setHistory([]);
-			setPlayTerm(null);
-			setTape([]);
-			setTapeIndex(0);
+			setDeliveredStars(null);
+			return;
 		}
+		const initialDraft = loadLevelDrafts()[order.id] ?? { kind: "hole" };
+		setDraft(initialDraft);
+		setSelectedPath(findFirstHole(initialDraft, ""));
+		setHistory([]);
+		setPlayTerm(null);
+		setTape([]);
+		setTapeIndex(0);
+		setDeliveredStars(
+			stars !== void 0 &&
+				findFirstHole(initialDraft, "") === null &&
+				judgeOrder(draftToTerm(initialDraft, []), order.tests, options.registry, 300).every((item) => item.passed)
+				? stars
+				: null,
+		);
 	});
 
 	const handleKeyDown = (event: KeyboardEvent): void => {

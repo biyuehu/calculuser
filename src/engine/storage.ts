@@ -4,6 +4,7 @@ export interface SettingsState {
 	readonly volume: number;
 	readonly reducedMotion: boolean;
 	readonly judgeMode: boolean;
+	readonly autoSkipRead: boolean;
 }
 
 export interface UiPreferences {
@@ -22,7 +23,13 @@ const SETTINGS_KEY = "calculuser_settings_v1";
 const UI_PREFS_KEY = "calculuser_ui_prefs_v1";
 const DRAFT_STORAGE_KEY = "calculuser_drafts_v1";
 const SESSION_STORAGE_KEY = "calculuser_session_v1";
-const DEFAULT_SETTINGS: SettingsState = { volume: 1, reducedMotion: false, judgeMode: false };
+const SEEN_DIALOGUES_KEY = "calculuser_seen_dialogues_v1";
+const DEFAULT_SETTINGS: SettingsState = {
+	volume: 1,
+	reducedMotion: false,
+	judgeMode: false,
+	autoSkipRead: false,
+};
 const DEFAULT_SESSION: SessionState = { lastOrderId: null, screen: "title" };
 export const DEFAULT_UI_PREFS: UiPreferences = {
 	shelfWidth: 76,
@@ -56,6 +63,7 @@ export function clearWorkshop(): void {
 		localStorage.removeItem(STORAGE_KEY);
 		localStorage.removeItem(DRAFT_STORAGE_KEY);
 		localStorage.removeItem(SESSION_STORAGE_KEY);
+		localStorage.removeItem(SEEN_DIALOGUES_KEY);
 	} catch {}
 }
 
@@ -64,7 +72,12 @@ export function loadSettings(): SettingsState {
 		const raw = localStorage.getItem(SETTINGS_KEY);
 		if (raw === null) return DEFAULT_SETTINGS;
 		const parsed = JSON.parse(raw) as SettingsState;
-		return { volume: parsed.volume, reducedMotion: parsed.reducedMotion, judgeMode: parsed.judgeMode };
+		return {
+			volume: typeof parsed.volume === "number" ? parsed.volume : DEFAULT_SETTINGS.volume,
+			reducedMotion: typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : DEFAULT_SETTINGS.reducedMotion,
+			judgeMode: typeof parsed.judgeMode === "boolean" ? parsed.judgeMode : DEFAULT_SETTINGS.judgeMode,
+			autoSkipRead: typeof parsed.autoSkipRead === "boolean" ? parsed.autoSkipRead : false,
+		};
 	} catch {
 		return DEFAULT_SETTINGS;
 	}
@@ -201,5 +214,24 @@ export function loadSession(): SessionState {
 export function saveSession(session: SessionState): void {
 	try {
 		localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+	} catch {}
+}
+
+export function loadSeenDialogues(): ReadonlySet<string> {
+	try {
+		const raw = localStorage.getItem(SEEN_DIALOGUES_KEY);
+		if (raw === null) return new Set();
+		const parsed = JSON.parse(raw);
+		return Array.isArray(parsed)
+			? new Set(parsed.filter((item): item is string => typeof item === "string"))
+			: new Set();
+	} catch {
+		return new Set();
+	}
+}
+
+export function markDialogueSeen(id: string): void {
+	try {
+		localStorage.setItem(SEEN_DIALOGUES_KEY, JSON.stringify(Array.from(new Set([...loadSeenDialogues(), id]))));
 	} catch {}
 }

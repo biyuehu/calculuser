@@ -26,27 +26,19 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 
 	const setVolume = (value: number): void => {
 		setMasterVolume(value);
-		props.onUpdateSettings((prev) => ({
-			volume: value,
-			reducedMotion: prev.reducedMotion,
-			judgeMode: prev.judgeMode,
-		}));
+		props.onUpdateSettings((prev) => ({ ...prev, volume: value }));
 	};
 
 	const toggleMotion = (): void => {
-		props.onUpdateSettings((prev) => ({
-			volume: prev.volume,
-			reducedMotion: !prev.reducedMotion,
-			judgeMode: prev.judgeMode,
-		}));
+		props.onUpdateSettings((prev) => ({ ...prev, reducedMotion: !prev.reducedMotion }));
 	};
 
 	const toggleJudgeMode = (): void => {
-		props.onUpdateSettings((prev) => ({
-			volume: prev.volume,
-			reducedMotion: prev.reducedMotion,
-			judgeMode: !prev.judgeMode,
-		}));
+		props.onUpdateSettings((prev) => ({ ...prev, judgeMode: !prev.judgeMode }));
+	};
+
+	const toggleAutoSkipRead = (): void => {
+		props.onUpdateSettings((prev) => ({ ...prev, autoSkipRead: !prev.autoSkipRead }));
 	};
 
 	return (
@@ -127,6 +119,20 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								onClick={toggleMotion}
 							>
 								{props.settings.reducedMotion ? "已开启" : "已关闭"}
+							</button>
+						</div>
+
+						<div class="control-row">
+							<div>
+								<div class="control-title">自动跳过已读对话</div>
+								<div class="control-desc">通关重玩时自动跳过看过的剧情</div>
+							</div>
+							<button
+								type="button"
+								class={`icon-btn ${props.settings.autoSkipRead ? "active" : ""}`}
+								onClick={toggleAutoSkipRead}
+							>
+								{props.settings.autoSkipRead ? "已开启" : "未开启"}
 							</button>
 						</div>
 

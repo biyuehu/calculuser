@@ -810,8 +810,11 @@ body {
 }
 
 .mini-scale {
-	transform: scale(0.78);
-	transform-origin: left center;
+	display: inline-flex;
+	align-items: center;
+	width: fit-content;
+	flex-shrink: 0;
+	zoom: 0.8;
 }
 
 .chapter-section-title {

@@ -65,7 +65,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 											</div>
 										)}
 									</For>
-									<span style={{ color: "var(--text-muted)" }}>→</span>
+									<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>→</span>
 									<div class="mini-scale">
 										<TermVisual term={testCase.expect} depth={0} path="" redexPaths={[]} onStepRedex={null} />
 									</div>
@@ -78,7 +78,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 				<Show when={props.order.mode === "run" ? props.order : null}>
 					{(runOrder) => (
 						<div class="order-sample-row">
-							<span style={{ color: "var(--text-muted)" }}>目标结果：</span>
+							<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>目标结果：</span>
 							<div class="mini-scale">
 								<TermVisual term={runOrder().targetTerm} depth={0} path="" redexPaths={[]} onStepRedex={null} />
 							</div>

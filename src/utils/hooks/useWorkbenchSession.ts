@@ -376,8 +376,9 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	createEffect(() => {
 		draftSaver.flush();
 		const order = options.order();
+		const stars = options.clearedStars().get(order.id);
 		setRejected(null);
-		setDeliveredStars(null);
+		setDeliveredStars(stars !== void 0 ? stars : null);
 		setCombo(0);
 		if (order.mode === "run") {
 			setPlayTerm(order.initialTerm);

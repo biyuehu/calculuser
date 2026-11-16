@@ -28,7 +28,7 @@ export function TitleScreen(props: TitleScreenProps): JSX.Element {
 		if (isStarting()) return;
 		setIsStarting(true);
 		playSnapSound(2);
-		setTimeout(props.onStart, 220);
+		props.onStart();
 	};
 
 	return (

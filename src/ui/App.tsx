@@ -1,4 +1,4 @@
-import { type JSX, Show, createMemo, createSignal } from "solid-js";
+import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
 import { setMasterVolume } from "../audio/synth";
 import { LEVELS, getContinueOrderIndex, getOrderCode, getToolDefinition } from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
@@ -37,6 +37,12 @@ export function App(): JSX.Element {
 	const [showMachinery, setShowMachinery] = createSignal<boolean>(false);
 	const [machineryTab, setMachineryTab] = createSignal<"settings" | "about">("settings");
 	const [settings, setSettings] = createSignal<SettingsState>(initialSettings);
+
+	createEffect(() => {
+		if (typeof document !== "undefined") {
+			document.documentElement.classList.toggle("reduced-motion", settings().reducedMotion);
+		}
+	});
 	const [orderIndex, setOrderIndex] = createSignal<number>(savedOrderIndex >= 0 ? savedOrderIndex : 0);
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
@@ -91,23 +97,7 @@ export function App(): JSX.Element {
 
 	return (
 		<div class={`workshop-root ${settings().reducedMotion ? "reduced-motion" : ""}`}>
-			<Show
-				when={screen() === "workbench"}
-				fallback={
-					<TitleScreen
-						continueOrderCode={continueCode()}
-						onStart={() => {
-							transitionView(() => {
-								selectOrder(continueIndex());
-								setScreen("workbench");
-							}, "forward");
-						}}
-						onOpenWorkshop={() => openFolio("orders")}
-						onOpenSettings={() => openMachinery("settings")}
-						onOpenAbout={() => openMachinery("about")}
-					/>
-				}
-			>
+			<div class="workbench-layer-container" style={{ "pointer-events": screen() === "title" ? "none" : "auto" }}>
 				<WorkbenchView
 					order={currentOrder()}
 					registry={registry}
@@ -125,6 +115,21 @@ export function App(): JSX.Element {
 						}, "backward");
 					}}
 				/>
+			</div>
+
+			<Show when={screen() === "title"}>
+				<TitleScreen
+					continueOrderCode={continueCode()}
+					onStart={() => {
+						transitionView(() => {
+							selectOrder(continueIndex());
+							setScreen("workbench");
+						}, "forward");
+					}}
+					onOpenWorkshop={() => openFolio("orders")}
+					onOpenSettings={() => openMachinery("settings")}
+					onOpenAbout={() => openMachinery("about")}
+				/>
 			</Show>
 
 			<Show when={showFolio()}>
@@ -134,6 +139,7 @@ export function App(): JSX.Element {
 					clearedStars={clearedStars()}
 					registry={registry}
 					judgeMode={settings().judgeMode}
+					reducedMotion={settings().reducedMotion}
 					onSelectOrder={(index) => {
 						const dir = index >= orderIndex() ? "forward" : "backward";
 						transitionView(() => {

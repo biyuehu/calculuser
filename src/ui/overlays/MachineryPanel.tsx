@@ -12,6 +12,17 @@ interface MachineryPanelProps {
 
 export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"settings" | "about">(props.initialTab ?? "settings");
+	const [isClosing, setIsClosing] = createSignal<boolean>(false);
+
+	const handleClose = (): void => {
+		if (isClosing()) return;
+		if (props.settings.reducedMotion) {
+			props.onClose();
+			return;
+		}
+		setIsClosing(true);
+		setTimeout(props.onClose, 180);
+	};
 
 	const setVolume = (value: number): void => {
 		setMasterVolume(value);
@@ -40,12 +51,12 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 
 	return (
 		<div
-			class="modal-backdrop"
-			onClick={props.onClose}
-			onKeyDown={(event) => event.key === "Escape" && props.onClose()}
+			class={`modal-backdrop ${isClosing() ? "modal-exit" : ""}`}
+			onClick={handleClose}
+			onKeyDown={(event) => event.key === "Escape" && handleClose()}
 		>
 			<div
-				class="modal-card machinery-panel"
+				class={`modal-card machinery-panel ${isClosing() ? "modal-exit" : ""}`}
 				onClick={(event) => event.stopPropagation()}
 				onKeyDown={(event) => event.stopPropagation()}
 			>
@@ -68,7 +79,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 							<span>关于</span>
 						</button>
 					</div>
-					<button type="button" class="icon-btn" onClick={props.onClose} title="关闭 (Esc)">
+					<button type="button" class="icon-btn" onClick={handleClose} title="关闭 (Esc)">
 						✕
 					</button>
 				</header>

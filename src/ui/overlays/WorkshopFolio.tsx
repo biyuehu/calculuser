@@ -9,6 +9,7 @@ interface WorkshopFolioProps {
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly registry: Registry;
 	readonly judgeMode: boolean;
+	readonly reducedMotion: boolean;
 	readonly onSelectOrder: (index: number) => void;
 	readonly onClose: () => void;
 }
@@ -28,6 +29,17 @@ const CHAPTER_GROUPS = [
 
 export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"orders" | "parts">(props.initialTab ?? "orders");
+	const [isClosing, setIsClosing] = createSignal<boolean>(false);
+
+	const handleClose = (): void => {
+		if (isClosing()) return;
+		if (props.reducedMotion) {
+			props.onClose();
+			return;
+		}
+		setIsClosing(true);
+		setTimeout(props.onClose, 180);
+	};
 
 	const isUnlocked = (index: number): boolean =>
 		props.judgeMode || index === 0 || props.clearedStars.has(LEVELS[index - 1].id);
@@ -36,12 +48,12 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 
 	return (
 		<div
-			class="modal-backdrop"
-			onClick={props.onClose}
-			onKeyDown={(event) => event.key === "Escape" && props.onClose()}
+			class={`modal-backdrop ${isClosing() ? "modal-exit" : ""}`}
+			onClick={handleClose}
+			onKeyDown={(event) => event.key === "Escape" && handleClose()}
 		>
 			<div
-				class="modal-card folio-card"
+				class={`modal-card folio-card ${isClosing() ? "modal-exit" : ""}`}
 				onClick={(event) => event.stopPropagation()}
 				onKeyDown={(event) => event.stopPropagation()}
 			>
@@ -67,7 +79,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 
 					<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
 						<span class="folio-status-badge">★ {totalStars()}</span>
-						<button type="button" class="icon-btn" onClick={props.onClose} title="关闭 (Esc)">
+						<button type="button" class="icon-btn" onClick={handleClose} title="关闭 (Esc)">
 							✕
 						</button>
 					</div>

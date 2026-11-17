@@ -1,42 +1,68 @@
-export type DialogueSpeaker = "hen" | "guest" | "master";
+export type DialogueSpeaker = "me" | "hen" | "guest" | "master";
 
 export type DialogueFace = "default" | "happy" | "wow" | "think" | "sad" | "proud";
 
-export interface DialogueLine {
+export interface TextLine {
 	readonly text: string;
 	readonly speaker?: DialogueSpeaker;
 	readonly face?: DialogueFace;
 }
 
+export type ChoiceBranch = DialogueLine | readonly DialogueLine[];
+
+export interface ChoicesLine {
+	readonly choices: readonly [string, ChoiceBranch][];
+}
+
+export type DialogueLine = TextLine | ChoicesLine;
+
 export interface DialogueBeat {
 	readonly id: string;
 	readonly title?: string;
-	readonly speaker: DialogueSpeaker;
-	readonly face: DialogueFace;
-	readonly lines: readonly (string | DialogueLine)[];
+	readonly lines: readonly DialogueLine[];
 }
+
+export const textLine = (text: string, speaker?: DialogueSpeaker, face?: DialogueFace): TextLine => ({
+	text,
+	speaker,
+	face,
+});
+
+export const dialogueLine = textLine;
+
+export const choicesLine = (choices: readonly [string, ChoiceBranch][]): ChoicesLine => ({
+	choices,
+});
+
+export const isChoicesLine = (line: DialogueLine): line is ChoicesLine => "choices" in line;
 
 export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	identity: {
 		id: "identity_intro",
 		title: "工坊初访",
-		speaker: "hen",
-		face: "happy",
 		lines: [
-			"太好了，第一件机器顺利交货！",
-			"原样进、原样出，可别小看它——这是整座工坊流转的基石。",
-			"工坊外头还有不少客人排队，我们接着下一单！",
+			textLine("太好了，第一件机器顺利交货！", "hen", "happy"),
+			textLine("原样进、原样出，可别小看它——这是整座工坊流转的基石。"),
+			choicesLine([
+				["感觉并不难，接着来！", textLine("很有干劲嘛，下一张图纸已经备好了。", "hen", "proud")],
+				[
+					"这公理零件有什么来头？",
+					[
+						textLine("这可是纯粹逻辑的结晶，不带半点多余机械杂质。", "hen", "think"),
+						textLine("后面你还会见到更多更有趣的零件。", "hen", "happy"),
+					],
+				],
+			]),
+			textLine("工坊外头还有不少客人排队，我们接着下一单！", "hen", "happy"),
 		],
 	},
 	"ch1-boss": {
 		id: "ch1_boss_cleared",
 		title: "初阶考核通过",
-		speaker: "guest",
-		face: "wow",
 		lines: [
-			"真不可思议……仅凭三个公理零件，居然真能拼出任意逻辑重排！",
-			"工坊的名声已经在城里传开了。",
-			"老师傅留下的第二间绘图室已经为你打开，去瞧瞧吧。",
+			textLine("真不可思议……仅凭三个公理零件，居然真能拼出任意逻辑重排！", "guest", "wow"),
+			textLine("工坊的名声已经在城里传开了。"),
+			textLine("老师傅留下的第二间绘图室已经为你打开，去瞧瞧吧。"),
 		],
 	},
 };

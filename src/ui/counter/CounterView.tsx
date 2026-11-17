@@ -1,5 +1,13 @@
-import { type JSX, Show, createEffect, createSignal } from "solid-js";
-import type { DialogueBeat, DialogueFace, DialogueLine, DialogueSpeaker } from "../../content/dialogue";
+import { For, type JSX, Show, createEffect, createSignal } from "solid-js";
+import {
+	type ChoiceBranch,
+	type DialogueBeat,
+	type DialogueFace,
+	type DialogueLine,
+	type DialogueSpeaker,
+	type TextLine,
+	isChoicesLine,
+} from "../../content/dialogue";
 
 interface CounterViewProps {
 	readonly beat: DialogueBeat | null;
@@ -10,44 +18,63 @@ interface CounterViewProps {
 }
 
 const SPEAKER_NAMES: Record<DialogueSpeaker, string> = {
+	me: "我",
 	hen: "小恒 · 助手机械臂",
 	guest: "工坊来客",
 	master: "老师傅的旧信件",
 };
 
 export function CounterView(props: CounterViewProps): JSX.Element {
+	const [activeLines, setActiveLines] = createSignal<readonly DialogueLine[]>([]);
 	const [lineIndex, setLineIndex] = createSignal<number>(0);
 	const [charCount, setCharCount] = createSignal<number>(0);
 
 	createEffect(() => {
 		const beat = props.beat;
 		if (beat === null) return;
+		setActiveLines(beat.lines);
 		setLineIndex(0);
 		setCharCount(0);
 	});
 
-	const currentLineRaw = (): string | DialogueLine => {
-		const beat = props.beat;
-		if (beat === null) return "";
-		return beat.lines[lineIndex()] ?? "";
+	const currentLine = (): DialogueLine => activeLines()[lineIndex()] ?? { text: "" };
+
+	const lastTextLine = (): TextLine | null => {
+		const lines = activeLines().slice(0, lineIndex() + 1);
+		for (let i = lines.length - 1; i >= 0; i--) {
+			const line = lines[i];
+			if (!isChoicesLine(line)) return line;
+		}
+		return null;
 	};
 
 	const currentText = (): string => {
-		const raw = currentLineRaw();
-		return typeof raw === "string" ? raw : raw.text;
+		const line = currentLine();
+		if (!isChoicesLine(line)) return line.text;
+		const prev = lastTextLine();
+		return prev === null ? "" : prev.text;
 	};
 
-	const currentSpeaker = (): DialogueSpeaker => {
-		const raw = currentLineRaw();
-		const beat = props.beat;
-		return typeof raw !== "string" && raw.speaker !== void 0 ? raw.speaker : beat !== null ? beat.speaker : "hen";
+	const currentChoices = (): readonly [string, ChoiceBranch][] => {
+		const line = currentLine();
+		return isChoicesLine(line) ? line.choices : [];
 	};
 
-	const currentFace = (): DialogueFace => {
-		const raw = currentLineRaw();
-		const beat = props.beat;
-		return typeof raw !== "string" && raw.face !== void 0 ? raw.face : beat !== null ? beat.face : "default";
-	};
+	const currentSpeaker = (): DialogueSpeaker =>
+		activeLines()
+			.slice(0, lineIndex() + 1)
+			.reduce<DialogueSpeaker>(
+				(prev, cur) => (!isChoicesLine(cur) && cur.speaker !== void 0 ? cur.speaker : prev),
+				"me",
+			);
+
+	const currentFace = (): DialogueFace =>
+		activeLines()
+			.slice(0, lineIndex() + 1)
+			.reduce<DialogueFace>(
+				(prev, cur) => (!isChoicesLine(cur) ? (cur.face ?? (cur.speaker !== void 0 ? "default" : prev)) : prev),
+				"default",
+			);
 
 	createEffect(() => {
 		const text = currentText();
@@ -65,15 +92,23 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 		return () => clearInterval(timer);
 	});
 
+	const chooseBranch = (branch: ChoiceBranch): void => {
+		const branchLines = Array.isArray(branch) ? branch : [branch];
+		const index = lineIndex();
+		const nextLines = [...activeLines().slice(0, index), ...branchLines, ...activeLines().slice(index + 1)];
+		setActiveLines(nextLines);
+		setCharCount(0);
+		if (branchLines.length === 0 && index >= nextLines.length) props.onComplete();
+	};
+
 	const handleAdvance = (): void => {
+		if (isChoicesLine(currentLine())) return;
 		const text = currentText();
 		if (charCount() < text.length) {
 			setCharCount(text.length);
 			return;
 		}
-		const beat = props.beat;
-		if (beat === null) return;
-		if (lineIndex() + 1 < beat.lines.length) setLineIndex(lineIndex() + 1);
+		if (lineIndex() + 1 < activeLines().length) setLineIndex(lineIndex() + 1);
 		else props.onComplete();
 	};
 
@@ -150,16 +185,41 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 								</div>
 							</header>
 
+							<Show when={isChoicesLine(currentLine())}>
+								<div class="dialogue-choices-floating">
+									<For each={currentChoices()}>
+										{([label, branch], idx) => (
+											<button
+												type="button"
+												class="dialogue-choice-btn"
+												onClick={(event) => {
+													event.stopPropagation();
+													chooseBranch(branch);
+												}}
+											>
+												<span class="dialogue-choice-badge">{(idx() + 1).toString().padStart(2, "0")}</span>
+												<span class="dialogue-choice-text">{label}</span>
+												<span class="dialogue-choice-arrow">▸</span>
+											</button>
+										)}
+									</For>
+								</div>
+							</Show>
+
 							<p class="dialogue-text">
-								{currentText().slice(0, charCount())}
-								<Show when={charCount() < currentText().length}>
+								{currentText().slice(0, isChoicesLine(currentLine()) ? currentText().length : charCount())}
+								<Show when={!isChoicesLine(currentLine()) && charCount() < currentText().length}>
 									<span class="dialogue-cursor">▎</span>
 								</Show>
 							</p>
 
 							<footer class="dialogue-footer">
 								<span class="dialogue-prompt-hint">
-									{charCount() < currentText().length ? "点击补全" : "点击继续 ▸"}
+									{isChoicesLine(currentLine())
+										? "请在上方选择回应"
+										: charCount() < currentText().length
+											? "点击补全"
+											: "点击继续 ▸"}
 								</span>
 							</footer>
 						</div>

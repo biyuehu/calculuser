@@ -106,9 +106,11 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 						);
 					}}
 				</For>
+				<Show when={props.unlockedIds.length > 0}>
+					<div class="shelf-divider" />
+				</Show>
 			</div>
 
-			<div class="shelf-divider" />
 			<div class="shelf-group">
 				<For each={props.atoms}>
 					{(atomName) => (

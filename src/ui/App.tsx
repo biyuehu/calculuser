@@ -23,11 +23,11 @@ import {
 	saveWorkshop,
 } from "../engine/storage";
 import { transitionView } from "../utils/transition";
-import { CounterView } from "./counter/CounterView";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
-import { TitleScreen } from "./screens/TitleScreen";
-import { WorkbenchView } from "./workbench/WorkbenchView";
+import { CounterView } from "./views/CounterView";
+import { TitleView } from "./views/TitleView";
+import { WorkbenchView } from "./views/WorkbenchView";
 
 export function App(): JSX.Element {
 	const saved = loadWorkshop();
@@ -62,7 +62,7 @@ export function App(): JSX.Element {
 	for (const order of LEVELS)
 		if (order.mode === "build" && order.unlocksToolId !== void 0 && clearedStars().has(order.id)) {
 			const tool = getToolDefinition(order.unlocksToolId);
-			if (tool !== null && tool.defText !== null && !registry.has(tool.id))
+			if (tool !== null && !registry.has(tool.id))
 				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
 		}
 
@@ -168,7 +168,7 @@ export function App(): JSX.Element {
 			</div>
 
 			<Show when={screen() === "title"}>
-				<TitleScreen
+				<TitleView
 					continueOrderCode={continueCode()}
 					onStart={() => {
 						transitionView(() => {

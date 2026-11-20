@@ -2,15 +2,14 @@ import { type JSX, Show, createEffect, createSignal } from "solid-js";
 import type { OrderLevel } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { PRINT_NAMES } from "../../engine/parse";
-import { useUiPreferences } from "../../utils/hooks/useUiPreferences";
-import { useWorkbenchSession } from "../../utils/hooks/useWorkbenchSession";
-import { DeliveryCounter } from "./DeliveryCounter";
-import { DraftNode } from "./DraftNode";
-import { OrderSlip } from "./OrderSlip";
-import { PressureGauge } from "./PressureGauge";
-import { ShelfRail } from "./ShelfRail";
-import { TapeTimeline } from "./TapeTimeline";
-import { TermVisual } from "./TermVisual";
+import { useUiPreferences, useWorkbenchSession } from "../../utils/hooks";
+import { DeliveryCounter } from "../workbench/panels/DeliveryCounter";
+import { OrderSlip } from "../workbench/panels/OrderSlip";
+import { PressureGauge } from "../workbench/panels/PressureGauge";
+import { ShelfRail } from "../workbench/panels/ShelfRail";
+import { TapeTimeline } from "../workbench/panels/TapeTimeline";
+import { DraftNode } from "../workbench/term/DraftNode";
+import { TermVisual } from "../workbench/term/TermVisual";
 
 interface WorkbenchViewProps {
 	readonly order: OrderLevel;

@@ -1,9 +1,9 @@
 import type { JSX } from "solid-js";
 import { For, Show } from "solid-js";
-import { getGadgetMeta } from "../../content";
-import type { GadgetId } from "../../engine/term";
-import { getVariableColor } from "../../styles";
-import { startDragResize } from "../../utils/dragResize";
+import { getGadgetMeta } from "../../../content";
+import type { GadgetId } from "../../../engine/term";
+import { getVariableColor } from "../../../styles";
+import { startDragResize } from "../../../utils/dragResize";
 
 interface ShelfRailProps {
 	readonly width: number;

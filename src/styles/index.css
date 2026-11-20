@@ -155,6 +155,7 @@ body {
 }
 
 .workbench-assembly {
+	position: relative;
 	pointer-events: auto;
 	padding: 36px;
 	border-radius: 16px;
@@ -1312,6 +1313,17 @@ body {
 	opacity: 0;
 }
 
+.title-logo {
+	width: 76px;
+	height: 76px;
+	border-radius: 16px;
+	margin-bottom: 8px;
+	box-shadow: 0 8px 24px rgba(32, 32, 31, 0.12);
+	user-select: none;
+	-webkit-user-drag: none;
+	object-fit: cover;
+}
+
 .title-toy-box {
 	border: 1.5px dashed var(--border-accent);
 	background: rgba(243, 243, 240, 0.65);
@@ -2269,4 +2281,334 @@ html.reduced-motion::view-transition-new(*),
 	::view-transition-new(*) {
 		animation-duration: 0.01ms !important;
 	}
+}
+
+/* ==========================================================================
+   GTLC Type System & Nameplates
+   ========================================================================== */
+.canvas-viewport.type-perspective .canvas-transform-layer {
+	opacity: 0.7;
+	transition: opacity 0.2s ease;
+}
+
+/* Visibility gate: completely hidden when perspective is off, except inside folio/parts modals */
+.canvas-viewport .nameplate-body,
+.node-port-inlet,
+.node-port-outlet,
+.nameplate-inconsistent-cross {
+	display: none !important;
+}
+
+.canvas-viewport.type-perspective .nameplate-body,
+.canvas-viewport.type-perspective .node-port-inlet,
+.canvas-viewport.type-perspective .node-port-outlet,
+.canvas-viewport.type-perspective .nameplate-inconsistent-cross {
+	display: inline-flex !important;
+}
+
+.folio-card .nameplate-body,
+.compendium-cell .nameplate-body {
+	display: inline-flex !important;
+	position: static !important;
+	transform: none !important;
+}
+
+/* Nameplate Body */
+.nameplate-body {
+	position: absolute;
+	bottom: -24px;
+	left: 50%;
+	transform: translateX(-50%);
+	height: 24px;
+	min-width: 50px;
+	width: max-content;
+	padding: 2px 6px;
+	border-radius: 6px;
+	border: 1.5px solid var(--border-strong);
+	background: var(--surface-2);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 6px rgba(32, 32, 31, 0.08);
+	z-index: 15;
+	user-select: none;
+	transition: transform 0.15s var(--ease-overshoot);
+}
+
+.nameplate-body.unplated {
+	border-style: dashed;
+	background: transparent;
+	opacity: 0.6;
+}
+
+.nameplate-socket-group {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+}
+
+.nameplate-plug-socket,
+.nameplate-plug-out {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 18px;
+	flex-shrink: 0;
+}
+
+.nameplate-type-token {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--text-primary);
+	background: var(--surface-1);
+	border: 1px solid var(--border-subtle);
+	padding: 1px 5px;
+	border-radius: 4px;
+	height: 18px;
+	line-height: 16px;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+}
+
+.nameplate-arrow {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--text-secondary);
+	line-height: 18px;
+	margin: 0 4px;
+	flex-shrink: 0;
+	user-select: none;
+}
+
+.type-glyph-arrow-composite {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	vertical-align: middle;
+	user-select: none;
+}
+
+.type-glyph-arrow-sep {
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--text-secondary);
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+.order-case-arrow {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--text-muted);
+	flex-shrink: 0;
+	margin: 0 4px;
+	line-height: 1;
+	user-select: none;
+}
+
+.nameplate-body.interactive {
+	cursor: pointer;
+}
+
+.nameplate-body.interactive:hover {
+	border-color: var(--accent-clay);
+}
+
+/* Certified Stamp (朱红圆章 -8deg with drop overshoot) */
+.nameplate-certified-stamp {
+	position: absolute;
+	right: -10px;
+	top: -12px;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 1.5px solid #b91c1c;
+	color: #b91c1c;
+	font-size: 9px;
+	font-weight: 800;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(254, 242, 242, 0.95);
+	transform: rotate(-8deg);
+	animation: stampDrop 0.25s var(--ease-overshoot) forwards;
+	pointer-events: none;
+	box-shadow: 0 1px 4px rgba(185, 28, 28, 0.2);
+}
+
+@keyframes stampDrop {
+	0% {
+		opacity: 0;
+		transform: scale(1.8) rotate(-20deg);
+	}
+	80% {
+		transform: scale(0.92) rotate(-8deg);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) rotate(-8deg);
+	}
+}
+
+/* Rejected Slash & Shake */
+.nameplate-body.rejected {
+	animation: nameplateShake 0.32s ease-in-out;
+}
+
+.nameplate-reject-slash {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		to top right,
+		transparent calc(50% - 1.5px),
+		#dc2626 calc(50% - 1.5px),
+		#dc2626 calc(50% + 1.5px),
+		transparent calc(50% + 1.5px)
+	);
+	pointer-events: none;
+}
+
+.nameplate-bubble-tip {
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%) translateY(4px);
+	background: #18130e;
+	color: #ffffff;
+	font-size: 11px;
+	padding: 3px 8px;
+	border-radius: 6px;
+	white-space: nowrap;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	z-index: 30;
+	animation: partPop 0.2s var(--ease-overshoot);
+}
+
+@keyframes nameplateShake {
+	0%,
+	100% {
+		transform: translateX(-50%) rotate(0deg);
+	}
+	20% {
+		transform: translateX(calc(-50% - 3px)) rotate(-2deg);
+	}
+	40% {
+		transform: translateX(calc(-50% + 3px)) rotate(2deg);
+	}
+	60% {
+		transform: translateX(calc(-50% - 2px)) rotate(-1deg);
+	}
+	80% {
+		transform: translateX(calc(-50% + 2px)) rotate(1deg);
+	}
+}
+
+/* Inconsistent Cross */
+.nameplate-inconsistent-cross {
+	font-size: 12px;
+	font-weight: 800;
+	color: #dc2626;
+	cursor: help;
+	animation: partPop 0.2s var(--ease-overshoot);
+}
+
+/* Popover Editor */
+.nameplate-popover-editor {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--surface-1);
+	border: 1.5px solid var(--border-strong);
+	border-radius: 8px;
+	padding: 10px 12px;
+	box-shadow: 0 8px 24px rgba(32, 32, 31, 0.16);
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 170px;
+}
+
+.popover-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 11.5px;
+	font-weight: 700;
+	border-bottom: 1px solid var(--border-subtle);
+	padding-bottom: 4px;
+}
+
+.popover-close-btn {
+	background: transparent;
+	border: none;
+	font-size: 12px;
+	cursor: pointer;
+	color: var(--text-muted);
+	padding: 0 2px;
+}
+
+.popover-close-btn:hover {
+	color: var(--text-primary);
+}
+
+.popover-body {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.popover-field {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.popover-label {
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--text-secondary);
+	white-space: nowrap;
+}
+
+.shape-select {
+	background: var(--surface-2);
+	border: 1px solid var(--border-subtle);
+	border-radius: 5px;
+	padding: 2px 6px;
+	font-size: 11px;
+	font-family: var(--font-mono);
+	font-weight: 600;
+	color: var(--text-primary);
+	width: 96px;
+	height: 24px;
+	box-sizing: border-box;
+	outline: none;
+}
+
+.shape-select:focus {
+	border-color: var(--accent-clay);
+}
+
+.nameplate-verify-btn {
+	margin-top: 4px;
+	background: var(--accent-clay);
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	padding: 5px 10px;
+	font-size: 11.5px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+
+.nameplate-verify-btn:hover {
+	background: var(--accent-clay-strong);
 }

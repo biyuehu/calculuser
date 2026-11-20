@@ -1,9 +1,9 @@
 import { For, type JSX, Show } from "solid-js";
-import type { OrderLevel } from "../../content";
-import type { JudgeTestCase, JudgeTestResult } from "../../engine/judge";
-import { startDragResize } from "../../utils/dragResize";
-import { useUiPreferences } from "../../utils/hooks/useUiPreferences";
-import { TermVisual } from "./TermVisual";
+import type { OrderLevel } from "../../../content";
+import type { JudgeTestCase, JudgeTestResult } from "../../../engine/judge";
+import { startDragResize } from "../../../utils/dragResize";
+import { useUiPreferences } from "../../../utils/hooks/useUiPreferences";
+import { TermVisual } from "../term/TermVisual";
 
 export interface RejectedInfo {
 	readonly testCase: JudgeTestCase;

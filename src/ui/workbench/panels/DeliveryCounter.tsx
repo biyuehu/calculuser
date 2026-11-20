@@ -1,5 +1,5 @@
 import { For, type JSX, Show } from "solid-js";
-import { getGadgetMeta } from "../../content";
+import { getGadgetMeta } from "../../../content";
 
 interface DeliveryCounterProps {
 	readonly mode: "build" | "run";

@@ -2,7 +2,7 @@ import { type JSX, Show, createSignal } from "solid-js";
 import { playPassSound, playSnapSound } from "../../audio/synth";
 import { getGadgetMeta } from "../../content";
 
-interface TitleScreenProps {
+interface TitleViewProps {
 	readonly continueOrderCode: string;
 	readonly onStart: () => void;
 	readonly onOpenWorkshop: () => void;
@@ -10,7 +10,7 @@ interface TitleScreenProps {
 	readonly onOpenAbout: () => void;
 }
 
-export function TitleScreen(props: TitleScreenProps): JSX.Element {
+export function TitleView(props: TitleViewProps): JSX.Element {
 	const [toyState, setToyState] = createSignal<number>(0);
 	const [isStarting, setIsStarting] = createSignal<boolean>(false);
 

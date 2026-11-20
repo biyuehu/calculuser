@@ -41,7 +41,10 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 
 	const lastTextLine = (): TextLine | null => {
 		const lines = activeLines().slice(0, lineIndex() + 1);
-		for (let i = lines.length - 1; i >= 0; i--) if (!isChoicesLine(lines[i])) return lines[i];
+		for (let i = lines.length - 1; i >= 0; i--) {
+			const line = lines[i];
+			if (!isChoicesLine(line)) return line;
+		}
 		return null;
 	};
 

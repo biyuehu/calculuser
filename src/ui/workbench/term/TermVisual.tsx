@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
-import { getGadgetMeta } from "../../content";
-import type { Path, Term } from "../../engine/term";
-import { getColorAtDepth } from "../../styles";
+import { getGadgetMeta } from "../../../content";
+import type { Path, Term } from "../../../engine/term";
+import { getColorAtDepth } from "../../../styles";
 
 interface TermVisualProps {
 	readonly term: Term;

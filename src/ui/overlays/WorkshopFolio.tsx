@@ -1,13 +1,19 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
-import { BUILTIN_COUNT, CHAPTERS, COMBINATORS, LEVELS, getGadgetMeta, getToolSource } from "../../content";
-import type { Registry } from "../../engine/gadget";
+import {
+	BUILTIN_COUNT,
+	CHAPTERS,
+	COMBINATORS,
+	LEVELS,
+	getGadgetMeta,
+	isOrderUnlocked,
+	isToolUnlocked,
+} from "../../content";
 import { transitionView } from "../../utils/transition";
 
 interface WorkshopFolioProps {
 	readonly initialTab?: "orders" | "parts";
 	readonly currentOrderIndex: number;
 	readonly clearedStars: ReadonlyMap<string, number>;
-	readonly registry: Registry;
 	readonly judgeMode: boolean;
 	readonly reducedMotion: boolean;
 	readonly onSelectOrder: (index: number) => void;
@@ -41,8 +47,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 		setTimeout(props.onClose, 180);
 	};
 
-	const isUnlocked = (index: number): boolean =>
-		props.judgeMode || index === 0 || props.clearedStars.has(LEVELS[index - 1].id);
+	const isUnlocked = (index: number): boolean => isOrderUnlocked(index, props.clearedStars, props.judgeMode);
 
 	const totalStars = (): number => Array.from(props.clearedStars.values()).reduce((sum, s) => sum + s, 0);
 
@@ -201,11 +206,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 								>
 									<For each={COMBINATORS.slice(BUILTIN_COUNT)}>
 										{(tool) => {
-											const sourceOrderId = getToolSource(tool.id);
-											const isUnlockedPart =
-												props.judgeMode ||
-												(sourceOrderId !== null && props.clearedStars.has(sourceOrderId)) ||
-												props.registry.has(tool.id);
+											const isUnlockedPart = isToolUnlocked(tool.id, props.clearedStars, props.judgeMode);
 											return (
 												<div
 													class={`compendium-cell ${!isUnlockedPart ? "locked-cell" : ""}`}

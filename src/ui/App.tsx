@@ -7,12 +7,13 @@ import {
 	getContinueOrderIndex,
 	getOrderCode,
 	getToolDefinition,
+	isToolUnlocked,
 } from "../content";
 import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
 import { parseLambda } from "../engine/parse";
 import {
 	type SettingsState,
-	clearWorkshop,
+	clearSave,
 	loadSeenDialogues,
 	loadSession,
 	loadSettings,
@@ -29,6 +30,23 @@ import { CounterView } from "./views/CounterView";
 import { TitleView } from "./views/TitleView";
 import { WorkbenchView } from "./views/WorkbenchView";
 
+function syncRegistryWithUnlocked(registry: Registry, stars: ReadonlyMap<string, number>, isJudge: boolean): void {
+	for (const key of Array.from(registry.keys())) {
+		const item = registry.get(key);
+		if (item !== void 0 && item.origin === "level" && !isToolUnlocked(key, stars, isJudge)) registry.delete(key);
+	}
+	for (const order of LEVELS)
+		if (
+			order.mode === "build" &&
+			order.unlocksToolId !== void 0 &&
+			isToolUnlocked(order.unlocksToolId, stars, isJudge)
+		) {
+			const tool = getToolDefinition(order.unlocksToolId);
+			if (tool !== null && !registry.has(tool.id))
+				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
+		}
+}
+
 export function App(): JSX.Element {
 	const saved = loadWorkshop();
 	const initialSettings = loadSettings();
@@ -36,6 +54,8 @@ export function App(): JSX.Element {
 	setMasterVolume(initialSettings.volume);
 
 	const registry: Registry = createBuiltinRegistry();
+	const initialStars = new Map(Object.entries(saved.stars));
+	syncRegistryWithUnlocked(registry, initialStars, initialSettings.judgeMode);
 
 	const savedOrderIndex =
 		initialSession.lastOrderId !== void 0 ? LEVELS.findIndex((item) => item.id === initialSession.lastOrderId) : -1;
@@ -59,12 +79,7 @@ export function App(): JSX.Element {
 	const [activeBeat, setActiveBeat] = createSignal<DialogueBeat | null>(null);
 	const [cameraView, setCameraView] = createSignal<"bench" | "counter">("bench");
 
-	for (const order of LEVELS)
-		if (order.mode === "build" && order.unlocksToolId !== void 0 && clearedStars().has(order.id)) {
-			const tool = getToolDefinition(order.unlocksToolId);
-			if (tool !== null && !registry.has(tool.id))
-				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
-		}
+	createEffect(() => syncRegistryWithUnlocked(registry, clearedStars(), settings().judgeMode));
 
 	const currentOrder = createMemo(() => LEVELS[orderIndex()]);
 
@@ -84,14 +99,19 @@ export function App(): JSX.Element {
 		if (previousBest === void 0 || stars > previousBest) updatedStars.set(orderId, stars);
 		setClearedStars(updatedStars);
 		saveWorkshop(updatedStars);
+		syncRegistryWithUnlocked(registry, updatedStars, settings().judgeMode);
 	};
 
 	const resetWorkshopData = (): void => {
-		clearWorkshop();
+		clearSave();
 		setClearedStars(new Map());
+		setSettings(loadSettings());
+		setMasterVolume(loadSettings().volume);
+		syncRegistryWithUnlocked(registry, new Map(), loadSettings().judgeMode);
 		setShowMachinery(false);
 		setOrderIndex(0);
 		setScreen("title");
+		setTimeout(() => window.location.reload(), 100);
 	};
 
 	const openFolio = (tab: "orders" | "parts"): void => {
@@ -111,6 +131,12 @@ export function App(): JSX.Element {
 
 	const toggleAutoSkipRead = (): void => {
 		const updated = { ...settings(), autoSkipRead: !settings().autoSkipRead };
+		setSettings(updated);
+		saveSettings(updated);
+	};
+
+	const toggleXRay = (): void => {
+		const updated = { ...settings(), xRayMode: !settings().xRayMode };
 		setSettings(updated);
 		saveSettings(updated);
 	};
@@ -151,6 +177,8 @@ export function App(): JSX.Element {
 							registry={registry}
 							judgeMode={settings().judgeMode}
 							clearedStars={clearedStars()}
+							xRayMode={settings().xRayMode}
+							onToggleXRay={toggleXRay}
 							isLastOrder={orderIndex() === LEVELS.length - 1}
 							onRecordStars={recordStars}
 							onNextOrder={handleNextOrderAdvance}
@@ -187,7 +215,6 @@ export function App(): JSX.Element {
 					initialTab={folioTab()}
 					currentOrderIndex={orderIndex()}
 					clearedStars={clearedStars()}
-					registry={registry}
 					judgeMode={settings().judgeMode}
 					reducedMotion={settings().reducedMotion}
 					onSelectOrder={(index) => {
@@ -209,6 +236,7 @@ export function App(): JSX.Element {
 						const updated = updater(settings());
 						setSettings(updated);
 						saveSettings(updated);
+						syncRegistryWithUnlocked(registry, clearedStars(), updated.judgeMode);
 					}}
 					onResetData={resetWorkshopData}
 					onClose={() => setShowMachinery(false)}

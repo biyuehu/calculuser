@@ -13,6 +13,18 @@ interface MachineryPanelProps {
 export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"settings" | "about">(props.initialTab ?? "settings");
 	const [isClosing, setIsClosing] = createSignal<boolean>(false);
+	const [confirmingReset, setConfirmingReset] = createSignal<boolean>(false);
+	let resetTimer: number | undefined;
+
+	const handleResetClick = (): void => {
+		if (!confirmingReset()) {
+			setConfirmingReset(true);
+			resetTimer = window.setTimeout(() => setConfirmingReset(false), 3500);
+			return;
+		}
+		if (resetTimer !== void 0) clearTimeout(resetTimer);
+		props.onResetData();
+	};
 
 	const handleClose = (): void => {
 		if (isClosing()) return;
@@ -31,7 +43,10 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 
 	const toggleMotion = (): void => props.onUpdateSettings((prev) => ({ ...prev, reducedMotion: !prev.reducedMotion }));
 
-	const toggleJudgeMode = (): void => props.onUpdateSettings((prev) => ({ ...prev, judgeMode: !prev.judgeMode }));
+	const toggleJudgeMode = (): void => {
+		props.onUpdateSettings((prev) => ({ ...prev, judgeMode: !prev.judgeMode }));
+		setTimeout(() => window.location.reload(), 100);
+	};
 
 	const toggleAutoSkipRead = (): void =>
 		props.onUpdateSettings((prev) => ({ ...prev, autoSkipRead: !prev.autoSkipRead }));
@@ -148,12 +163,19 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						<div class="control-row danger-zone">
 							<div>
 								<div class="control-title" style={{ color: "var(--accent-danger)" }}>
-									重置进度
+									重置存档
 								</div>
-								<div class="control-desc">清空星级与解锁记录</div>
+								<div class="control-desc">
+									{confirmingReset() ? "危险：不可撤销，请再次点击确认清空" : "清空所有进度、草稿与设置项"}
+								</div>
 							</div>
-							<button type="button" class="icon-btn danger" onClick={props.onResetData}>
-								清空数据
+							<button
+								type="button"
+								class="icon-btn danger"
+								style={confirmingReset() ? { background: "var(--accent-danger)", color: "#ffffff" } : {}}
+								onClick={handleResetClick}
+							>
+								{confirmingReset() ? "再次点击确认" : "清空整个存档"}
 							</button>
 						</div>
 					</section>

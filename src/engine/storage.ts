@@ -19,106 +19,46 @@ export interface SessionState {
 	readonly screen: "title" | "workbench";
 }
 
-const STORAGE_KEY = "calculuser_workshop_v2";
-const SETTINGS_KEY = "calculuser_settings_v1";
-const UI_PREFS_KEY = "calculuser_ui_prefs_v1";
-const DRAFT_STORAGE_KEY = "calculuser_drafts_v1";
-const SESSION_STORAGE_KEY = "calculuser_session_v1";
-const SEEN_DIALOGUES_KEY = "calculuser_seen_dialogues_v1";
-const NAMEPLATES_STORAGE_KEY = "calculuser_nameplates_v1";
+export interface SaveData {
+	readonly workshop: { readonly stars: Record<string, number> };
+	readonly settings: SettingsState;
+	readonly uiPrefs: UiPreferences;
+	readonly session: SessionState;
+	readonly drafts: Record<string, DraftTerm>;
+	readonly seenDialogues: readonly string[];
+	readonly nameplates: Record<string, NameplateSpec>;
+}
+
+export const STORAGE_KEY = "calculuser_save";
+
 const DEFAULT_SETTINGS: SettingsState = {
 	volume: 1,
 	reducedMotion: false,
 	judgeMode: false,
 	autoSkipRead: false,
 };
+
 const DEFAULT_SESSION: SessionState = { lastOrderId: null, screen: "title" };
+
 export const DEFAULT_UI_PREFS: UiPreferences = {
 	shelfWidth: 76,
 	orderSlipWidth: 290,
 	orderSlipCollapsed: false,
 };
 
-interface SavedWorkshop {
-	readonly stars: Record<string, number>;
-}
-
-export function loadWorkshop(): SavedWorkshop {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		if (raw === null) return { stars: {} };
-		const parsed = JSON.parse(raw) as SavedWorkshop;
-		return { stars: parsed.stars !== void 0 ? parsed.stars : {} };
-	} catch {
-		return { stars: {} };
-	}
-}
-
-export function saveWorkshop(stars: ReadonlyMap<string, number>): void {
-	localStorage.setItem(STORAGE_KEY, JSON.stringify({ stars: Object.fromEntries(stars) }));
-}
-
-export function clearWorkshop(): void {
-	localStorage.removeItem(STORAGE_KEY);
-	localStorage.removeItem(DRAFT_STORAGE_KEY);
-	localStorage.removeItem(SESSION_STORAGE_KEY);
-	localStorage.removeItem(SEEN_DIALOGUES_KEY);
-	localStorage.removeItem(NAMEPLATES_STORAGE_KEY);
-}
-
-export function loadSettings(): SettingsState {
-	try {
-		const raw = localStorage.getItem(SETTINGS_KEY);
-		if (raw === null) return DEFAULT_SETTINGS;
-		const parsed = JSON.parse(raw) as SettingsState;
-		return {
-			volume: typeof parsed.volume === "number" ? parsed.volume : DEFAULT_SETTINGS.volume,
-			reducedMotion: typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : DEFAULT_SETTINGS.reducedMotion,
-			judgeMode: typeof parsed.judgeMode === "boolean" ? parsed.judgeMode : DEFAULT_SETTINGS.judgeMode,
-			autoSkipRead: typeof parsed.autoSkipRead === "boolean" ? parsed.autoSkipRead : false,
-		};
-	} catch {
-		return DEFAULT_SETTINGS;
-	}
-}
-
-export function saveSettings(settings: SettingsState): void {
-	localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-}
-
-export function loadUiPreferences(): UiPreferences {
-	try {
-		const raw = localStorage.getItem(UI_PREFS_KEY);
-		if (raw === null) return DEFAULT_UI_PREFS;
-		const parsed = JSON.parse(raw);
-		return !parsed || typeof parsed !== "object"
-			? DEFAULT_UI_PREFS
-			: {
-					shelfWidth:
-						typeof parsed.shelfWidth === "number" && parsed.shelfWidth >= 72 && parsed.shelfWidth <= 480
-							? parsed.shelfWidth
-							: DEFAULT_UI_PREFS.shelfWidth,
-					orderSlipWidth:
-						typeof parsed.orderSlipWidth === "number" && parsed.orderSlipWidth >= 260 && parsed.orderSlipWidth <= 720
-							? parsed.orderSlipWidth
-							: DEFAULT_UI_PREFS.orderSlipWidth,
-					orderSlipCollapsed:
-						typeof parsed.orderSlipCollapsed === "boolean"
-							? parsed.orderSlipCollapsed
-							: DEFAULT_UI_PREFS.orderSlipCollapsed,
-				};
-	} catch {
-		return DEFAULT_UI_PREFS;
-	}
-}
-
-export function saveUiPreferences(prefs: UiPreferences): void {
-	localStorage.setItem(UI_PREFS_KEY, JSON.stringify(prefs));
-}
+const DEFAULT_SAVE_DATA: SaveData = {
+	workshop: { stars: {} },
+	settings: DEFAULT_SETTINGS,
+	uiPrefs: DEFAULT_UI_PREFS,
+	session: DEFAULT_SESSION,
+	drafts: {},
+	seenDialogues: [],
+	nameplates: {},
+};
 
 function isValidDraft(val: unknown): val is DraftTerm {
 	if (!val || typeof val !== "object") return false;
-	const record = val as {
+	const r = val as {
 		readonly kind?: unknown;
 		readonly name?: unknown;
 		readonly id?: unknown;
@@ -127,108 +67,181 @@ function isValidDraft(val: unknown): val is DraftTerm {
 		readonly fn?: unknown;
 		readonly arg?: unknown;
 	};
-	switch (record.kind) {
+	switch (r.kind) {
 		case "hole":
 			return true;
 		case "var":
 		case "atom":
-			return typeof record.name === "string";
+			return typeof r.name === "string";
 		case "gad":
-			return typeof record.id === "string";
+			return typeof r.id === "string";
 		case "lam":
-			return typeof record.param === "string" && isValidDraft(record.body);
+			return typeof r.param === "string" && isValidDraft(r.body);
 		case "app":
-			return isValidDraft(record.fn) && isValidDraft(record.arg);
+			return isValidDraft(r.fn) && isValidDraft(r.arg);
 		default:
 			return false;
 	}
 }
 
-export function loadLevelDrafts(): Record<string, DraftTerm> {
+function sanitizeDrafts(val: unknown): Record<string, DraftTerm> {
+	return !val || typeof val !== "object"
+		? {}
+		: (Object.fromEntries(Object.entries(val).filter(([, v]) => isValidDraft(v))) as Record<string, DraftTerm>);
+}
+
+function sanitizeSettings(val: unknown): SettingsState {
+	if (!val || typeof val !== "object") return DEFAULT_SETTINGS;
+	const r = val as Partial<SettingsState>;
+	return {
+		volume: typeof r.volume === "number" ? r.volume : DEFAULT_SETTINGS.volume,
+		reducedMotion: typeof r.reducedMotion === "boolean" ? r.reducedMotion : DEFAULT_SETTINGS.reducedMotion,
+		judgeMode: typeof r.judgeMode === "boolean" ? r.judgeMode : DEFAULT_SETTINGS.judgeMode,
+		autoSkipRead: typeof r.autoSkipRead === "boolean" ? r.autoSkipRead : false,
+	};
+}
+
+function sanitizeUiPrefs(val: unknown): UiPreferences {
+	if (!val || typeof val !== "object") return DEFAULT_UI_PREFS;
+	const r = val as Partial<UiPreferences>;
+	return {
+		shelfWidth:
+			typeof r.shelfWidth === "number" && r.shelfWidth >= 72 && r.shelfWidth <= 480
+				? r.shelfWidth
+				: DEFAULT_UI_PREFS.shelfWidth,
+		orderSlipWidth:
+			typeof r.orderSlipWidth === "number" && r.orderSlipWidth >= 260 && r.orderSlipWidth <= 720
+				? r.orderSlipWidth
+				: DEFAULT_UI_PREFS.orderSlipWidth,
+		orderSlipCollapsed:
+			typeof r.orderSlipCollapsed === "boolean" ? r.orderSlipCollapsed : DEFAULT_UI_PREFS.orderSlipCollapsed,
+	};
+}
+
+function sanitizeSession(val: unknown): SessionState {
+	if (!val || typeof val !== "object") return DEFAULT_SESSION;
+	const r = val as Partial<SessionState>;
+	return {
+		lastOrderId: typeof r.lastOrderId === "string" ? r.lastOrderId : null,
+		screen: r.screen === "workbench" ? "workbench" : "title",
+	};
+}
+
+export function loadSaveData(): SaveData {
 	try {
-		const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
-		if (raw === null) return {};
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (raw === null) return DEFAULT_SAVE_DATA;
 		const parsed = JSON.parse(raw);
-		if (!parsed || typeof parsed !== "object") return {};
-		const result: Record<string, DraftTerm> = {};
-		for (const [key, value] of Object.entries(parsed))
-			if (isValidDraft(value)) result[key] = value;
-		return result;
+		return !parsed || typeof parsed !== "object"
+			? DEFAULT_SAVE_DATA
+			: {
+					workshop:
+						parsed.workshop && typeof parsed.workshop === "object"
+							? { stars: parsed.workshop.stars ?? {} }
+							: DEFAULT_SAVE_DATA.workshop,
+					settings: sanitizeSettings(parsed.settings),
+					uiPrefs: sanitizeUiPrefs(parsed.uiPrefs),
+					session: sanitizeSession(parsed.session),
+					drafts: sanitizeDrafts(parsed.drafts),
+					seenDialogues: Array.isArray(parsed.seenDialogues)
+						? parsed.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
+						: [],
+					nameplates: parsed.nameplates && typeof parsed.nameplates === "object" ? parsed.nameplates : {},
+				};
 	} catch {
-		return {};
+		return DEFAULT_SAVE_DATA;
 	}
+}
+
+function mutateSaveData(mutator: (draft: SaveData) => SaveData): void {
+	try {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(mutator(loadSaveData())));
+	} catch (err) {
+		console.warn("Failed to persist save data", err);
+	}
+}
+
+export function loadWorkshop(): { readonly stars: Record<string, number> } {
+	return loadSaveData().workshop;
+}
+
+export function saveWorkshop(stars: ReadonlyMap<string, number>): void {
+	mutateSaveData((prev) => ({ ...prev, workshop: { stars: Object.fromEntries(stars) } }));
+}
+
+export function clearWorkshop(): void {
+	mutateSaveData((prev) => ({
+		...prev,
+		workshop: { stars: {} },
+		session: DEFAULT_SESSION,
+		drafts: {},
+		seenDialogues: [],
+		nameplates: {},
+	}));
+}
+
+export function loadSettings(): SettingsState {
+	return loadSaveData().settings;
+}
+
+export function saveSettings(settings: SettingsState): void {
+	mutateSaveData((prev) => ({ ...prev, settings }));
+}
+
+export function loadUiPreferences(): UiPreferences {
+	return loadSaveData().uiPrefs;
+}
+
+export function saveUiPreferences(uiPrefs: UiPreferences): void {
+	mutateSaveData((prev) => ({ ...prev, uiPrefs }));
+}
+
+export function loadLevelDrafts(): Record<string, DraftTerm> {
+	return loadSaveData().drafts;
 }
 
 export function saveLevelDraft(orderId: string, draft: DraftTerm): void {
-	const current = loadLevelDrafts();
-	current[orderId] = draft;
-	localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(current));
+	mutateSaveData((prev) => ({ ...prev, drafts: { ...prev.drafts, [orderId]: draft } }));
 }
 
 export function clearLevelDraft(orderId: string): void {
-	const current = loadLevelDrafts();
-	if (current[orderId] !== void 0) {
-		delete current[orderId];
-		localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(current));
-	}
+	mutateSaveData((prev) => ({
+		...prev,
+		drafts: Object.fromEntries(Object.entries(prev.drafts).filter(([k]) => k !== orderId)),
+	}));
 }
 
 export function clearLevelDrafts(): void {
-	localStorage.removeItem(DRAFT_STORAGE_KEY);
+	mutateSaveData((prev) => ({ ...prev, drafts: {} }));
 }
 
 export function loadSession(): SessionState {
-	try {
-		const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-		if (raw === null) return DEFAULT_SESSION;
-		const parsed = JSON.parse(raw);
-		return !parsed || typeof parsed !== "object"
-			? DEFAULT_SESSION
-			: {
-					lastOrderId: typeof parsed.lastOrderId === "string" ? parsed.lastOrderId : null,
-					screen: parsed.screen === "workbench" ? "workbench" : "title",
-				};
-	} catch {
-		return DEFAULT_SESSION;
-	}
+	return loadSaveData().session;
 }
 
 export function saveSession(session: SessionState): void {
-	localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+	mutateSaveData((prev) => ({ ...prev, session }));
 }
 
 export function loadSeenDialogues(): ReadonlySet<string> {
-	try {
-		const raw = localStorage.getItem(SEEN_DIALOGUES_KEY);
-		if (raw === null) return new Set();
-		const parsed = JSON.parse(raw);
-		return Array.isArray(parsed)
-			? new Set(parsed.filter((item): item is string => typeof item === "string"))
-			: new Set();
-	} catch {
-		return new Set();
-	}
+	return new Set(loadSaveData().seenDialogues);
 }
 
 export function markDialogueSeen(id: string): void {
-	localStorage.setItem(SEEN_DIALOGUES_KEY, JSON.stringify(Array.from(new Set([...loadSeenDialogues(), id]))));
+	mutateSaveData((prev) => ({
+		...prev,
+		seenDialogues: prev.seenDialogues.includes(id) ? prev.seenDialogues : [...prev.seenDialogues, id],
+	}));
 }
 
 export function loadNameplates(): Record<string, NameplateSpec> {
-	try {
-		const raw = localStorage.getItem(NAMEPLATES_STORAGE_KEY);
-		if (raw === null) return {};
-		const parsed = JSON.parse(raw);
-		return parsed && typeof parsed === "object" ? parsed : {};
-	} catch {
-		return {};
-	}
+	return loadSaveData().nameplates;
 }
 
 export function saveNameplate(id: string, spec: NameplateSpec): void {
-	localStorage.setItem(NAMEPLATES_STORAGE_KEY, JSON.stringify({ ...loadNameplates(), [id]: spec }));
+	mutateSaveData((prev) => ({ ...prev, nameplates: { ...prev.nameplates, [id]: spec } }));
 }
 
 export function clearNameplates(): void {
-	localStorage.removeItem(NAMEPLATES_STORAGE_KEY);
+	mutateSaveData((prev) => ({ ...prev, nameplates: {} }));
 }

@@ -35,6 +35,7 @@ export function TitleScreen(props: TitleScreenProps): JSX.Element {
 		<div class={`title-screen-container ${isStarting() ? "title-exit" : ""}`}>
 			<div class={`title-card ${isStarting() ? "title-exit" : ""}`}>
 				<header style={{ "text-align": "center" }}>
+					<img src="/logo.png" alt="Calculuser Logo" class="title-logo" />
 					<h1 style={{ "font-size": "26px", "font-weight": 700, "letter-spacing": "-0.5px" }}>Calculuser · 装置工坊</h1>
 					<p style={{ "font-size": "13px", color: "var(--text-muted)", "margin-top": "4px" }}>
 						λ-演算与组合逻辑的机器实验台

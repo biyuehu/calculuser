@@ -37,7 +37,6 @@ export interface BuildOrder {
 	readonly title: string;
 	readonly guestLine: string;
 	readonly hintOnFail: string;
-	readonly toolbox: readonly GadgetId[] | "all";
 	readonly forbidden: readonly GadgetId[];
 	readonly allowBlueprint: boolean;
 	readonly atoms: readonly string[];

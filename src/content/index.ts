@@ -1,5 +1,5 @@
 import type { GadgetId } from "../engine/term";
-import { COMBINATORS } from "./data/combinators";
+import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
 import type { GadgetMeta, ToolDefinition } from "./types";
 
@@ -10,6 +10,21 @@ export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 
 export function getToolSource(toolId: string): string | null {
 	return LEVELS.find((item) => item.mode === "build" && item.unlocksToolId === toolId)?.id ?? null;
+}
+
+export function isOrderUnlocked(
+	orderIndex: number,
+	clearedStars: ReadonlyMap<string, number>,
+	judgeMode: boolean,
+): boolean {
+	return judgeMode || orderIndex === 0 || clearedStars.has(LEVELS[orderIndex - 1].id);
+}
+
+export function isToolUnlocked(toolId: string, clearedStars: ReadonlyMap<string, number>, judgeMode: boolean): boolean {
+	if (judgeMode) return true;
+	for (let i = 0; i < BUILTIN_COUNT; i += 1) if (COMBINATORS[i].id === toolId) return true;
+	const sourceOrderId = getToolSource(toolId);
+	return sourceOrderId !== null && clearedStars.has(sourceOrderId);
 }
 
 export function getContinueOrderIndex(clearedStars: ReadonlyMap<string, number>): number {

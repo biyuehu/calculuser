@@ -64,6 +64,9 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	gap: 10px;
+	min-width: 0;
+	box-sizing: border-box;
 	z-index: 30;
 	flex-shrink: 0;
 }
@@ -80,7 +83,18 @@ body {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
+	min-width: 0;
+	flex-shrink: 1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 	transition: background 0.12s ease;
+}
+
+.order-badge-btn span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .order-badge-btn.level-transitioning {
@@ -95,6 +109,20 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	flex-shrink: 0;
+	min-width: 0;
+}
+
+@media (max-width: 960px) {
+	.media-controls {
+		gap: 4px;
+	}
+	.media-controls .icon-btn {
+		padding: 0 6px;
+	}
+	.media-controls .icon-btn > span:not(:first-child) {
+		display: none;
+	}
 }
 
 .icon-btn {

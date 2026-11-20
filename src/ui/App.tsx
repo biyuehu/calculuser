@@ -38,7 +38,7 @@ export function App(): JSX.Element {
 	const registry: Registry = createBuiltinRegistry();
 
 	const savedOrderIndex =
-		initialSession.lastOrderId !== null ? LEVELS.findIndex((item) => item.id === initialSession.lastOrderId) : -1;
+		initialSession.lastOrderId !== void 0 ? LEVELS.findIndex((item) => item.id === initialSession.lastOrderId) : -1;
 	const [screen, setScreen] = createSignal<"title" | "workbench">(
 		savedOrderIndex >= 0 ? initialSession.screen : "title",
 	);
@@ -138,7 +138,7 @@ export function App(): JSX.Element {
 				<div class="camera-world-stage">
 					<div class="camera-counter-slot">
 						<CounterView
-							beat={activeBeat()}
+							beat={activeBeat() ?? void 0}
 							autoSkipRead={settings().autoSkipRead}
 							onToggleAutoSkipRead={toggleAutoSkipRead}
 							onComplete={dismissCounter}

@@ -138,7 +138,7 @@ describe("Calculuser core engine", () => {
 
 	it("persists session navigation state cleanly", () => {
 		const initial = loadSession();
-		expect(initial.lastOrderId).toBeNull();
+		expect(initial.lastOrderId).toBeUndefined();
 		expect(initial.screen).toBe("title");
 
 		saveSession({ lastOrderId: "1.2", screen: "workbench" });

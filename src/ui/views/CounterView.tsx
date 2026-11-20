@@ -10,7 +10,7 @@ import {
 } from "../../content/dialogue";
 
 interface CounterViewProps {
-	readonly beat: DialogueBeat | null;
+	readonly beat?: DialogueBeat;
 	readonly autoSkipRead: boolean;
 	readonly onToggleAutoSkipRead: () => void;
 	readonly onComplete: () => void;
@@ -31,7 +31,7 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 
 	createEffect(() => {
 		const beat = props.beat;
-		if (beat === null) return;
+		if (beat === void 0) return;
 		setActiveLines(beat.lines);
 		setLineIndex(0);
 		setCharCount(0);

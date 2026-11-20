@@ -11,7 +11,7 @@ interface DeliveryCounterProps {
 	readonly note: string;
 	readonly isLastOrder: boolean;
 	readonly rejected: boolean;
-	readonly unlocksToolId: string | null;
+	readonly unlocksToolId?: string;
 	readonly onDeliver: () => void;
 	readonly onNextOrder: () => void;
 }
@@ -74,7 +74,7 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 				<span style={{ "font-size": "11.5px", color: "var(--text-secondary)", "text-align": "center" }}>
 					{props.note}
 				</span>
-				<Show when={props.unlocksToolId !== null ? props.unlocksToolId : null}>
+				<Show when={props.unlocksToolId}>
 					{(toolId) => {
 						const meta = getGadgetMeta(toolId());
 						return (

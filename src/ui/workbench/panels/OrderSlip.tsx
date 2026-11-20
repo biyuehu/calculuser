@@ -12,7 +12,7 @@ export interface RejectedInfo {
 
 interface OrderSlipProps {
 	readonly order: OrderLevel;
-	readonly rejected: RejectedInfo | null;
+	readonly rejected?: RejectedInfo;
 	readonly runSteps: number;
 	readonly runFailed: boolean;
 	readonly transitioning: boolean;
@@ -61,13 +61,13 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 									<For each={testCase.args}>
 										{(argTerm) => (
 											<div class="mini-scale">
-												<TermVisual term={argTerm} depth={0} path="" redexPaths={[]} onStepRedex={null} />
+												<TermVisual term={argTerm} depth={0} path="" redexPaths={[]} />
 											</div>
 										)}
 									</For>
 									<span class="order-case-arrow">→</span>
 									<div class="mini-scale">
-										<TermVisual term={testCase.expect} depth={0} path="" redexPaths={[]} onStepRedex={null} />
+										<TermVisual term={testCase.expect} depth={0} path="" redexPaths={[]} />
 									</div>
 								</div>
 							)}
@@ -80,7 +80,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 						<div class="order-sample-row">
 							<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>目标结果：</span>
 							<div class="mini-scale">
-								<TermVisual term={runOrder().targetTerm} depth={0} path="" redexPaths={[]} onStepRedex={null} />
+								<TermVisual term={runOrder().targetTerm} depth={0} path="" redexPaths={[]} />
 							</div>
 						</div>
 					)}
@@ -94,14 +94,14 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 							<div class="order-reject-box">
 								<span style={{ "font-weight": "700" }}>客人退货：</span>
 								<Show
-									when={result.terminated && actual !== null ? actual : null}
+									when={result.terminated && actual !== void 0 ? actual : void 0}
 									fallback={<span>机器冒烟卡死了（死循环）！</span>}
 								>
 									{(actualTerm) => (
 										<div style={{ display: "flex", "align-items": "center", gap: "6px", "flex-wrap": "wrap" }}>
 											<span>实际吐出：</span>
 											<div class="mini-scale">
-												<TermVisual term={actualTerm()} depth={0} path="" redexPaths={[]} onStepRedex={null} />
+												<TermVisual term={actualTerm()} depth={0} path="" redexPaths={[]} />
 											</div>
 										</div>
 									)}

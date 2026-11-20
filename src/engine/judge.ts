@@ -8,7 +8,7 @@ export interface JudgeTestCase {
 
 export interface JudgeTestResult {
 	readonly passed: boolean;
-	readonly actual: Term | null;
+	readonly actual?: Term;
 	readonly terminated: boolean;
 	readonly steps: number;
 }
@@ -84,7 +84,7 @@ export function judgeOrder(
 		const expectedNorm = judgeNormalize(testCase.expect, registry, maxSteps);
 		return {
 			passed: result.terminated && expectedNorm.terminated && termsEqual(result.term, expectedNorm.term),
-			actual: result.terminated ? result.term : null,
+			actual: result.terminated ? result.term : void 0,
 			terminated: result.terminated,
 			steps: result.steps,
 		};

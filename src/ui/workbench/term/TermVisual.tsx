@@ -8,7 +8,7 @@ interface TermVisualProps {
 	readonly depth: number;
 	readonly path: Path;
 	readonly redexPaths: readonly Path[];
-	readonly onStepRedex: ((path: Path) => void) | null;
+	readonly onStepRedex?: (path: Path) => void;
 }
 
 export function TermVisual(props: TermVisualProps): JSX.Element {
@@ -59,13 +59,13 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 							<span
 								class={`machine-app ${isRedex ? "redex-glow" : ""}`}
 								onClick={(event) => {
-									if (isRedex && props.onStepRedex !== null) {
+									if (isRedex && props.onStepRedex !== void 0) {
 										event.stopPropagation();
 										props.onStepRedex(props.path);
 									}
 								}}
 								onKeyDown={(event) => {
-									if (event.key === "Enter" && isRedex && props.onStepRedex !== null) {
+									if (event.key === "Enter" && isRedex && props.onStepRedex !== void 0) {
 										event.stopPropagation();
 										props.onStepRedex(props.path);
 									}

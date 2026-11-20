@@ -7,7 +7,7 @@ import { getVariableColor } from "../../../styles";
 interface DraftNodeProps {
 	readonly draft: DraftTerm;
 	readonly path: Path;
-	readonly selectedPath: Path | null;
+	readonly selectedPath?: Path;
 	readonly onSelectHole: (path: Path) => void;
 	readonly onDismantle: (path: Path) => void;
 }

@@ -157,7 +157,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 								<DraftNode
 									draft={session.draft()}
 									path=""
-									selectedPath={session.selectedPath()}
+									selectedPath={session.selectedPath() ?? void 0}
 									onSelectHole={session.selectHole}
 									onDismantle={session.dismantleAtPath}
 								/>
@@ -217,7 +217,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<OrderSlip
 					order={props.order}
-					rejected={session.rejected()}
+					rejected={session.rejected() ?? void 0}
 					runSteps={session.runSteps()}
 					runFailed={session.runFailed()}
 					transitioning={levelTransitioning()}
@@ -233,9 +233,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					note={props.order.note}
 					isLastOrder={props.isLastOrder}
 					rejected={session.rejected() !== null}
-					unlocksToolId={
-						props.order.mode === "build" && props.order.unlocksToolId !== void 0 ? props.order.unlocksToolId : null
-					}
+					unlocksToolId={props.order.mode === "build" ? props.order.unlocksToolId : void 0}
 					onDeliver={session.deliverOrder}
 					onNextOrder={props.onNextOrder}
 				/>

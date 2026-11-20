@@ -14,7 +14,7 @@ export interface UiPreferences {
 }
 
 export type SessionState =
-	| { readonly screen: "title"; readonly lastOrderId: string | null }
+	| { readonly screen: "title"; readonly lastOrderId?: string }
 	| { readonly screen: "workbench"; readonly lastOrderId: string };
 
 interface SaveData {
@@ -35,7 +35,7 @@ const DEFAULT_SETTINGS: SettingsState = {
 	autoSkipRead: false,
 };
 
-const DEFAULT_SESSION: SessionState = { screen: "title", lastOrderId: null };
+const DEFAULT_SESSION: SessionState = { screen: "title" };
 
 export const DEFAULT_UI_PREFS: UiPreferences = {
 	shelfWidth: 76,
@@ -117,10 +117,12 @@ function sanitizeUiPrefs(val: unknown): UiPreferences {
 function sanitizeSession(val: unknown): SessionState {
 	if (!val || typeof val !== "object") return DEFAULT_SESSION;
 	const r = val as { readonly lastOrderId?: unknown; readonly screen?: unknown };
-	const lastOrderId = typeof r.lastOrderId === "string" ? r.lastOrderId : null;
-	return r.screen === "workbench" && lastOrderId !== null
+	const lastOrderId = typeof r.lastOrderId === "string" ? r.lastOrderId : void 0;
+	return r.screen === "workbench" && lastOrderId !== void 0
 		? { screen: "workbench", lastOrderId }
-		: { screen: "title", lastOrderId };
+		: lastOrderId !== void 0
+			? { screen: "title", lastOrderId }
+			: { screen: "title" };
 }
 
 function loadSaveData(): SaveData {

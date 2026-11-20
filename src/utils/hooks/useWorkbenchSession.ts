@@ -1,8 +1,7 @@
-import { type Accessor, createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { type Accessor, createEffect, createMemo, onCleanup, onMount } from "solid-js";
 import type { OrderLevel } from "../../content";
-import { type DraftTerm, draftToTerm, findFirstHole } from "../../engine/draft";
+import { type DraftTerm, draftToTerm } from "../../engine/draft";
 import type { Registry } from "../../engine/gadget";
-import { judgeOrder } from "../../engine/judge";
 import { printXRayTerm } from "../../engine/parse";
 import { loadLevelDrafts } from "../../engine/storage";
 import type { GadgetId, Path, Term } from "../../engine/term";
@@ -17,6 +16,8 @@ interface WorkbenchSessionOptions {
 	readonly judgeMode: Accessor<boolean>;
 	readonly clearedStars: Accessor<ReadonlyMap<string, number>>;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
+	readonly xRayMode: Accessor<boolean>;
+	readonly onToggleXRay: () => void;
 }
 
 interface WorkbenchSession {
@@ -54,8 +55,6 @@ interface WorkbenchSession {
 }
 
 export function useWorkbenchSession(options: WorkbenchSessionOptions): WorkbenchSession {
-	const [isXRay, setIsXRay] = createSignal<boolean>(false);
-
 	const delivery = useOrderDelivery({
 		order: options.order,
 		registry: options.registry,
@@ -116,6 +115,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	const deliverOrder = (): void => {
 		if (draftBench.hasHoles()) return;
 		delivery.deliverBuildOrder(draftBench.draft(), draftBench.partCount());
+		draftBench.flushDraft();
 	};
 
 	const xRayText = createMemo((): string => {
@@ -139,18 +139,12 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		const initialDraft = loadLevelDrafts()[order.id] ?? { kind: "hole" };
 		draftBench.loadDraft(initialDraft);
 		tapePlay.stopPlay();
-		delivery.setDeliveredStars(
-			stars !== void 0 &&
-				findFirstHole(initialDraft, "") === null &&
-				judgeOrder(draftToTerm(initialDraft, []), order.tests, options.registry, 300).every((item) => item.passed)
-				? stars
-				: null,
-		);
+		delivery.syncInitialDelivery(initialDraft, stars);
 	});
 
 	const handleKeyDown = (event: KeyboardEvent): void => {
 		if ((event.key === "z" || event.key === "Z") && (event.ctrlKey || !event.metaKey)) undo();
-		if (event.key === "x" || event.key === "X") setIsXRay(!isXRay());
+		if (event.key === "x" || event.key === "X") options.onToggleXRay();
 		if (event.key === " " && options.order().mode === "build") {
 			event.preventDefault();
 			tapePlay.startOrStepPlay();
@@ -174,7 +168,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		tape: tapePlay.tape,
 		tapeIndex: tapePlay.tapeIndex,
 		activeRedexes: tapePlay.activeRedexes,
-		isXRay,
+		isXRay: options.xRayMode,
 		xRayText,
 		shelfUnlockedIds: delivery.shelfUnlockedIds,
 		shelfLockedCount: delivery.shelfLockedCount,
@@ -196,7 +190,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		fastForwardPlay: tapePlay.fastForwardPlay,
 		stepRedexAt: tapePlay.stepRedexAt,
 		stopPlay: tapePlay.stopPlay,
-		toggleXRay: () => setIsXRay(!isXRay()),
+		toggleXRay: options.onToggleXRay,
 		selectHole: draftBench.selectHole,
 		deliverOrder,
 	};

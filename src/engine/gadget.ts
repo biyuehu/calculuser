@@ -23,14 +23,14 @@ function computeArity(term: Term): number {
 
 export function registerGadget(registry: Registry, id: GadgetId, def: Term, origin: "builtin" | "level"): Gadget {
 	if (!isClosed(def, 0)) throw new Error(`Gadget ${id} must be a closed term`);
-	const gadget: Gadget = {
-		id,
-		def,
-		arity: computeArity(def),
-		origin,
-	};
-	registry.set(id, gadget);
-	return gadget;
+	return registry
+		.set(id, {
+			id,
+			def,
+			arity: computeArity(def),
+			origin,
+		})
+		.get(id) as Gadget;
 }
 
 export function createBuiltinRegistry(): Registry {

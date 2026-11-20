@@ -16,8 +16,10 @@ interface WorkbenchViewProps {
 	readonly registry: Registry;
 	readonly judgeMode: boolean;
 	readonly clearedStars: ReadonlyMap<string, number>;
+	readonly xRayMode: boolean;
 	readonly isLastOrder: boolean;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
+	readonly onToggleXRay: () => void;
 	readonly onNextOrder: () => void;
 	readonly onOpenWorkshop: () => void;
 	readonly onOpenSettings: () => void;
@@ -31,6 +33,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		judgeMode: () => props.judgeMode,
 		clearedStars: () => props.clearedStars,
 		onRecordStars: props.onRecordStars,
+		xRayMode: () => props.xRayMode,
+		onToggleXRay: props.onToggleXRay,
 	});
 
 	const ui = useUiPreferences();

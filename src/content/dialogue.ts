@@ -65,4 +65,14 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("老师傅留下的第二间绘图室已经为你打开，去瞧瞧吧。"),
 		],
 	},
+	"type-intro": {
+		id: "type_intro_beat",
+		title: "标准与铭牌",
+		lines: [
+			textLine("师傅，给！这是工坊刚拟定的「类型铭牌」。", "hen", "happy"),
+			textLine("以前我们造机器全凭感觉，裸机虽然自由，可一旦接错就会卡死。"),
+			textLine("挂上牌子、标清入口和出口形状，经出厂检验盖上合格章，就能保证不冒烟！"),
+			textLine("随时按下键盘上的 T 键，就能开启铭牌透视视角。"),
+		],
+	},
 };

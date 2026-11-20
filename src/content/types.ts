@@ -12,7 +12,7 @@ export interface ToolDefinition {
 	readonly arity: number;
 	readonly schematic: string;
 	readonly note: string;
-	readonly defText: string | null;
+	readonly defText: string;
 }
 
 export interface GadgetMeta {

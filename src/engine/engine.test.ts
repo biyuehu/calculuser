@@ -6,14 +6,17 @@ import { parseLambda, printTerm } from "./parse";
 import { redexes, stepAt, stepLeftmost } from "./reduce";
 import {
 	DEFAULT_UI_PREFS,
+	STORAGE_KEY,
 	clearLevelDraft,
 	clearLevelDrafts,
 	loadLevelDrafts,
 	loadSession,
 	loadUiPreferences,
+	loadWorkshop,
 	saveLevelDraft,
 	saveSession,
 	saveUiPreferences,
+	saveWorkshop,
 } from "./storage";
 import { termsEqual } from "./term";
 
@@ -169,5 +172,35 @@ describe("Calculuser core engine", () => {
 
 		clearLevelDrafts();
 		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
+	});
+
+	it("stores all persistent state under exactly one storage key", () => {
+		const store = new Map<string, string>();
+		Object.defineProperty(globalThis, "localStorage", {
+			value: {
+				getItem: (k: string): string | null => store.get(k) ?? null,
+				setItem: (k: string, v: string): void => {
+					store.set(k, v);
+				},
+				removeItem: (k: string): void => {
+					store.delete(k);
+				},
+				clear: (): void => store.clear(),
+				key: (_i: number): string | null => null,
+				length: 0,
+			},
+			configurable: true,
+			writable: true,
+		});
+
+		saveWorkshop(new Map([["1.1", 3]]));
+		saveSession({ lastOrderId: "1.1", screen: "workbench" });
+		saveLevelDraft("1.1", { kind: "gad", id: "I" });
+
+		expect(store.size).toBe(1);
+		expect(store.has(STORAGE_KEY)).toBe(true);
+		expect(loadWorkshop().stars["1.1"]).toBe(3);
+		expect(loadSession().lastOrderId).toBe("1.1");
+		expect(loadLevelDrafts()["1.1"]).toEqual({ kind: "gad", id: "I" });
 	});
 });

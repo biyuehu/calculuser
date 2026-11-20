@@ -1,5 +1,4 @@
 import type { DraftTerm } from "./draft";
-import type { NameplateSpec } from "./gtlc";
 
 export interface SettingsState {
 	readonly volume: number;
@@ -14,19 +13,17 @@ export interface UiPreferences {
 	readonly orderSlipCollapsed: boolean;
 }
 
-export interface SessionState {
-	readonly lastOrderId: string | null;
-	readonly screen: "title" | "workbench";
-}
+export type SessionState =
+	| { readonly screen: "title"; readonly lastOrderId: string | null }
+	| { readonly screen: "workbench"; readonly lastOrderId: string };
 
-export interface SaveData {
+interface SaveData {
 	readonly workshop: { readonly stars: Record<string, number> };
 	readonly settings: SettingsState;
 	readonly uiPrefs: UiPreferences;
 	readonly session: SessionState;
 	readonly drafts: Record<string, DraftTerm>;
 	readonly seenDialogues: readonly string[];
-	readonly nameplates: Record<string, NameplateSpec>;
 }
 
 export const STORAGE_KEY = "calculuser_save";
@@ -38,7 +35,7 @@ const DEFAULT_SETTINGS: SettingsState = {
 	autoSkipRead: false,
 };
 
-const DEFAULT_SESSION: SessionState = { lastOrderId: null, screen: "title" };
+const DEFAULT_SESSION: SessionState = { screen: "title", lastOrderId: null };
 
 export const DEFAULT_UI_PREFS: UiPreferences = {
 	shelfWidth: 76,
@@ -53,7 +50,6 @@ const DEFAULT_SAVE_DATA: SaveData = {
 	session: DEFAULT_SESSION,
 	drafts: {},
 	seenDialogues: [],
-	nameplates: {},
 };
 
 function isValidDraft(val: unknown): val is DraftTerm {
@@ -120,14 +116,14 @@ function sanitizeUiPrefs(val: unknown): UiPreferences {
 
 function sanitizeSession(val: unknown): SessionState {
 	if (!val || typeof val !== "object") return DEFAULT_SESSION;
-	const r = val as Partial<SessionState>;
-	return {
-		lastOrderId: typeof r.lastOrderId === "string" ? r.lastOrderId : null,
-		screen: r.screen === "workbench" ? "workbench" : "title",
-	};
+	const r = val as { readonly lastOrderId?: unknown; readonly screen?: unknown };
+	const lastOrderId = typeof r.lastOrderId === "string" ? r.lastOrderId : null;
+	return r.screen === "workbench" && lastOrderId !== null
+		? { screen: "workbench", lastOrderId }
+		: { screen: "title", lastOrderId };
 }
 
-export function loadSaveData(): SaveData {
+function loadSaveData(): SaveData {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (raw === null) return DEFAULT_SAVE_DATA;
@@ -146,7 +142,6 @@ export function loadSaveData(): SaveData {
 					seenDialogues: Array.isArray(parsed.seenDialogues)
 						? parsed.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
 						: [],
-					nameplates: parsed.nameplates && typeof parsed.nameplates === "object" ? parsed.nameplates : {},
 				};
 	} catch {
 		return DEFAULT_SAVE_DATA;
@@ -232,16 +227,4 @@ export function markDialogueSeen(id: string): void {
 		...prev,
 		seenDialogues: prev.seenDialogues.includes(id) ? prev.seenDialogues : [...prev.seenDialogues, id],
 	}));
-}
-
-export function loadNameplates(): Record<string, NameplateSpec> {
-	return loadSaveData().nameplates;
-}
-
-export function saveNameplate(id: string, spec: NameplateSpec): void {
-	mutateSaveData((prev) => ({ ...prev, nameplates: { ...prev.nameplates, [id]: spec } }));
-}
-
-export function clearNameplates(): void {
-	mutateSaveData((prev) => ({ ...prev, nameplates: {} }));
 }

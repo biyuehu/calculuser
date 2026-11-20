@@ -65,7 +65,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 											</div>
 										)}
 									</For>
-									<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>→</span>
+									<span class="order-case-arrow">→</span>
 									<div class="mini-scale">
 										<TermVisual term={testCase.expect} depth={0} path="" redexPaths={[]} onStepRedex={null} />
 									</div>

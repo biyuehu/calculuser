@@ -15,9 +15,7 @@ const createDebouncedSaver = (delayMs: number): ((prefs: UiPreferences) => void)
 const [prefs, setPrefs] = createSignal<UiPreferences>(loadUiPreferences());
 const debouncedSave = createDebouncedSaver(200);
 
-if (typeof window !== "undefined") {
-	window.addEventListener("beforeunload", () => saveUiPreferences(prefs()));
-}
+if (typeof window !== "undefined") window.addEventListener("beforeunload", () => saveUiPreferences(prefs()));
 
 export function useUiPreferences(): {
 	readonly shelfWidth: () => number;

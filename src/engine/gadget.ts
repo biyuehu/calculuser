@@ -35,9 +35,8 @@ export function registerGadget(registry: Registry, id: GadgetId, def: Term, orig
 
 export function createBuiltinRegistry(): Registry {
 	const registry: Registry = new Map();
-	for (const tool of COMBINATORS.slice(0, BUILTIN_COUNT)) {
+	for (const tool of COMBINATORS.slice(0, BUILTIN_COUNT))
 		if (tool.defText !== null && !registry.has(tool.id))
 			registerGadget(registry, tool.id, parseLambda(tool.defText), "builtin");
-	}
 	return registry;
 }

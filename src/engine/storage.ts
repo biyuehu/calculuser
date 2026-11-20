@@ -1,4 +1,5 @@
 import type { DraftTerm } from "./draft";
+import type { NameplateSpec } from "./gtlc";
 
 export interface SettingsState {
 	readonly volume: number;
@@ -24,6 +25,7 @@ const UI_PREFS_KEY = "calculuser_ui_prefs_v1";
 const DRAFT_STORAGE_KEY = "calculuser_drafts_v1";
 const SESSION_STORAGE_KEY = "calculuser_session_v1";
 const SEEN_DIALOGUES_KEY = "calculuser_seen_dialogues_v1";
+const NAMEPLATES_STORAGE_KEY = "calculuser_nameplates_v1";
 const DEFAULT_SETTINGS: SettingsState = {
 	volume: 1,
 	reducedMotion: false,
@@ -53,18 +55,15 @@ export function loadWorkshop(): SavedWorkshop {
 }
 
 export function saveWorkshop(stars: ReadonlyMap<string, number>): void {
-	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify({ stars: Object.fromEntries(stars) }));
-	} catch {}
+	localStorage.setItem(STORAGE_KEY, JSON.stringify({ stars: Object.fromEntries(stars) }));
 }
 
 export function clearWorkshop(): void {
-	try {
-		localStorage.removeItem(STORAGE_KEY);
-		localStorage.removeItem(DRAFT_STORAGE_KEY);
-		localStorage.removeItem(SESSION_STORAGE_KEY);
-		localStorage.removeItem(SEEN_DIALOGUES_KEY);
-	} catch {}
+	localStorage.removeItem(STORAGE_KEY);
+	localStorage.removeItem(DRAFT_STORAGE_KEY);
+	localStorage.removeItem(SESSION_STORAGE_KEY);
+	localStorage.removeItem(SEEN_DIALOGUES_KEY);
+	localStorage.removeItem(NAMEPLATES_STORAGE_KEY);
 }
 
 export function loadSettings(): SettingsState {
@@ -84,9 +83,7 @@ export function loadSettings(): SettingsState {
 }
 
 export function saveSettings(settings: SettingsState): void {
-	try {
-		localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-	} catch {}
+	localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 export function loadUiPreferences(): UiPreferences {
@@ -116,9 +113,7 @@ export function loadUiPreferences(): UiPreferences {
 }
 
 export function saveUiPreferences(prefs: UiPreferences): void {
-	try {
-		localStorage.setItem(UI_PREFS_KEY, JSON.stringify(prefs));
-	} catch {}
+	localStorage.setItem(UI_PREFS_KEY, JSON.stringify(prefs));
 }
 
 function isValidDraft(val: unknown): val is DraftTerm {
@@ -133,25 +128,19 @@ function isValidDraft(val: unknown): val is DraftTerm {
 		readonly arg?: unknown;
 	};
 	switch (record.kind) {
-		case "hole": {
+		case "hole":
 			return true;
-		}
 		case "var":
-		case "atom": {
+		case "atom":
 			return typeof record.name === "string";
-		}
-		case "gad": {
+		case "gad":
 			return typeof record.id === "string";
-		}
-		case "lam": {
+		case "lam":
 			return typeof record.param === "string" && isValidDraft(record.body);
-		}
-		case "app": {
+		case "app":
 			return isValidDraft(record.fn) && isValidDraft(record.arg);
-		}
-		default: {
+		default:
 			return false;
-		}
 	}
 }
 
@@ -162,9 +151,8 @@ export function loadLevelDrafts(): Record<string, DraftTerm> {
 		const parsed = JSON.parse(raw);
 		if (!parsed || typeof parsed !== "object") return {};
 		const result: Record<string, DraftTerm> = {};
-		for (const [key, value] of Object.entries(parsed)) {
+		for (const [key, value] of Object.entries(parsed))
 			if (isValidDraft(value)) result[key] = value;
-		}
 		return result;
 	} catch {
 		return {};
@@ -172,27 +160,21 @@ export function loadLevelDrafts(): Record<string, DraftTerm> {
 }
 
 export function saveLevelDraft(orderId: string, draft: DraftTerm): void {
-	try {
-		const current = loadLevelDrafts();
-		current[orderId] = draft;
-		localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(current));
-	} catch {}
+	const current = loadLevelDrafts();
+	current[orderId] = draft;
+	localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(current));
 }
 
 export function clearLevelDraft(orderId: string): void {
-	try {
-		const current = loadLevelDrafts();
-		if (current[orderId] !== void 0) {
-			delete current[orderId];
-			localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(current));
-		}
-	} catch {}
+	const current = loadLevelDrafts();
+	if (current[orderId] !== void 0) {
+		delete current[orderId];
+		localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(current));
+	}
 }
 
 export function clearLevelDrafts(): void {
-	try {
-		localStorage.removeItem(DRAFT_STORAGE_KEY);
-	} catch {}
+	localStorage.removeItem(DRAFT_STORAGE_KEY);
 }
 
 export function loadSession(): SessionState {
@@ -212,9 +194,7 @@ export function loadSession(): SessionState {
 }
 
 export function saveSession(session: SessionState): void {
-	try {
-		localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
-	} catch {}
+	localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
 export function loadSeenDialogues(): ReadonlySet<string> {
@@ -231,7 +211,24 @@ export function loadSeenDialogues(): ReadonlySet<string> {
 }
 
 export function markDialogueSeen(id: string): void {
+	localStorage.setItem(SEEN_DIALOGUES_KEY, JSON.stringify(Array.from(new Set([...loadSeenDialogues(), id]))));
+}
+
+export function loadNameplates(): Record<string, NameplateSpec> {
 	try {
-		localStorage.setItem(SEEN_DIALOGUES_KEY, JSON.stringify(Array.from(new Set([...loadSeenDialogues(), id]))));
-	} catch {}
+		const raw = localStorage.getItem(NAMEPLATES_STORAGE_KEY);
+		if (raw === null) return {};
+		const parsed = JSON.parse(raw);
+		return parsed && typeof parsed === "object" ? parsed : {};
+	} catch {
+		return {};
+	}
+}
+
+export function saveNameplate(id: string, spec: NameplateSpec): void {
+	localStorage.setItem(NAMEPLATES_STORAGE_KEY, JSON.stringify({ ...loadNameplates(), [id]: spec }));
+}
+
+export function clearNameplates(): void {
+	localStorage.removeItem(NAMEPLATES_STORAGE_KEY);
 }

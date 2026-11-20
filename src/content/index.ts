@@ -13,8 +13,10 @@ export function getToolSource(toolId: string): string | null {
 }
 
 export function getContinueOrderIndex(clearedStars: ReadonlyMap<string, number>): number {
-	const firstIncomplete = LEVELS.findIndex((order) => !clearedStars.has(order.id));
-	return firstIncomplete >= 0 ? firstIncomplete : 0;
+	return Math.max(
+		0,
+		LEVELS.findIndex((order) => !clearedStars.has(order.id)),
+	);
 }
 
 export function getOrderCode(orderId: string): string {
@@ -27,21 +29,21 @@ export function getToolDefinition(id: string): ToolDefinition | null {
 
 export function getGadgetMeta(id: GadgetId): GadgetMeta {
 	const tool = getToolDefinition(id);
-	if (tool !== null)
-		return {
-			id: tool.id,
-			symbol: tool.symbol,
-			name: tool.name,
-			shape: tool.shape,
-			accent: tool.accent,
-			note: tool.note,
-		};
-	return {
-		id,
-		symbol: id.length <= 2 ? id : "★",
-		name: id,
-		shape: "circle",
-		accent: "#64748b",
-		note: "工坊自制组合子部件",
-	};
+	return tool !== null
+		? {
+				id: tool.id,
+				symbol: tool.symbol,
+				name: tool.name,
+				shape: tool.shape,
+				accent: tool.accent,
+				note: tool.note,
+			}
+		: {
+				id,
+				symbol: id.length <= 2 ? id : "★",
+				name: id,
+				shape: "circle",
+				accent: "#64748b",
+				note: "工坊自制组合子部件",
+			};
 }

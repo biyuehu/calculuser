@@ -2,32 +2,7 @@ import type { Registry } from "./gadget";
 import type { Term } from "./term";
 
 export const PRINT_NAMES: readonly string[] = [
-	"x",
-	"y",
-	"z",
-	"w",
-	"u",
-	"v",
-	"a",
-	"b",
-	"c",
-	"d",
-	"e",
-	"f",
-	"g",
-	"h",
-	"i",
-	"j",
-	"k",
-	"l",
-	"m",
-	"n",
-	"o",
-	"p",
-	"q",
-	"r",
-	"s",
-	"t",
+	"x", "y", "z", "w", "u", "v", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
 ];
 
 interface ParseState {

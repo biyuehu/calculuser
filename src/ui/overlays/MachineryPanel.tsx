@@ -29,17 +29,12 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 		props.onUpdateSettings((prev) => ({ ...prev, volume: value }));
 	};
 
-	const toggleMotion = (): void => {
-		props.onUpdateSettings((prev) => ({ ...prev, reducedMotion: !prev.reducedMotion }));
-	};
+	const toggleMotion = (): void => props.onUpdateSettings((prev) => ({ ...prev, reducedMotion: !prev.reducedMotion }));
 
-	const toggleJudgeMode = (): void => {
-		props.onUpdateSettings((prev) => ({ ...prev, judgeMode: !prev.judgeMode }));
-	};
+	const toggleJudgeMode = (): void => props.onUpdateSettings((prev) => ({ ...prev, judgeMode: !prev.judgeMode }));
 
-	const toggleAutoSkipRead = (): void => {
+	const toggleAutoSkipRead = (): void =>
 		props.onUpdateSettings((prev) => ({ ...prev, autoSkipRead: !prev.autoSkipRead }));
-	};
 
 	return (
 		<div

@@ -30,9 +30,7 @@ export const textLine = (text: string, speaker?: DialogueSpeaker, face?: Dialogu
 
 export const dialogueLine = textLine;
 
-export const choicesLine = (choices: readonly [string, ChoiceBranch][]): ChoicesLine => ({
-	choices,
-});
+export const choicesLine = (choices: readonly [string, ChoiceBranch][]): ChoicesLine => ({ choices });
 
 export const isChoicesLine = (line: DialogueLine): line is ChoicesLine => "choices" in line;
 

@@ -24,7 +24,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 			{(() => {
 				const node = props.draft;
 				switch (node.kind) {
-					case "hole": {
+					case "hole":
 						return (
 							<button
 								type="button"
@@ -35,8 +35,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 								?
 							</button>
 						);
-					}
-					case "var": {
+					case "var":
 						return (
 							<span
 								class="signal-orb"
@@ -48,14 +47,12 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 								}}
 							/>
 						);
-					}
-					case "atom": {
+					case "atom":
 						return (
 							<span class="atom-token" title="右键拆回空槽" onContextMenu={handleDismantle}>
 								{node.name}
 							</span>
 						);
-					}
 					case "gad": {
 						const meta = getGadgetMeta(node.id);
 						return (
@@ -67,7 +64,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 							</span>
 						);
 					}
-					case "lam": {
+					case "lam":
 						return (
 							<span
 								class="machine-lam"
@@ -95,8 +92,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 								</span>
 							</span>
 						);
-					}
-					case "app": {
+					case "app":
 						return (
 							<span class="machine-app" title="右键拆回空槽" onContextMenu={handleDismantle}>
 								<DraftNode
@@ -116,7 +112,6 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 								/>
 							</span>
 						);
-					}
 				}
 			})()}
 		</>

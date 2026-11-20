@@ -95,10 +95,9 @@ describe("Calculuser core engine", () => {
 
 	it("loads all orders without parse errors", () => {
 		expect(LEVELS.length).toBeGreaterThanOrEqual(27);
-		for (const order of LEVELS) {
+		for (const order of LEVELS)
 			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
 			else expect(order.stepBudget).toBeGreaterThan(0);
-		}
 	});
 
 	it("loads, saves, and sanitizes UI preferences", () => {

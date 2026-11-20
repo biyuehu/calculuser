@@ -21,9 +21,8 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 						const color = getColorAtDepth(props.depth - 1 - node.index);
 						return <span class="signal-orb" style={{ background: color, "--orb-glow": color }} />;
 					}
-					case "atom": {
+					case "atom":
 						return <span class="atom-token">{node.name}</span>;
-					}
 					case "gad": {
 						const meta = getGadgetMeta(node.id);
 						return (

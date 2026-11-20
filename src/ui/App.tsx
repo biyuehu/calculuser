@@ -49,9 +49,8 @@ export function App(): JSX.Element {
 	const [settings, setSettings] = createSignal<SettingsState>(initialSettings);
 
 	createEffect(() => {
-		if (typeof document !== "undefined") {
+		if (typeof document !== "undefined")
 			document.documentElement.classList.toggle("reduced-motion", settings().reducedMotion);
-		}
 	});
 	const [orderIndex, setOrderIndex] = createSignal<number>(savedOrderIndex >= 0 ? savedOrderIndex : 0);
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
@@ -60,14 +59,12 @@ export function App(): JSX.Element {
 	const [activeBeat, setActiveBeat] = createSignal<DialogueBeat | null>(null);
 	const [cameraView, setCameraView] = createSignal<"bench" | "counter">("bench");
 
-	for (const order of LEVELS) {
+	for (const order of LEVELS)
 		if (order.mode === "build" && order.unlocksToolId !== void 0 && clearedStars().has(order.id)) {
 			const tool = getToolDefinition(order.unlocksToolId);
-			if (tool !== null && tool.defText !== null && !registry.has(tool.id)) {
+			if (tool !== null && tool.defText !== null && !registry.has(tool.id))
 				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
-			}
 		}
-	}
 
 	const currentOrder = createMemo(() => LEVELS[orderIndex()]);
 

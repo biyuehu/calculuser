@@ -16,9 +16,8 @@ export interface JudgeTestResult {
 function inlineGadgets(term: Term, registry: Registry, cache: Map<GadgetId, Term>): Term {
 	switch (term.kind) {
 		case "var":
-		case "atom": {
+		case "atom":
 			return term;
-		}
 		case "gad": {
 			const cached = cache.get(term.id);
 			if (cached !== void 0) return cached;
@@ -28,16 +27,14 @@ function inlineGadgets(term: Term, registry: Registry, cache: Map<GadgetId, Term
 			cache.set(term.id, expanded);
 			return expanded;
 		}
-		case "lam": {
+		case "lam":
 			return { kind: "lam", body: inlineGadgets(term.body, registry, cache) };
-		}
-		case "app": {
+		case "app":
 			return {
 				kind: "app",
 				fn: inlineGadgets(term.fn, registry, cache),
 				arg: inlineGadgets(term.arg, registry, cache),
 			};
-		}
 	}
 }
 
@@ -79,8 +76,11 @@ export function judgeOrder(
 	maxSteps: number,
 ): readonly JudgeTestResult[] {
 	return tests.map((testCase) => {
-		const applied = testCase.args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), candidate);
-		const result = judgeNormalize(applied, registry, maxSteps);
+		const result = judgeNormalize(
+			testCase.args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), candidate),
+			registry,
+			maxSteps,
+		);
 		const expectedNorm = judgeNormalize(testCase.expect, registry, maxSteps);
 		return {
 			passed: result.terminated && expectedNorm.terminated && termsEqual(result.term, expectedNorm.term),

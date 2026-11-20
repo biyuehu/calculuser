@@ -9,6 +9,7 @@ import {
 	STORAGE_KEY,
 	clearLevelDraft,
 	clearLevelDrafts,
+	clearSave,
 	loadLevelDrafts,
 	loadSession,
 	loadUiPreferences,
@@ -202,5 +203,9 @@ describe("Calculuser core engine", () => {
 		expect(loadWorkshop().stars["1.1"]).toBe(3);
 		expect(loadSession().lastOrderId).toBe("1.1");
 		expect(loadLevelDrafts()["1.1"]).toEqual({ kind: "gad", id: "I" });
+
+		clearSave();
+		expect(store.size).toBe(0);
+		expect(loadWorkshop().stars["1.1"]).toBeUndefined();
 	});
 });

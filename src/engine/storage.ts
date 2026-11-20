@@ -5,6 +5,7 @@ export interface SettingsState {
 	readonly reducedMotion: boolean;
 	readonly judgeMode: boolean;
 	readonly autoSkipRead: boolean;
+	readonly xRayMode: boolean;
 }
 
 export interface UiPreferences {
@@ -33,6 +34,7 @@ const DEFAULT_SETTINGS: SettingsState = {
 	reducedMotion: false,
 	judgeMode: false,
 	autoSkipRead: false,
+	xRayMode: false,
 };
 
 const DEFAULT_SESSION: SessionState = { screen: "title" };
@@ -94,6 +96,7 @@ function sanitizeSettings(val: unknown): SettingsState {
 		reducedMotion: typeof r.reducedMotion === "boolean" ? r.reducedMotion : DEFAULT_SETTINGS.reducedMotion,
 		judgeMode: typeof r.judgeMode === "boolean" ? r.judgeMode : DEFAULT_SETTINGS.judgeMode,
 		autoSkipRead: typeof r.autoSkipRead === "boolean" ? r.autoSkipRead : false,
+		xRayMode: typeof r.xRayMode === "boolean" ? r.xRayMode : DEFAULT_SETTINGS.xRayMode,
 	};
 }
 
@@ -166,15 +169,8 @@ export function saveWorkshop(stars: ReadonlyMap<string, number>): void {
 	mutateSaveData((prev) => ({ ...prev, workshop: { stars: Object.fromEntries(stars) } }));
 }
 
-export function clearWorkshop(): void {
-	mutateSaveData((prev) => ({
-		...prev,
-		workshop: { stars: {} },
-		session: DEFAULT_SESSION,
-		drafts: {},
-		seenDialogues: [],
-		nameplates: {},
-	}));
+export function clearSave(): void {
+	localStorage.removeItem(STORAGE_KEY);
 }
 
 export function loadSettings(): SettingsState {

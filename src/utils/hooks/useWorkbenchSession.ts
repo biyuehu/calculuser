@@ -1,41 +1,15 @@
 import { type Accessor, createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
-import {
-	playBetaReductionMelody,
-	playDropSound,
-	playFailSound,
-	playMoveSound,
-	playPassSound,
-	playPopExplosionSound,
-	playSnapSound,
-	playSplitSound,
-	playUndoSound,
-} from "../../audio/synth";
-import { BUILTIN_COUNT, COMBINATORS, LEVELS, type OrderLevel, getToolDefinition, getToolSource } from "../../content";
-import {
-	type DraftTerm,
-	countDraftSize,
-	draftToTerm,
-	findFirstHole,
-	getScopeAt,
-	setDraftAtPath,
-} from "../../engine/draft";
-import { type Registry, registerGadget } from "../../engine/gadget";
+import type { OrderLevel } from "../../content";
+import { type DraftTerm, draftToTerm, findFirstHole } from "../../engine/draft";
+import type { Registry } from "../../engine/gadget";
 import { judgeOrder } from "../../engine/judge";
-import { PRINT_NAMES, printXRayTerm } from "../../engine/parse";
-import { type StepEvent, redexes, stepAt, stepLeftmost } from "../../engine/reduce";
-import { clearLevelDraft, loadLevelDrafts, saveLevelDraft } from "../../engine/storage";
-import { type GadgetId, type Path, type Term, termsEqual } from "../../engine/term";
-import type { RejectedInfo } from "../../ui/workbench/OrderSlip";
-
-function playStepEventSound(event: StepEvent, stepCount: number): void {
-	const count = event.kind === "beta" ? event.copies : event.copies.length > 0 ? event.copies[0] : 1;
-	if (count === 0) playDropSound();
-	else if (count >= 2) playSplitSound();
-	else {
-		playMoveSound();
-		playBetaReductionMelody(stepCount);
-	}
-}
+import { printXRayTerm } from "../../engine/parse";
+import { loadLevelDrafts } from "../../engine/storage";
+import type { GadgetId, Path, Term } from "../../engine/term";
+import type { RejectedInfo } from "../../ui/workbench/panels/OrderSlip";
+import { useDraftWorkbench } from "./useDraftWorkbench";
+import { useOrderDelivery } from "./useOrderDelivery";
+import { useTapePlayback } from "./useTapePlayback";
 
 interface WorkbenchSessionOptions {
 	readonly order: Accessor<OrderLevel>;
@@ -44,35 +18,6 @@ interface WorkbenchSessionOptions {
 	readonly clearedStars: Accessor<ReadonlyMap<string, number>>;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
 }
-
-const createDebouncedDraftSaver = (
-	delayMs: number,
-): {
-	readonly schedule: (orderId: string, draft: DraftTerm) => void;
-	readonly flush: () => void;
-} => {
-	let timer: ReturnType<typeof setTimeout> | null = null;
-	let pendingOrderId: string | null = null;
-	let pendingDraft: DraftTerm | null = null;
-	const flush = (): void => {
-		if (timer !== null && pendingOrderId !== null && pendingDraft !== null) {
-			clearTimeout(timer);
-			saveLevelDraft(pendingOrderId, pendingDraft);
-			timer = null;
-			pendingOrderId = null;
-			pendingDraft = null;
-		}
-	};
-	return {
-		schedule: (orderId: string, draft: DraftTerm): void => {
-			pendingOrderId = orderId;
-			pendingDraft = draft;
-			if (timer !== null) clearTimeout(timer);
-			timer = setTimeout(flush, delayMs);
-		},
-		flush,
-	};
-};
 
 interface WorkbenchSession {
 	readonly draft: Accessor<DraftTerm>;
@@ -109,291 +54,92 @@ interface WorkbenchSession {
 }
 
 export function useWorkbenchSession(options: WorkbenchSessionOptions): WorkbenchSession {
-	const draftSaver = createDebouncedDraftSaver(200);
-	const [draft, setDraft] = createSignal<DraftTerm>({ kind: "hole" });
-	const [selectedPath, setSelectedPath] = createSignal<Path | null>("");
-	const [history, setHistory] = createSignal<readonly DraftTerm[]>([]);
-	const [combo, setCombo] = createSignal<number>(0);
-	const [rejected, setRejected] = createSignal<RejectedInfo | null>(null);
-	const [deliveredStars, setDeliveredStars] = createSignal<number | null>(null);
 	const [isXRay, setIsXRay] = createSignal<boolean>(false);
-	const [playTerm, setPlayTerm] = createSignal<Term | null>(null);
-	const [tape, setTape] = createSignal<readonly Term[]>([]);
-	const [tapeIndex, setTapeIndex] = createSignal<number>(0);
 
-	const currentScope = createMemo(() => {
-		const path = selectedPath();
-		return path !== null ? getScopeAt(draft(), path) : [];
+	const delivery = useOrderDelivery({
+		order: options.order,
+		registry: options.registry,
+		judgeMode: options.judgeMode,
+		clearedStars: options.clearedStars,
+		onRecordStars: options.onRecordStars,
 	});
-	const hasHoles = createMemo(() => findFirstHole(draft(), "") !== null);
-	const partCount = createMemo(() => countDraftSize(draft()));
-	const runSteps = createMemo(() => tapeIndex());
+
+	const draftBench = useDraftWorkbench({
+		orderId: () => options.order().id,
+		onDraftMutated: () => {
+			delivery.resetDelivery();
+			tapePlay.stopPlay();
+		},
+	});
+
+	const getExecutableTerm = (): Term | null => {
+		if (draftBench.hasHoles()) return null;
+		const order = options.order();
+		if (order.mode !== "build") return null;
+		return order.tests[0].args.reduce<Term>(
+			(fn, arg) => ({ kind: "app", fn, arg }),
+			draftToTerm(draftBench.draft(), []),
+		);
+	};
+
+	const tapePlay = useTapePlayback({
+		order: options.order,
+		registry: options.registry,
+		getExecutableTerm,
+		onRunPass: () => delivery.deliverRunSuccess(),
+		onRunExceeded: () => delivery.deliverRunExceeded(),
+	});
+
 	const runFailed = createMemo(() => {
 		const order = options.order();
-		return order.mode === "run" && deliveredStars() === null && tapeIndex() >= order.stepBudget;
+		return order.mode === "run" && delivery.deliveredStars() === null && tapePlay.tapeIndex() >= order.stepBudget;
 	});
-
-	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {
-		const order = options.order();
-		if (order.mode !== "build") return [];
-		const forbiddenSet = new Set(order.forbidden);
-		const judgeAll = options.judgeMode();
-		const currentOrderIndex = LEVELS.findIndex((item) => item.id === order.id);
-		const rawCandidates =
-			order.toolbox === "all"
-				? [
-						...COMBINATORS.slice(0, BUILTIN_COUNT).map((tool) => tool.id),
-						...COMBINATORS.slice(BUILTIN_COUNT)
-							.filter((tool) => {
-								if (tool.id === order.id) return false;
-								if (judgeAll) return true;
-								const sourceOrderId = getToolSource(tool.id);
-								if (sourceOrderId === null) return false;
-								const sourceIndex = LEVELS.findIndex((item) => item.id === sourceOrderId);
-								return (
-									sourceIndex >= 0 && (sourceIndex < currentOrderIndex || options.clearedStars().has(sourceOrderId))
-								);
-							})
-							.map((tool) => tool.id),
-					]
-				: order.toolbox;
-		const seen = new Set<string>();
-		const unique: GadgetId[] = [];
-		for (const id of rawCandidates) {
-			if (forbiddenSet.has(id) || seen.has(id) || getToolDefinition(id) === null) continue;
-			seen.add(id);
-			unique.push(id);
-		}
-		return unique;
-	});
-
-	const shelfLockedCount = createMemo(() => {
-		const order = options.order();
-		return order.mode === "build" && order.toolbox === "all"
-			? Math.max(0, COMBINATORS.length - BUILTIN_COUNT - options.clearedStars().size)
-			: 0;
-	});
-
-	const applyReplacement = (replacement: DraftTerm): void => {
-		const path = selectedPath();
-		if (path === null) return;
-		playSnapSound(combo());
-		setCombo(combo() + 1);
-		setHistory([...history(), draft()]);
-		const updated = setDraftAtPath(draft(), path, replacement);
-		setDraft(updated);
-		setSelectedPath(findFirstHole(updated, ""));
-		draftSaver.schedule(options.order().id, updated);
-		setRejected(null);
-		setDeliveredStars(null);
-		setPlayTerm(null);
-		setTape([]);
-		setTapeIndex(0);
-	};
-
-	const dismantleAtPath = (path: Path): void => {
-		playUndoSound();
-		setCombo(0);
-		setHistory([...history(), draft()]);
-		const updated = setDraftAtPath(draft(), path, { kind: "hole" });
-		setDraft(updated);
-		setSelectedPath(path);
-		draftSaver.schedule(options.order().id, updated);
-		setRejected(null);
-		setDeliveredStars(null);
-		setPlayTerm(null);
-		setTape([]);
-		setTapeIndex(0);
-	};
-
-	const fillLam = (): void => {
-		const available = PRINT_NAMES.find((candidate) => !currentScope().includes(candidate));
-		if (available !== void 0) applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });
-	};
-
-	const jumpToTapeIndex = (targetIndex: number): void => {
-		const currentTape = tape();
-		if (targetIndex < 0 || targetIndex >= currentTape.length) return;
-		playMoveSound();
-		setTapeIndex(targetIndex);
-		setPlayTerm(currentTape[targetIndex]);
-	};
 
 	const undo = (): void => {
-		if (options.order().mode === "run" || playTerm() !== null) {
-			if (tapeIndex() > 0) jumpToTapeIndex(tapeIndex() - 1);
+		if (options.order().mode === "run" || tapePlay.playTerm() !== null) {
+			tapePlay.undoTape();
 			return;
 		}
-		const past = history();
-		if (past.length === 0) return;
-		playUndoSound();
-		setCombo(0);
-		const previous = past[past.length - 1];
-		setHistory(past.slice(0, past.length - 1));
-		setDraft(previous);
-		setSelectedPath(findFirstHole(previous, ""));
-		draftSaver.schedule(options.order().id, previous);
-		setRejected(null);
-		setDeliveredStars(null);
+		draftBench.undoDraft();
 	};
 
 	const clearBench = (): void => {
-		playUndoSound();
-		setCombo(0);
 		const order = options.order();
 		if (order.mode === "run") {
-			setPlayTerm(order.initialTerm);
-			setTape([order.initialTerm]);
-			setTapeIndex(0);
-			setDeliveredStars(null);
+			tapePlay.resetTape(order.initialTerm);
+			delivery.resetDelivery();
 			return;
 		}
-		clearLevelDraft(order.id);
-		setDraft({ kind: "hole" });
-		setSelectedPath("");
-		setHistory([]);
-		setRejected(null);
-		setDeliveredStars(null);
-		setPlayTerm(null);
-		setTape([]);
-		setTapeIndex(0);
-	};
-
-	const stepRedexAt = (path: Path): void => {
-		const active = playTerm();
-		if (active === null) return;
-		const order = options.order();
-		const stepped = stepAt(active, path, options.registry, "");
-		if (stepped === null) return;
-		playStepEventSound(stepped.event, tapeIndex() + 1);
-		const updatedTape = [...tape().slice(0, tapeIndex() + 1), stepped.next];
-		setTape(updatedTape);
-		setTapeIndex(updatedTape.length - 1);
-		setPlayTerm(stepped.next);
-		if (order.mode === "run") {
-			if (
-				updatedTape.length - 1 <= order.stepBudget &&
-				termsEqual(stepped.next, order.targetTerm) &&
-				redexes(stepped.next, options.registry, "").length === 0
-			) {
-				playPassSound();
-				setDeliveredStars(3);
-				options.onRecordStars(order.id, 3);
-			} else if (updatedTape.length - 1 >= order.stepBudget) playPopExplosionSound();
-		}
-	};
-
-	const activeRedexes = createMemo(() => {
-		const term = playTerm();
-		return term !== null ? redexes(term, options.registry, "") : [];
-	});
-
-	const startOrStepPlay = (): void => {
-		const order = options.order();
-		if (order.mode === "run") {
-			const paths = activeRedexes();
-			if (paths.length > 0) stepRedexAt(paths[0]);
-			return;
-		}
-		if (hasHoles()) return;
-		const active = playTerm();
-		if (active === null) {
-			const applied = order.tests[0].args.reduce<Term>(
-				(fn, arg) => ({ kind: "app", fn, arg }),
-				draftToTerm(draft(), []),
-			);
-			playMoveSound();
-			setPlayTerm(applied);
-			setTape([applied]);
-			setTapeIndex(0);
-			return;
-		}
-		const stepped = stepLeftmost(active, options.registry, "");
-		if (stepped === null) {
-			playPassSound();
-			return;
-		}
-		playStepEventSound(stepped.event, tapeIndex() + 1);
-		const updatedTape = [...tape().slice(0, tapeIndex() + 1), stepped.next];
-		setTape(updatedTape);
-		setTapeIndex(updatedTape.length - 1);
-		setPlayTerm(stepped.next);
-	};
-
-	const fastForwardPlay = (): void => {
-		const order = options.order();
-		if (order.mode === "run" || hasHoles()) return;
-		const term = playTerm();
-		let current =
-			term !== null
-				? term
-				: order.tests[0].args.reduce<Term>((fn, arg) => ({ kind: "app", fn, arg }), draftToTerm(draft(), []));
-		const recorded = tape().length > 0 ? [...tape().slice(0, tapeIndex() + 1)] : [current];
-		for (let step = 0; step < 80; step += 1) {
-			const stepped = stepLeftmost(current, options.registry, "");
-			if (stepped === null) break;
-			current = stepped.next;
-			recorded.push(current);
-		}
-		playSnapSound(4);
-		setTape(recorded);
-		setTapeIndex(recorded.length - 1);
-		setPlayTerm(current);
+		draftBench.clearBenchDraft();
 	};
 
 	const deliverOrder = (): void => {
-		const order = options.order();
-		if (order.mode !== "build" || hasHoles()) return;
-		const candidate = draftToTerm(draft(), []);
-		const results = judgeOrder(candidate, order.tests, options.registry, 300);
-		const firstFailIndex = results.findIndex((item) => !item.passed);
-		if (firstFailIndex >= 0) {
-			playFailSound();
-			setRejected({ testCase: order.tests[firstFailIndex], result: results[firstFailIndex] });
-			return;
-		}
-		playPassSound();
-		setRejected(null);
-		const stars = partCount() <= order.parSize ? 3 : partCount() <= order.parSize + 2 ? 2 : 1;
-		setDeliveredStars(stars);
-		if (order.unlocksToolId !== void 0 && !options.registry.has(order.unlocksToolId)) {
-			const canonicalTool = getToolDefinition(order.unlocksToolId);
-			if (canonicalTool !== null) registerGadget(options.registry, canonicalTool.id, candidate, "level");
-		}
-		options.onRecordStars(order.id, stars);
-		saveLevelDraft(order.id, draft());
+		if (draftBench.hasHoles()) return;
+		delivery.deliverBuildOrder(draftBench.draft(), draftBench.partCount());
 	};
 
 	const xRayText = createMemo((): string => {
 		try {
-			const term = playTerm();
-			return printXRayTerm(term !== null ? term : draftToTerm(draft(), []), options.registry, 0);
+			const term = tapePlay.playTerm();
+			return printXRayTerm(term !== null ? term : draftToTerm(draftBench.draft(), []), options.registry, 0);
 		} catch {
 			return "装置尚有空槽未填满";
 		}
 	});
 
 	createEffect(() => {
-		draftSaver.flush();
+		draftBench.flushDraft();
 		const order = options.order();
 		const stars = options.clearedStars().get(order.id);
-		setRejected(null);
-		setCombo(0);
+		delivery.resetDelivery();
 		if (order.mode === "run") {
-			setPlayTerm(order.initialTerm);
-			setTape([order.initialTerm]);
-			setTapeIndex(0);
-			setDeliveredStars(null);
+			tapePlay.resetTape(order.initialTerm);
 			return;
 		}
 		const initialDraft = loadLevelDrafts()[order.id] ?? { kind: "hole" };
-		setDraft(initialDraft);
-		setSelectedPath(findFirstHole(initialDraft, ""));
-		setHistory([]);
-		setPlayTerm(null);
-		setTape([]);
-		setTapeIndex(0);
-		setDeliveredStars(
+		draftBench.loadDraft(initialDraft);
+		tapePlay.stopPlay();
+		delivery.setDeliveredStars(
 			stars !== void 0 &&
 				findFirstHole(initialDraft, "") === null &&
 				judgeOrder(draftToTerm(initialDraft, []), order.tests, options.registry, 300).every((item) => item.passed)
@@ -407,58 +153,51 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		if (event.key === "x" || event.key === "X") setIsXRay(!isXRay());
 		if (event.key === " " && options.order().mode === "build") {
 			event.preventDefault();
-			startOrStepPlay();
+			tapePlay.startOrStepPlay();
 		}
 	};
 
 	onMount(() => {
 		window.addEventListener("keydown", handleKeyDown);
-		window.addEventListener("beforeunload", draftSaver.flush);
+		window.addEventListener("beforeunload", draftBench.flushDraft);
 	});
 	onCleanup(() => {
 		window.removeEventListener("keydown", handleKeyDown);
-		window.removeEventListener("beforeunload", draftSaver.flush);
-		draftSaver.flush();
+		window.removeEventListener("beforeunload", draftBench.flushDraft);
+		draftBench.flushDraft();
 	});
 
 	return {
-		draft,
-		selectedPath,
-		playTerm,
-		tape,
-		tapeIndex,
-		activeRedexes,
+		draft: draftBench.draft,
+		selectedPath: draftBench.selectedPath,
+		playTerm: tapePlay.playTerm,
+		tape: tapePlay.tape,
+		tapeIndex: tapePlay.tapeIndex,
+		activeRedexes: tapePlay.activeRedexes,
 		isXRay,
 		xRayText,
-		shelfUnlockedIds,
-		shelfLockedCount,
-		currentScope,
-		rejected,
-		deliveredStars,
-		partCount,
-		runSteps,
+		shelfUnlockedIds: delivery.shelfUnlockedIds,
+		shelfLockedCount: delivery.shelfLockedCount,
+		currentScope: draftBench.currentScope,
+		rejected: delivery.rejected,
+		deliveredStars: delivery.deliveredStars,
+		partCount: draftBench.partCount,
+		runSteps: tapePlay.runSteps,
 		runFailed,
-		canUndo: () => (playTerm() !== null ? tapeIndex() > 0 : history().length > 0),
-		hasHoles,
-		applyReplacement,
-		dismantleAtPath,
-		fillLam,
-		jumpToTapeIndex,
+		canUndo: () => (tapePlay.playTerm() !== null ? tapePlay.canUndoTape() : draftBench.canUndoDraft()),
+		hasHoles: draftBench.hasHoles,
+		applyReplacement: draftBench.applyReplacement,
+		dismantleAtPath: draftBench.dismantleAtPath,
+		fillLam: draftBench.fillLam,
+		jumpToTapeIndex: tapePlay.jumpToTapeIndex,
 		undo,
 		clearBench,
-		startOrStepPlay,
-		fastForwardPlay,
-		stepRedexAt,
-		stopPlay: () => {
-			setPlayTerm(null);
-			setTape([]);
-			setTapeIndex(0);
-		},
+		startOrStepPlay: tapePlay.startOrStepPlay,
+		fastForwardPlay: tapePlay.fastForwardPlay,
+		stepRedexAt: tapePlay.stepRedexAt,
+		stopPlay: tapePlay.stopPlay,
 		toggleXRay: () => setIsXRay(!isXRay()),
-		selectHole: (path: Path) => {
-			playSnapSound(0);
-			setSelectedPath(path);
-		},
+		selectHole: draftBench.selectHole,
 		deliverOrder,
 	};
 }

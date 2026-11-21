@@ -1,9 +1,10 @@
 import { type JSX, Show, createSignal } from "solid-js";
 import { setMasterVolume } from "../../audio/synth";
 import type { SettingsState } from "../../engine/storage";
+import { useKeyScope } from "../keybus";
 
 interface MachineryPanelProps {
-	readonly initialTab?: "settings" | "about";
+	readonly initialTab?: "settings" | "controls" | "about";
 	readonly settings: SettingsState;
 	readonly onUpdateSettings: (updater: (prev: SettingsState) => SettingsState) => void;
 	readonly onResetData: () => void;
@@ -11,7 +12,7 @@ interface MachineryPanelProps {
 }
 
 export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
-	const [activeTab, setActiveTab] = createSignal<"settings" | "about">(props.initialTab ?? "settings");
+	const [activeTab, setActiveTab] = createSignal<"settings" | "controls" | "about">(props.initialTab ?? "settings");
 	const [isClosing, setIsClosing] = createSignal<boolean>(false);
 	const [confirmingReset, setConfirmingReset] = createSignal<boolean>(false);
 	let resetTimer: number | undefined;
@@ -35,6 +36,23 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 		setIsClosing(true);
 		setTimeout(props.onClose, 180);
 	};
+
+	useKeyScope({
+		id: "machinery-panel",
+		level: "modal",
+		bindings: [
+			{ key: ["Escape", "o"], handle: handleClose },
+			{
+				key: "Tab",
+				handle: (e) => {
+					const tabs: readonly ("settings" | "controls" | "about")[] = ["settings", "controls", "about"];
+					const currentIdx = tabs.indexOf(activeTab());
+					const nextIdx = e.shiftKey ? (currentIdx - 1 + tabs.length) % tabs.length : (currentIdx + 1) % tabs.length;
+					setActiveTab(tabs[nextIdx]);
+				},
+			},
+		],
+	});
 
 	const setVolume = (value: number): void => {
 		setMasterVolume(value);
@@ -74,6 +92,14 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						</button>
 						<button
 							type="button"
+							class={`machinery-tab-btn ${activeTab() === "controls" ? "active" : ""}`}
+							onClick={() => setActiveTab("controls")}
+						>
+							<span>⌨</span>
+							<span>操作指南</span>
+						</button>
+						<button
+							type="button"
 							class={`machinery-tab-btn ${activeTab() === "about" ? "active" : ""}`}
 							onClick={() => setActiveTab("about")}
 						>
@@ -81,7 +107,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 							<span>关于</span>
 						</button>
 					</div>
-					<button type="button" class="icon-btn" onClick={handleClose} title="关闭 (Esc)">
+					<button type="button" class="icon-btn" onClick={handleClose} title="关闭 (Esc / O)">
 						✕
 					</button>
 				</header>
@@ -177,6 +203,183 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 							>
 								{confirmingReset() ? "再次点击确认" : "清空整个存档"}
 							</button>
+						</div>
+					</section>
+				</Show>
+
+				<Show when={activeTab() === "controls"}>
+					<section class="machinery-section controls-section">
+						<div class="shortcut-group">
+							<div class="shortcut-group-title">装配与零件填入</div>
+							<div class="shortcut-row">
+								<span>开槽（λ 抽象机身）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Q</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>喂入（应用连接器 ◀）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">E</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>填入对应组合子（需未被禁用）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">I</span>
+									<span class="key-cap">S</span>
+									<span class="key-cap">K</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>填入作用域信号珠（0 为当前最内层）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">0</span>
+									<span>~</span>
+									<span class="key-cap">9</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>左右循环切换聚焦的空槽</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">A</span>
+									<span class="key-cap">D</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>拆解零件（回退为空槽）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Del</span>
+									<span>/</span>
+									<span class="key-cap">Backspace</span>
+									<span>或右键</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="shortcut-group">
+							<div class="shortcut-group-title">运转、试机与关卡</div>
+							<div class="shortcut-row">
+								<span>单步开动 / 单步规约</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Space</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>快进到底</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Shift</span>
+									<span>+</span>
+									<span class="key-cap">Space</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>纸带时间轴步退 / 步进</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">←</span>
+									<span class="key-cap">→</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>重置关卡纸带或工作台</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">R</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>验货交付 / 通关下一关</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Enter</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="shortcut-group">
+							<div class="shortcut-group-title">视口与界面辅助</div>
+							<div class="shortcut-row">
+								<span>集中画布（回到全景 100%）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">F</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>画布缩放</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">+</span>
+									<span class="key-cap">-</span>
+									<span>或滚轮</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>透视模式（展开组合子 λ 式）</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">X</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>显示 / 收起客人过关提示</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">H</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>工坊总览地图开关</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">M</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>设置面板与指南开关</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">O</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>关闭弹窗 / 返回主界面</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Esc</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>弹窗内切换标签页</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Tab</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>撤销上一步操作</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Z</span>
+									<span>或</span>
+									<span class="key-cap">Ctrl+Z</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="shortcut-group">
+							<div class="shortcut-group-title">剧情对话与接待台</div>
+							<div class="shortcut-row">
+								<span>推进对话 / 立即显现文本</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Space</span>
+									<span>/</span>
+									<span class="key-cap">Enter</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>选择对应数字分支选项</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">1</span>
+									<span>~</span>
+									<span class="key-cap">9</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>跳过剧情对话</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">Esc</span>
+								</div>
+							</div>
 						</div>
 					</section>
 				</Show>

@@ -9,6 +9,7 @@ import {
 	isToolUnlocked,
 } from "../../content";
 import { transitionView } from "../../utils/transition";
+import { useKeyScope } from "../keybus";
 
 interface WorkshopFolioProps {
 	readonly initialTab?: "orders" | "parts";
@@ -46,6 +47,15 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 		setIsClosing(true);
 		setTimeout(props.onClose, 180);
 	};
+
+	useKeyScope({
+		id: "workshop-folio",
+		level: "modal",
+		bindings: [
+			{ key: ["Escape", "m"], handle: handleClose },
+			{ key: "Tab", handle: () => void setActiveTab(activeTab() === "orders" ? "parts" : "orders") },
+		],
+	});
 
 	const isUnlocked = (index: number): boolean => isOrderUnlocked(index, props.clearedStars, props.judgeMode);
 

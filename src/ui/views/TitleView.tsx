@@ -1,6 +1,7 @@
 import { type JSX, Show, createSignal } from "solid-js";
 import { playPassSound, playSnapSound } from "../../audio/synth";
 import { getGadgetMeta } from "../../content";
+import { useKeyScope } from "../keybus";
 
 interface TitleViewProps {
 	readonly continueOrderCode: string;
@@ -30,6 +31,16 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 		playSnapSound(2);
 		props.onStart();
 	};
+
+	useKeyScope({
+		id: "title-view",
+		level: "view",
+		bindings: [
+			{ key: [" ", "Enter"], handle: handleStart },
+			{ key: "o", handle: props.onOpenSettings },
+			{ key: "m", handle: props.onOpenWorkshop },
+		],
+	});
 
 	return (
 		<div class={`title-screen-container ${isStarting() ? "title-exit" : ""}`}>
@@ -74,7 +85,13 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 				</div>
 
 				<div class="title-actions">
-					<button type="button" class="title-primary-btn" onClick={handleStart} disabled={isStarting()}>
+					<button
+						type="button"
+						class="title-primary-btn"
+						onClick={handleStart}
+						disabled={isStarting()}
+						title="开始游戏 (Space)"
+					>
 						<span>▶</span>
 						<span>{props.continueOrderCode === "1.1" ? "开始体验" : `继续关卡 · ${props.continueOrderCode}`}</span>
 					</button>

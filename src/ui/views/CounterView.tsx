@@ -8,6 +8,7 @@ import {
 	type TextLine,
 	isChoicesLine,
 } from "../../content/dialogue";
+import { useKeyScope } from "../keybus";
 
 interface CounterViewProps {
 	readonly beat?: DialogueBeat;
@@ -111,6 +112,24 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 		if (lineIndex() + 1 < activeLines().length) setLineIndex(lineIndex() + 1);
 		else props.onComplete();
 	};
+
+	useKeyScope({
+		id: "counter-dialogue",
+		level: "modal",
+		active: () => props.beat !== void 0,
+		bindings: [
+			{ key: [" ", "Enter"], handle: handleAdvance },
+			{ key: "Escape", handle: props.onSkip },
+			{
+				predicate: (event) => /^[1-9]$/.test(event.key) && isChoicesLine(currentLine()),
+				handle: (event) => {
+					const index = Number.parseInt(event.key, 10) - 1;
+					const choices = currentChoices();
+					if (index >= 0 && index < choices.length) chooseBranch(choices[index][1]);
+				},
+			},
+		],
+	});
 
 	return (
 		<div

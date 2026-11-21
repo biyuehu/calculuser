@@ -1,9 +1,11 @@
 import { type JSX, Show, createEffect, createSignal } from "solid-js";
+import { playFailSound } from "../../audio/synth";
 import type { OrderLevel } from "../../content";
 import type { Registry } from "../../engine/gadget";
 import { PRINT_NAMES } from "../../engine/parse";
 import { useUiPreferences } from "../../hooks/useUiPreferences";
 import { useWorkbenchSession } from "../../hooks/useWorkbenchSession";
+import { useKeyScope } from "../keybus";
 import { DeliveryCounter } from "../workbench/panels/DeliveryCounter";
 import { OrderSlip } from "../workbench/panels/OrderSlip";
 import { PressureGauge } from "../workbench/panels/PressureGauge";
@@ -13,6 +15,7 @@ import { DraftNode } from "../workbench/term/DraftNode";
 import { TermVisual } from "../workbench/term/TermVisual";
 
 interface WorkbenchViewProps {
+	readonly active?: boolean;
 	readonly order: OrderLevel;
 	readonly registry: Registry;
 	readonly judgeMode: boolean;
@@ -43,6 +46,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 	const [panX, setPanX] = createSignal<number>(0);
 	const [panY, setPanY] = createSignal<number>(0);
 	const [levelTransitioning, setLevelTransitioning] = createSignal<boolean>(false);
+	const [showHint, setShowHint] = createSignal<boolean>(false);
 	let isPanning = false;
 	let panStartX = 0;
 	let panStartY = 0;
@@ -52,8 +56,119 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setPanX(0);
 		setPanY(0);
 		setZoom(1);
+		setShowHint(false);
 		setLevelTransitioning(true);
 		setTimeout(() => setLevelTransitioning(false), 380);
+	});
+
+	useKeyScope({
+		id: "workbench-view",
+		level: "view",
+		active: () => props.active !== false,
+		bindings: [
+			{ key: "Escape", handle: props.onBackToTitle },
+			{
+				key: "z",
+				handle: (event) => {
+					if (event.ctrlKey || !event.metaKey) session.undo();
+				},
+			},
+			{
+				key: "q",
+				handle: () => {
+					if (
+						props.order.mode === "build" &&
+						session.playTerm() === null &&
+						props.order.allowBlueprint !== false &&
+						session.currentScope().length < PRINT_NAMES.length
+					)
+						session.fillLam();
+					else playFailSound();
+				},
+			},
+			{
+				key: "e",
+				handle: () => {
+					if (props.order.mode === "build" && session.playTerm() === null && props.order.allowBlueprint !== false)
+						session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } });
+					else playFailSound();
+				},
+			},
+			{
+				key: "i",
+				handle: () => {
+					if (props.order.mode === "build" && session.playTerm() === null && session.shelfUnlockedIds().includes("I"))
+						session.applyReplacement({ kind: "gad", id: "I" });
+					else playFailSound();
+				},
+			},
+			{
+				key: "s",
+				handle: () => {
+					if (props.order.mode === "build" && session.playTerm() === null && session.shelfUnlockedIds().includes("S"))
+						session.applyReplacement({ kind: "gad", id: "S" });
+					else playFailSound();
+				},
+			},
+			{ key: "o", handle: props.onOpenSettings },
+			{
+				key: "k",
+				handle: () => {
+					if (props.order.mode === "build" && session.playTerm() === null && session.shelfUnlockedIds().includes("K"))
+						session.applyReplacement({ kind: "gad", id: "K" });
+					else playFailSound();
+				},
+			},
+			{
+				predicate: (event) => /^[0-9]$/.test(event.key),
+				handle: (event) => {
+					if (props.order.mode === "build" && session.playTerm() === null) {
+						const digit = Number.parseInt(event.key, 10);
+						const scope = session.currentScope();
+						const targetIndex = scope.length - 1 - digit;
+						if (targetIndex >= 0 && targetIndex < scope.length)
+							session.applyReplacement({ kind: "var", name: scope[targetIndex] });
+						else playFailSound();
+					}
+				},
+			},
+			{ key: "x", handle: props.onToggleXRay },
+			{ key: "m", handle: props.onOpenWorkshop },
+			{ key: "h", handle: () => setShowHint(!showHint()) },
+			{
+				key: "f",
+				handle: () => {
+					setPanX(0);
+					setPanY(0);
+					setZoom(1);
+				},
+			},
+			{ key: ["+", "="], handle: () => setZoom(Math.min(2, zoom() + 0.15)) },
+			{ key: ["-", "_"], handle: () => setZoom(Math.max(0.45, zoom() - 0.15)) },
+			{ key: "r", handle: session.clearBench },
+			{ key: "ArrowLeft", handle: session.stepBackward },
+			{ key: "ArrowRight", handle: session.stepForward },
+			{ key: "a", handle: () => session.cycleHoleFocus("left") },
+			{ key: "d", handle: () => session.cycleHoleFocus("right") },
+			{ key: ["Delete", "Backspace"], handle: session.dismantleSelected },
+			{
+				key: "Enter",
+				handle: () => {
+					if (session.deliveredStars() !== null) {
+						if (!props.isLastOrder) props.onNextOrder();
+					} else if (props.order.mode === "build" && !session.hasHoles()) {
+						session.deliverOrder();
+					}
+				},
+			},
+			{
+				key: " ",
+				handle: (event) => {
+					if (event.shiftKey) session.fastForwardPlay();
+					else session.startOrStepPlay();
+				},
+			},
+		],
 	});
 
 	return (
@@ -80,7 +195,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							class="icon-btn"
 							onClick={session.startOrStepPlay}
 							disabled={session.hasHoles()}
-							title="单步试机 (Space)"
+							title={session.playTerm() === null ? "开动 (Space)" : "单步 (Space)"}
 						>
 							<span>▶</span>
 							<span>{session.playTerm() === null ? "开动" : "单步"}</span>
@@ -90,13 +205,13 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							class="icon-btn"
 							onClick={session.fastForwardPlay}
 							disabled={session.hasHoles()}
-							title="快进到底"
+							title="快进 (Shift+Space)"
 						>
 							<span>⏭</span>
 							<span>快进</span>
 						</button>
 						<Show when={session.playTerm() !== null}>
-							<button type="button" class="icon-btn active" onClick={session.stopPlay} title="停止试机">
+							<button type="button" class="icon-btn active" onClick={session.stopPlay} title="停机 (Space)">
 								<span>■</span>
 								<span>停机</span>
 							</button>
@@ -106,20 +221,22 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						type="button"
 						class={`icon-btn ${session.isXRay() ? "active" : ""}`}
 						onClick={session.toggleXRay}
-						title="透视模式 (X)"
+						title="透视 (X)"
 					>
 						<span>◎</span>
 						<span>透视</span>
 					</button>
-					<button type="button" class="icon-btn" onClick={props.onOpenWorkshop} title="工坊总览">
+					<button type="button" class="icon-btn" onClick={props.onOpenWorkshop} title="工坊 (M)">
 						<span>▦</span>
 						<span>工坊</span>
 					</button>
-					<button type="button" class="icon-btn" onClick={props.onOpenSettings} title="设置">
+					<button type="button" class="icon-btn" onClick={props.onOpenSettings} title="设置 (O)">
 						<span>⚙</span>
+						<span>设置</span>
 					</button>
-					<button type="button" class="icon-btn" onClick={props.onBackToTitle} title="返回主界面">
+					<button type="button" class="icon-btn" onClick={props.onBackToTitle} title="主页 (Esc)">
 						<span>⌂</span>
+						<span>主页</span>
 					</button>
 				</div>
 			</header>
@@ -227,6 +344,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					runSteps={session.runSteps()}
 					runFailed={session.runFailed()}
 					transitioning={levelTransitioning()}
+					showHint={showHint()}
+					onToggleHint={() => setShowHint(!showHint())}
 				/>
 
 				<DeliveryCounter
@@ -248,10 +367,15 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					class="zoom-controls"
 					style={{ left: props.order.mode === "build" ? `${ui.shelfWidth() + 24}px` : "16px" }}
 				>
-					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))}>
+					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))} title="放大 (+)">
 						＋
 					</button>
-					<button type="button" class="icon-btn" onClick={() => setZoom(Math.max(0.45, zoom() - 0.15))}>
+					<button
+						type="button"
+						class="icon-btn"
+						onClick={() => setZoom(Math.max(0.45, zoom() - 0.15))}
+						title="缩小 (-)"
+					>
 						－
 					</button>
 					<button
@@ -262,11 +386,16 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							setPanX(0);
 							setPanY(0);
 						}}
-						title="回到全景"
+						title="回到全景 (F)"
 					>
 						⌖
 					</button>
-					<button type="button" class="icon-btn" onClick={session.clearBench}>
+					<button
+						type="button"
+						class="icon-btn"
+						onClick={session.clearBench}
+						title={props.order.mode === "run" ? "重置残局 (R)" : "清空桌面 (R)"}
+					>
 						{props.order.mode === "run" ? "重置残局" : "清空桌面"}
 					</button>
 				</div>

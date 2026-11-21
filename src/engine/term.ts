@@ -1,9 +1,11 @@
+import type { PRINT_NAMES } from "./parse";
+
 export type GadgetId = string;
 export type Path = string;
 
 export type Term =
-	| { readonly kind: "var"; readonly index: number }
-	| { readonly kind: "lam"; readonly body: Term }
+	| { readonly kind: "var"; readonly index: number; readonly name: (typeof PRINT_NAMES)[number] }
+	| { readonly kind: "lam"; readonly param: (typeof PRINT_NAMES)[number]; readonly body: Term }
 	| { readonly kind: "app"; readonly fn: Term; readonly arg: Term }
 	| { readonly kind: "gad"; readonly id: GadgetId }
 	| { readonly kind: "atom"; readonly name: string };
@@ -14,9 +16,9 @@ export const app = (fn: Term, arg: Term): Term => ({ kind: "app", fn, arg });
 export function shift(term: Term, delta: number, cutoff: number): Term {
 	switch (term.kind) {
 		case "var":
-			return term.index >= cutoff ? { kind: "var", index: term.index + delta } : term;
+			return term.index >= cutoff ? { kind: "var", index: term.index + delta, name: term.name } : term;
 		case "lam":
-			return { kind: "lam", body: shift(term.body, delta, cutoff + 1) };
+			return { kind: "lam", param: term.param, body: shift(term.body, delta, cutoff + 1) };
 		case "app":
 			return { kind: "app", fn: shift(term.fn, delta, cutoff), arg: shift(term.arg, delta, cutoff) };
 		case "gad":
@@ -30,7 +32,7 @@ export function subst(term: Term, targetIndex: number, replacement: Term): Term 
 		case "var":
 			return term.index === targetIndex ? replacement : term;
 		case "lam":
-			return { kind: "lam", body: subst(term.body, targetIndex + 1, shift(replacement, 1, 0)) };
+			return { kind: "lam", param: term.param, body: subst(term.body, targetIndex + 1, shift(replacement, 1, 0)) };
 		case "app":
 			return {
 				kind: "app",

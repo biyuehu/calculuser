@@ -2,6 +2,7 @@ import { COMBINATORS } from "../content/data/combinators";
 import type { ToolDefinition } from "../content/types";
 import type { Registry } from "./gadget";
 import { judgeNormalize } from "./judge";
+import type { PRINT_NAMES } from "./parse";
 import { type Term, app, atom } from "./term";
 
 export type Ty =
@@ -237,6 +238,7 @@ function parseSimpleLambda(text: string): Term {
 			const param = trimmed.slice(1, dotIdx).trim();
 			return {
 				kind: "lam",
+				param: param as (typeof PRINT_NAMES)[number],
 				body: parseScoped(trimmed.slice(dotIdx + 1), [param, ...scope]),
 			};
 		}
@@ -259,7 +261,7 @@ function parseSimpleLambda(text: string): Term {
 					return parseAppChain(sub);
 				}
 				const sIdx = scope.indexOf(tok);
-				return sIdx >= 0 ? { kind: "var", index: sIdx } : atom(tok);
+				return sIdx >= 0 ? { kind: "var", index: sIdx, name: tok as (typeof PRINT_NAMES)[number] } : atom(tok);
 			};
 			cur = parseNextAtom();
 			while (idx < items.length) {

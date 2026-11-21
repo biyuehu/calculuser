@@ -1,11 +1,12 @@
+import type { PRINT_NAMES } from "./parse";
 import type { GadgetId, Path, Term } from "./term";
 
 export type DraftTerm =
 	| { readonly kind: "hole" }
-	| { readonly kind: "var"; readonly name: string }
+	| { readonly kind: "var"; readonly name: (typeof PRINT_NAMES)[number] }
 	| { readonly kind: "atom"; readonly name: string }
 	| { readonly kind: "gad"; readonly id: GadgetId }
-	| { readonly kind: "lam"; readonly param: string; readonly body: DraftTerm }
+	| { readonly kind: "lam"; readonly param: (typeof PRINT_NAMES)[number]; readonly body: DraftTerm }
 	| { readonly kind: "app"; readonly fn: DraftTerm; readonly arg: DraftTerm };
 
 export function findFirstHole(draft: DraftTerm, path: Path): Path | null {
@@ -28,8 +29,8 @@ export function setDraftAtPath(draft: DraftTerm, path: Path, replacement: DraftT
 	return draft;
 }
 
-export function getScopeAt(draft: DraftTerm, path: Path): readonly string[] {
-	const scope: string[] = [];
+export function getScopeAt(draft: DraftTerm, path: Path): readonly (typeof PRINT_NAMES)[number][] {
+	const scope: (typeof PRINT_NAMES)[number][] = [];
 	let current = draft;
 	for (const character of path)
 		if (character === "b" && current.kind === "lam") {
@@ -72,10 +73,10 @@ export function draftToTerm(draft: DraftTerm, env: readonly string[]): Term {
 		case "var": {
 			const foundPosition = env.lastIndexOf(draft.name);
 			if (foundPosition < 0) throw new Error(`Unbound variable: ${draft.name}`);
-			return { kind: "var", index: env.length - 1 - foundPosition };
+			return { kind: "var", index: env.length - 1 - foundPosition, name: draft.name };
 		}
 		case "lam":
-			return { kind: "lam", body: draftToTerm(draft.body, [...env, draft.param]) };
+			return { kind: "lam", param: draft.param, body: draftToTerm(draft.body, [...env, draft.param]) };
 		case "app":
 			return { kind: "app", fn: draftToTerm(draft.fn, env), arg: draftToTerm(draft.arg, env) };
 	}

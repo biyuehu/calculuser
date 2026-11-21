@@ -1,13 +1,13 @@
 import type { Registry } from "./gadget";
 import type { Term } from "./term";
 
-export const PRINT_NAMES: readonly string[] = [
+export const PRINT_NAMES = [
 	"x",
 	"y",
 	"z",
-	"w",
 	"u",
 	"v",
+	"w",
 	"a",
 	"b",
 	"c",
@@ -28,7 +28,7 @@ export const PRINT_NAMES: readonly string[] = [
 	"r",
 	"s",
 	"t",
-];
+] as const;
 
 interface ParseState {
 	readonly source: string;
@@ -39,10 +39,10 @@ function skipWhitespace(state: ParseState): void {
 	while (state.cursor < state.source.length && /\s/.test(state.source[state.cursor])) state.cursor += 1;
 }
 
-function readIdentifier(state: ParseState): string {
+function readIdentifier(state: ParseState): (typeof PRINT_NAMES)[number] {
 	const start = state.cursor;
 	while (state.cursor < state.source.length && /[A-Za-z0-9_:]/.test(state.source[state.cursor])) state.cursor += 1;
-	return state.source.slice(start, state.cursor);
+	return state.source.slice(start, state.cursor) as (typeof PRINT_NAMES)[number];
 }
 
 function parseAtomOrVar(state: ParseState, env: readonly string[]): Term | null {
@@ -68,7 +68,7 @@ function parseAtomOrVar(state: ParseState, env: readonly string[]): Term | null 
 	if (/^[A-Z]/.test(identifier)) return { kind: "atom", name: identifier };
 	const boundPosition = env.lastIndexOf(identifier);
 	if (boundPosition < 0) throw new Error(`Unbound variable: ${identifier}`);
-	return { kind: "var", index: env.length - 1 - boundPosition };
+	return { kind: "var", index: env.length - 1 - boundPosition, name: identifier };
 }
 
 function parseExpr(state: ParseState, env: readonly string[]): Term {
@@ -81,7 +81,7 @@ function parseExpr(state: ParseState, env: readonly string[]): Term {
 		skipWhitespace(state);
 		if (state.source[state.cursor] !== ".") throw new Error("Expected '.' after lambda parameter");
 		state.cursor += 1;
-		return { kind: "lam", body: parseExpr(state, [...env, param]) };
+		return { kind: "lam", param, body: parseExpr(state, [...env, param]) };
 	}
 	let current = parseAtomOrVar(state, env);
 	if (current === null) throw new Error(`Expected expression at position ${state.cursor}`);
@@ -100,54 +100,45 @@ export function parseLambda(source: string): Term {
 	return parsed;
 }
 
-export function printTerm(term: Term, depth: number): string {
+export function printTerm(term: Term): string {
 	switch (term.kind) {
-		case "var": {
-			const position = depth - 1 - term.index;
-			return position >= 0 && position < PRINT_NAMES.length ? PRINT_NAMES[position] : `v${term.index}`;
-		}
+		case "var":
+			return term.name;
 		case "atom":
 			return term.name;
 		case "gad":
 			return term.id;
 		case "lam":
-			return `λ${depth < PRINT_NAMES.length ? PRINT_NAMES[depth] : `x${depth}`}.${printTerm(term.body, depth + 1)}`;
+			return `λ${term.param}.${printTerm(term.body)}`;
 		case "app": {
-			const fnStr = term.fn.kind === "lam" ? `(${printTerm(term.fn, depth)})` : printTerm(term.fn, depth);
+			const fnStr = term.fn.kind === "lam" ? `(${printTerm(term.fn)})` : printTerm(term.fn);
 			const argStr =
-				term.arg.kind === "app" || term.arg.kind === "lam"
-					? `(${printTerm(term.arg, depth)})`
-					: printTerm(term.arg, depth);
+				term.arg.kind === "app" || term.arg.kind === "lam" ? `(${printTerm(term.arg)})` : printTerm(term.arg);
 			return `${fnStr} ${argStr}`;
 		}
 	}
 }
 
-export function printXRayTerm(term: Term, registry: Registry, depth: number): string {
+export function printXRayTerm(term: Term, registry: Registry): string {
 	switch (term.kind) {
-		case "var": {
-			const position = depth - 1 - term.index;
-			return position >= 0 && position < PRINT_NAMES.length ? PRINT_NAMES[position] : `v${term.index}`;
-		}
+		case "var":
+			return term.name;
 		case "atom":
 			return term.name;
 		case "gad": {
 			if (term.id === "I" || term.id === "K" || term.id === "S") return term.id;
 			const entry = registry.get(term.id);
-			if (entry !== void 0) return `(${printXRayTerm(entry.def, registry, depth)})`;
+			if (entry !== void 0) return `(${printXRayTerm(entry.def, registry)})`;
 			return term.id;
 		}
 		case "lam":
-			return `λ${depth < PRINT_NAMES.length ? PRINT_NAMES[depth] : `x${depth}`}.${printXRayTerm(term.body, registry, depth + 1)}`;
+			return `λ${term.param}.${printXRayTerm(term.body, registry)}`;
 		case "app": {
-			const fnStr =
-				term.fn.kind === "lam"
-					? `(${printXRayTerm(term.fn, registry, depth)})`
-					: printXRayTerm(term.fn, registry, depth);
+			const fnStr = term.fn.kind === "lam" ? `(${printXRayTerm(term.fn, registry)})` : printXRayTerm(term.fn, registry);
 			const argStr =
 				term.arg.kind === "app" || term.arg.kind === "lam"
-					? `(${printXRayTerm(term.arg, registry, depth)})`
-					: printXRayTerm(term.arg, registry, depth);
+					? `(${printXRayTerm(term.arg, registry)})`
+					: printXRayTerm(term.arg, registry);
 			return `${fnStr} ${argStr}`;
 		}
 	}

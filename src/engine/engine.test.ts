@@ -23,8 +23,8 @@ import { termsEqual } from "./term";
 
 describe("Calculuser core engine", () => {
 	it("parses and prints lambda expressions cleanly", () => {
-		expect(printTerm(parseLambda("λx.λy. x"), 0)).toBe("λx.λy.x");
-		expect(printTerm(parseLambda("λf.λx. f (f x)"), 0)).toBe("λx.λy.x (x y)");
+		expect(printTerm(parseLambda("λx.λy. x"))).toBe("λx.λy.x");
+		expect(printTerm(parseLambda("λf.λx. f (f x)"))).toBe("λf.λx.f (f x)");
 	});
 
 	it("evaluates S K K A -> A via play delta-reduction with copy events", () => {

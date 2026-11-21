@@ -87,7 +87,9 @@ export function stepLeftmost(term: Term, registry: Registry, path: Path): StepRe
 	}
 	if (term.kind === "lam") {
 		const bodyStep = stepLeftmost(term.body, registry, `${path}b`);
-		return bodyStep !== null ? { next: { kind: "lam", body: bodyStep.next }, event: bodyStep.event } : null;
+		return bodyStep !== null
+			? { next: { kind: "lam", param: term.param, body: bodyStep.next }, event: bodyStep.event }
+			: null;
 	}
 	return null;
 }
@@ -97,7 +99,7 @@ export function stepAt(term: Term, targetPath: Path, registry: Registry, current
 	const segment = targetPath[currentPath.length];
 	if (term.kind === "lam" && segment === "b") {
 		const res = stepAt(term.body, targetPath, registry, `${currentPath}b`);
-		return res !== null ? { next: { kind: "lam", body: res.next }, event: res.event } : null;
+		return res !== null ? { next: { kind: "lam", param: term.param, body: res.next }, event: res.event } : null;
 	}
 	if (term.kind === "app" && segment === "f") {
 		const res = stepAt(term.fn, targetPath, registry, `${currentPath}f`);

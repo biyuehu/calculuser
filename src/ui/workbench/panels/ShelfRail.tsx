@@ -37,7 +37,7 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 						<button
 							type="button"
 							class="shelf-item"
-							title={props.canAddLam ? "开槽" : "已达最大嵌套深度限制"}
+							title={props.canAddLam ? "开槽 (Q)" : "已达最大嵌套深度限制"}
 							disabled={!props.hasSelectedHole}
 							onClick={props.onFillLam}
 						>
@@ -48,7 +48,7 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 					<button
 						type="button"
 						class="shelf-item"
-						title="喂入"
+						title="喂入 (E)"
 						disabled={!props.hasSelectedHole}
 						onClick={props.onFillApp}
 					>
@@ -95,7 +95,7 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 							<button
 								type="button"
 								class="shelf-item"
-								title={meta.name}
+								title={`${meta.name}${gadgetId === "I" ? " (I)" : gadgetId === "S" ? " (S)" : gadgetId === "K" ? " (K)" : ""}`}
 								disabled={!props.hasSelectedHole}
 								onClick={() => props.onFillGad(gadgetId)}
 							>

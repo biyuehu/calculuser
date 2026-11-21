@@ -6,12 +6,12 @@
 	--surface-hover: #ebe4d6;
 	--border-subtle: #dbd3c3;
 	--border-strong: #a39580;
-	--border-accent: #f97316;
+	--border-accent: #a2889a;
 	--text-primary: #1e1914;
 	--text-secondary: #584e41;
 	--text-muted: #8a7e6e;
-	--accent-clay: #f97316;
-	--accent-clay-strong: #c2410c;
+	--accent-clay: #d4adb6;
+	--accent-clay-strong: #a0859a;
 	--accent-clay-subtle: #fff7ed;
 	--accent-success: #16a34a;
 	--accent-success-strong: #15803d;
@@ -444,6 +444,22 @@ body {
 .order-reject-hint {
 	color: var(--accent-danger);
 	margin-top: 2px;
+}
+
+.order-hint-box {
+	background: var(--surface-2);
+	border: 1.5px dashed var(--accent-clay);
+	border-radius: 8px;
+	padding: 8px 10px;
+	font-size: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.order-hint-label {
+	font-weight: 700;
+	color: var(--accent-clay-strong);
 }
 
 @keyframes shakeBox {
@@ -1889,6 +1905,63 @@ body {
 	gap: 16px;
 	font-size: 13px;
 	overflow-y: auto;
+}
+
+.controls-section {
+	gap: 14px;
+	max-height: 60vh;
+}
+
+.shortcut-group {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	background: var(--surface-2);
+	border: 1px solid var(--border-subtle);
+	border-radius: 8px;
+	padding: 10px 12px;
+}
+
+.shortcut-group-title {
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--accent-clay-strong);
+	letter-spacing: 0.5px;
+	margin-bottom: 2px;
+}
+
+.shortcut-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.shortcut-key-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	color: var(--text-muted);
+}
+
+.key-cap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	border-radius: 4px;
+	background: #ffffff;
+	border: 1px solid var(--border-strong);
+	border-bottom: 2px solid var(--border-strong);
+	font-size: 10.5px;
+	font-weight: 700;
+	color: var(--text-primary);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .control-row {

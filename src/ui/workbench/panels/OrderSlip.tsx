@@ -16,6 +16,8 @@ interface OrderSlipProps {
 	readonly runSteps: number;
 	readonly runFailed: boolean;
 	readonly transitioning: boolean;
+	readonly showHint?: boolean;
+	readonly onToggleHint?: () => void;
 }
 
 export function OrderSlip(props: OrderSlipProps): JSX.Element {
@@ -34,6 +36,15 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 			<div class="order-slip-header">
 				<span>{props.order.mode === "run" ? "运转试炼" : "客人的订单"}</span>
 				<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
+					<button
+						type="button"
+						class={`icon-btn ${props.showHint ? "active" : ""}`}
+						style={{ height: "22px", padding: "0 6px", "font-size": "11px" }}
+						onClick={props.onToggleHint}
+						title="切换提示 (H)"
+					>
+						💡
+					</button>
 					<Show when={props.order.mode === "build" ? props.order : null}>
 						{(buildOrder) => (
 							<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>标准 {buildOrder().parSize} 件</span>
@@ -52,6 +63,13 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 
 			<Show when={!ui.orderSlipCollapsed()}>
 				<p class="order-guest-line">{props.order.guestLine}</p>
+
+				<Show when={props.showHint}>
+					<div class="order-hint-box">
+						<span class="order-hint-label">💡 提示：</span>
+						<span class="order-reject-hint">{props.order.hintOnFail}</span>
+					</div>
+				</Show>
 
 				<Show when={props.order.mode === "build" ? props.order : null}>
 					{(buildOrder) => (

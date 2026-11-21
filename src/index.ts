@@ -1,6 +1,5 @@
 import { render } from "solid-js/web";
 import "./styles/index.css";
-import { App } from "./App";
+import { Root } from "./ui/Root";
 
-const root = document.getElementById("root");
-if (root !== null) render(() => App(), root);
+((root) => root !== null && render(() => Root(), root))(document.getElementById("root"));

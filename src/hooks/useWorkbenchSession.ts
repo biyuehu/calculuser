@@ -1,4 +1,4 @@
-import { type Accessor, createEffect, createMemo, onCleanup, onMount } from "solid-js";
+import { type Accessor, createEffect, createMemo, onCleanup, onMount, untrack } from "solid-js";
 import type { OrderLevel } from "../content";
 import { type DraftTerm, draftToTerm } from "../engine/draft";
 import type { Registry } from "../engine/gadget";
@@ -130,9 +130,9 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	});
 
 	createEffect(() => {
-		draftBench.flushDraft();
 		const order = options.order();
-		const stars = options.clearedStars().get(order.id);
+		draftBench.flushDraft();
+		const stars = untrack(() => options.clearedStars().get(order.id));
 		delivery.resetDelivery();
 		if (order.mode === "run") {
 			tapePlay.resetTape(order.initialTerm);

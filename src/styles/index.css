@@ -183,7 +183,6 @@ body {
 	pointer-events: auto;
 	padding: 36px;
 	border-radius: 16px;
-	transition: transform 0.28s var(--ease-overshoot);
 	animation: workbenchAssemblyIn 0.32s var(--ease-overshoot);
 }
 
@@ -630,7 +629,6 @@ body {
 	border: 2px solid var(--socket-color, #aba495);
 	background: #ffffff;
 	box-shadow: 0 3px 12px rgba(40, 36, 30, 0.08), 0 1px 3px rgba(40, 36, 30, 0.04);
-	animation: partPop 0.18s var(--ease-overshoot);
 }
 
 .machine-socket {
@@ -658,7 +656,6 @@ body {
 	border: 1.5px solid var(--border-subtle);
 	background: var(--surface-2);
 	box-shadow: 0 2px 8px rgba(40, 36, 30, 0.05);
-	animation: partPop 0.18s var(--ease-overshoot);
 }
 
 .machine-app.redex-glow {
@@ -702,7 +699,6 @@ body {
 	display: inline-block;
 	box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.35), inset 3px 3px 6px rgba(255, 255, 255, 0.8), 0 2px 6px
 		rgba(28, 26, 23, 0.22);
-	animation: partPop 0.18s var(--ease-overshoot);
 }
 
 .atom-token {
@@ -720,7 +716,6 @@ body {
 	font-size: 13px;
 	font-weight: 800;
 	box-shadow: 0 2px 5px rgba(28, 26, 23, 0.1);
-	animation: partPop 0.18s var(--ease-overshoot);
 }
 
 .gadget-token {
@@ -735,7 +730,6 @@ body {
 	font-size: 12px;
 	font-weight: 600;
 	box-shadow: 0 2px 6px rgba(40, 36, 30, 0.06);
-	animation: partPop 0.18s var(--ease-overshoot);
 }
 
 .slot-hole {
@@ -751,7 +745,7 @@ body {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	transition: transform 0.12s var(--ease-overshoot);
+	transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .slot-hole.selected {

@@ -57,22 +57,25 @@ export function Root(): JSX.Element {
 	const initialStars = new Map(Object.entries(saved.stars));
 	syncRegistryWithUnlocked(registry, initialStars, initialSettings.judgeMode);
 
-	const savedOrderIndex =
-		initialSession.lastOrderId !== void 0 ? LEVELS.findIndex((item) => item.id === initialSession.lastOrderId) : -1;
+	const initialIndex = (() => {
+		const savedIdx =
+			initialSession.lastOrderId !== void 0 ? LEVELS.findIndex((item) => item.id === initialSession.lastOrderId) : -1;
+		return savedIdx >= 0 ? savedIdx : getContinueOrderIndex(initialStars);
+	})();
 	const [screen, setScreen] = createSignal<"title" | "workbench">(
-		savedOrderIndex >= 0 ? initialSession.screen : "title",
+		initialSession.lastOrderId !== void 0 ? initialSession.screen : "title",
 	);
 	const [showFolio, setShowFolio] = createSignal<boolean>(false);
 	const [folioTab, setFolioTab] = createSignal<"orders" | "parts">("orders");
 	const [showMachinery, setShowMachinery] = createSignal<boolean>(false);
-	const [machineryTab, setMachineryTab] = createSignal<"settings" | "about">("settings");
+	const [machineryTab, setMachineryTab] = createSignal<"settings" | "controls" | "about">("settings");
 	const [settings, setSettings] = createSignal<SettingsState>(initialSettings);
 
 	createEffect(() => {
 		if (typeof document !== "undefined")
 			document.documentElement.classList.toggle("reduced-motion", settings().reducedMotion);
 	});
-	const [orderIndex, setOrderIndex] = createSignal<number>(savedOrderIndex >= 0 ? savedOrderIndex : 0);
+	const [orderIndex, setOrderIndex] = createSignal<number>(initialIndex);
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
 	);
@@ -83,10 +86,7 @@ export function Root(): JSX.Element {
 
 	const currentOrder = createMemo(() => LEVELS[orderIndex()]);
 
-	const continueIndex = createMemo((): number =>
-		savedOrderIndex >= 0 ? savedOrderIndex : getContinueOrderIndex(clearedStars()),
-	);
-	const continueCode = createMemo((): string => getOrderCode(LEVELS[continueIndex()].id));
+	const continueCode = createMemo((): string => getOrderCode(LEVELS[orderIndex()].id));
 
 	const selectOrder = (index: number): void => {
 		setOrderIndex(index);
@@ -114,9 +114,12 @@ export function Root(): JSX.Element {
 		setTimeout(() => window.location.reload(), 100);
 	};
 
-	const openFolio = (tab: "orders" | "parts"): void => {
-		setFolioTab(tab);
-		setShowFolio(true);
+	const toggleFolio = (tab: "orders" | "parts"): void => {
+		if (showFolio()) setShowFolio(false);
+		else {
+			setFolioTab(tab);
+			setShowFolio(true);
+		}
 	};
 
 	const handleNextOrderAdvance = (): void => {
@@ -150,7 +153,7 @@ export function Root(): JSX.Element {
 			setTimeout(() => transitionView(() => selectOrder(orderIndex() + 1), "forward"), 360);
 	};
 
-	const openMachinery = (tab: "settings" | "about"): void => {
+	const openMachinery = (tab: "settings" | "controls" | "about"): void => {
 		setMachineryTab(tab);
 		setShowMachinery(true);
 	};
@@ -173,6 +176,7 @@ export function Root(): JSX.Element {
 					</div>
 					<div class="camera-bench-slot">
 						<WorkbenchView
+							active={screen() === "workbench"}
 							order={currentOrder()}
 							registry={registry}
 							judgeMode={settings().judgeMode}
@@ -182,7 +186,7 @@ export function Root(): JSX.Element {
 							isLastOrder={orderIndex() === LEVELS.length - 1}
 							onRecordStars={recordStars}
 							onNextOrder={handleNextOrderAdvance}
-							onOpenWorkshop={() => openFolio("orders")}
+							onOpenWorkshop={() => toggleFolio("orders")}
 							onOpenSettings={() => openMachinery("settings")}
 							onBackToTitle={() => {
 								transitionView(() => {
@@ -200,11 +204,11 @@ export function Root(): JSX.Element {
 					continueOrderCode={continueCode()}
 					onStart={() => {
 						transitionView(() => {
-							selectOrder(continueIndex());
+							selectOrder(orderIndex());
 							setScreen("workbench");
 						}, "forward");
 					}}
-					onOpenWorkshop={() => openFolio("orders")}
+					onOpenWorkshop={() => toggleFolio("orders")}
 					onOpenSettings={() => openMachinery("settings")}
 					onOpenAbout={() => openMachinery("about")}
 				/>

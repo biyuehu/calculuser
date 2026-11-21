@@ -1,9 +1,9 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
-import { playSnapSound, playUndoSound } from "../../audio/synth";
-import { type DraftTerm, countDraftSize, findFirstHole, getScopeAt, setDraftAtPath } from "../../engine/draft";
-import { PRINT_NAMES } from "../../engine/parse";
-import { clearLevelDraft, saveLevelDraft } from "../../engine/storage";
-import type { Path } from "../../engine/term";
+import { playSnapSound, playUndoSound } from "../audio/synth";
+import { type DraftTerm, countDraftSize, findFirstHole, getScopeAt, setDraftAtPath } from "../engine/draft";
+import { PRINT_NAMES } from "../engine/parse";
+import { clearLevelDraft, saveLevelDraft } from "../engine/storage";
+import type { Path } from "../engine/term";
 
 const createDebouncedDraftSaver = (
 	delayMs: number,

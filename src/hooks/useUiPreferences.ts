@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { type UiPreferences, loadUiPreferences, saveUiPreferences } from "../../engine/storage";
+import { type UiPreferences, loadUiPreferences, saveUiPreferences } from "../engine/storage";
 
 const createDebouncedSaver = (delayMs: number): ((prefs: UiPreferences) => void) => {
 	let timer: ReturnType<typeof setTimeout> | null = null;

@@ -1,5 +1,5 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
-import { setMasterVolume } from "../audio/synth";
+import { setMasterVolume } from "./audio/synth";
 import {
 	type DialogueBeat,
 	LEVELS,
@@ -8,9 +8,9 @@ import {
 	getOrderCode,
 	getToolDefinition,
 	isToolUnlocked,
-} from "../content";
-import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
-import { parseLambda } from "../engine/parse";
+} from "./content";
+import { type Registry, createBuiltinRegistry, registerGadget } from "./engine/gadget";
+import { parseLambda } from "./engine/parse";
 import {
 	type SettingsState,
 	clearSave,
@@ -22,13 +22,13 @@ import {
 	saveSession,
 	saveSettings,
 	saveWorkshop,
-} from "../engine/storage";
-import { transitionView } from "../utils/transition";
-import { MachineryPanel } from "./overlays/MachineryPanel";
-import { WorkshopFolio } from "./overlays/WorkshopFolio";
-import { CounterView } from "./views/CounterView";
-import { TitleView } from "./views/TitleView";
-import { WorkbenchView } from "./views/WorkbenchView";
+} from "./engine/storage";
+import { MachineryPanel } from "./ui/overlays/MachineryPanel";
+import { WorkshopFolio } from "./ui/overlays/WorkshopFolio";
+import { CounterView } from "./ui/views/CounterView";
+import { TitleView } from "./ui/views/TitleView";
+import { WorkbenchView } from "./ui/views/WorkbenchView";
+import { transitionView } from "./utils/transition";
 
 function syncRegistryWithUnlocked(registry: Registry, stars: ReadonlyMap<string, number>, isJudge: boolean): void {
 	for (const key of Array.from(registry.keys())) {

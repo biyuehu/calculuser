@@ -1,11 +1,11 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
-import { playFailSound, playPassSound, playPopExplosionSound } from "../../audio/synth";
-import { BUILTIN_COUNT, COMBINATORS, type OrderLevel, getToolDefinition, isToolUnlocked } from "../../content";
-import { type DraftTerm, draftToTerm, findFirstHole } from "../../engine/draft";
-import type { Registry } from "../../engine/gadget";
-import { judgeOrder } from "../../engine/judge";
-import type { GadgetId } from "../../engine/term";
-import type { RejectedInfo } from "../../ui/workbench/panels/OrderSlip";
+import { playFailSound, playPassSound, playPopExplosionSound } from "../audio/synth";
+import { BUILTIN_COUNT, COMBINATORS, type OrderLevel, getToolDefinition, isToolUnlocked } from "../content";
+import { type DraftTerm, draftToTerm, findFirstHole } from "../engine/draft";
+import type { Registry } from "../engine/gadget";
+import { judgeOrder } from "../engine/judge";
+import type { GadgetId } from "../engine/term";
+import type { RejectedInfo } from "../ui/workbench/panels/OrderSlip";
 
 const JUDGE_MAX_STEPS = 300;
 

@@ -1,8 +1,7 @@
 import { type JSX, Show, createEffect, createSignal } from "solid-js";
 import { playFailSound } from "../../audio/synth";
 import type { OrderLevel } from "../../content";
-import type { Registry } from "../../engine/gadget";
-import { PRINT_NAMES } from "../../engine/parse";
+import { PRINT_NAMES, type Registry } from "../../engine";
 import { useUiPreferences } from "../../hooks/useUiPreferences";
 import { useWorkbenchSession } from "../../hooks/useWorkbenchSession";
 import { useKeyScope } from "../keybus";

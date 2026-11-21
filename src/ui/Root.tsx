@@ -1,6 +1,8 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
 import { setMasterVolume } from "../audio/synth";
 import {
+	BUILTIN_COUNT,
+	COMBINATORS,
 	type DialogueBeat,
 	LEVELS,
 	LEVEL_DIALOGUES,
@@ -9,8 +11,7 @@ import {
 	getToolDefinition,
 	isToolUnlocked,
 } from "../content";
-import { type Registry, createBuiltinRegistry, registerGadget } from "../engine/gadget";
-import { parseLambda } from "../engine/parse";
+import { type Registry, createRegistry, parseLambda, registerGadget } from "../engine";
 import {
 	type SettingsState,
 	clearSave,
@@ -22,7 +23,7 @@ import {
 	saveSession,
 	saveSettings,
 	saveWorkshop,
-} from "../engine/storage";
+} from "../storage";
 import { transitionView } from "../utils/transition";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
@@ -53,7 +54,7 @@ export function Root(): JSX.Element {
 	const initialSession = loadSession();
 	setMasterVolume(initialSettings.volume);
 
-	const registry: Registry = createBuiltinRegistry();
+	const registry: Registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 	const initialStars = new Map(Object.entries(saved.stars));
 	syncRegistryWithUnlocked(registry, initialStars, initialSettings.judgeMode);
 

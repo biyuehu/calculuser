@@ -1,5 +1,5 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
-import { type NameplateSpec, type Ty, any, base, formatTy } from "../../../engine/gtlc";
+import { type NameplateSpec, type Ty, any, base, formatTy } from "../../../engine";
 import { TypeShapeGlyph } from "./TypeShapeGlyph";
 
 interface NameplateProps {

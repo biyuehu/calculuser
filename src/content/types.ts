@@ -1,5 +1,4 @@
-import type { JudgeTestCase } from "../engine/judge";
-import type { GadgetId, Term } from "../engine/term";
+import type { GadgetId, JudgeTestCase, Term } from "../engine";
 
 export type GadgetShape = "circle" | "square" | "diamond" | "hex";
 

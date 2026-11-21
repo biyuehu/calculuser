@@ -1,5 +1,4 @@
-import { parseLambda } from "../../engine/parse";
-import { atom } from "../../engine/term";
+import { atom, parseLambda } from "../../engine";
 import type { ChapterDefinition, OrderLevel } from "../types";
 
 export const CHAPTERS: readonly ChapterDefinition[] = [

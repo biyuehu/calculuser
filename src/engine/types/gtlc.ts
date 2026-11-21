@@ -1,9 +1,6 @@
-import { COMBINATORS } from "../content/data/combinators";
-import type { ToolDefinition } from "../content/types";
-import type { Registry } from "./gadget";
-import { judgeNormalize } from "./judge";
-import type { PRINT_NAMES } from "./parse";
-import { type Term, app, atom } from "./term";
+import type { Registry } from "../semantics/gadget";
+import { judgeNormalize } from "../semantics/judge";
+import { type Term, app, atom } from "../syntax/term";
 
 export type Ty =
 	| { readonly k: "any" }
@@ -39,7 +36,7 @@ export function parseTy(src: string): Ty {
 		return l;
 	};
 	const r = parseExpr();
-	if (i !== toks.length) throw new Error(`类型解析失败: ${src}`);
+	if (i !== toks.length) throw new Error(`Type parse error: ${src}`);
 	return r;
 }
 
@@ -189,28 +186,23 @@ class InferContext {
 	}
 }
 
-const TOOL_DEFS: ReadonlyMap<string, ToolDefinition> = new Map(COMBINATORS.map((c) => [c.id, c]));
-
-function inferRaw(term: Term, env: readonly Ty[], ctx: InferContext): Ty {
+function inferRaw(term: Term, env: readonly Ty[], ctx: InferContext, registry?: Registry): Ty {
 	switch (term.kind) {
 		case "var":
 			return term.index < env.length ? ctx.find(env[term.index]) : any;
 		case "atom":
 			return base("Atom");
 		case "gad": {
-			const tool = TOOL_DEFS.get(term.id);
-			if (tool?.defText) {
-				return inferRaw(parseDefText(tool.defText), [], ctx);
-			}
-			return any;
+			const entry = registry ? registry.get(term.id) : void 0;
+			return entry !== void 0 ? inferRaw(entry.def, [], ctx, registry) : any;
 		}
 		case "lam": {
 			const paramTy = ctx.fresh();
-			return arrow(paramTy, inferRaw(term.body, [paramTy, ...env], ctx));
+			return arrow(paramTy, inferRaw(term.body, [paramTy, ...env], ctx, registry));
 		}
 		case "app": {
-			const fnTy = inferRaw(term.fn, env, ctx);
-			const argTy = inferRaw(term.arg, env, ctx);
+			const fnTy = inferRaw(term.fn, env, ctx, registry);
+			const argTy = inferRaw(term.arg, env, ctx, registry);
 			const resTy = ctx.fresh();
 			ctx.unify(fnTy, arrow(argTy, resTy));
 			return resTy;
@@ -218,97 +210,41 @@ function inferRaw(term: Term, env: readonly Ty[], ctx: InferContext): Ty {
 	}
 }
 
-const PARSED_DEF_CACHE = new Map<string, Term>();
-
-function parseDefText(defText: string): Term {
-	const cached = PARSED_DEF_CACHE.get(defText);
-	if (cached !== void 0) return cached;
-	// Lightweight de Bruijn lambda parser for defText
-	const parsed = parseSimpleLambda(defText);
-	PARSED_DEF_CACHE.set(defText, parsed);
-	return parsed;
-}
-
-function parseSimpleLambda(text: string): Term {
-	const normalized = text.replace(/λ/g, "\\");
-	const parseScoped = (expr: string, scope: readonly string[]): Term => {
-		const trimmed = expr.trim();
-		if (trimmed.startsWith("\\")) {
-			const dotIdx = trimmed.indexOf(".");
-			const param = trimmed.slice(1, dotIdx).trim();
-			return {
-				kind: "lam",
-				param: param as (typeof PRINT_NAMES)[number],
-				body: parseScoped(trimmed.slice(dotIdx + 1), [param, ...scope]),
-			};
-		}
-		const tokens = trimmed.match(/\(|\)|[^\s()]+/g) ?? [];
-		const parseAppChain = (items: readonly string[]): Term => {
-			if (items.length === 0) return atom("?");
-			let cur: Term;
-			let idx = 0;
-			const parseNextAtom = (): Term => {
-				const tok = items[idx++];
-				if (tok === "(") {
-					let depth = 1;
-					const sub: string[] = [];
-					while (idx < items.length && depth > 0) {
-						const next = items[idx++];
-						if (next === "(") depth += 1;
-						else if (next === ")") depth -= 1;
-						if (depth > 0) sub.push(next);
-					}
-					return parseAppChain(sub);
-				}
-				const sIdx = scope.indexOf(tok);
-				return sIdx >= 0 ? { kind: "var", index: sIdx, name: tok as (typeof PRINT_NAMES)[number] } : atom(tok);
-			};
-			cur = parseNextAtom();
-			while (idx < items.length) {
-				cur = app(cur, parseNextAtom());
-			}
-			return cur;
-		};
-		return parseAppChain(tokens);
-	};
-	return parseScoped(normalized, []);
-}
-
-export function inferTermType(term: Term): Ty {
+export function inferTermType(term: Term, registry?: Registry): Ty {
 	const ctx = new InferContext();
-	return ctx.finalize(inferRaw(term, [], ctx));
+	return ctx.finalize(inferRaw(term, [], ctx, registry));
 }
 
-export function synth(term: Term, env: readonly Ty[] = []): Ty {
+export function synth(term: Term, env: readonly Ty[] = [], registry?: Registry): Ty {
 	switch (term.kind) {
 		case "var":
 			return term.index < env.length ? env[term.index] : any;
 		case "atom":
 			return base("Atom");
 		case "gad": {
-			const tool = TOOL_DEFS.get(term.id);
-			return tool?.defText ? inferTermType(parseDefText(tool.defText)) : any;
+			const entry = registry ? registry.get(term.id) : void 0;
+			return entry !== void 0 ? inferTermType(entry.def, registry) : any;
 		}
 		case "lam":
-			return arrow(any, synth(term.body, [any, ...env]));
+			return arrow(any, synth(term.body, [any, ...env], registry));
 		case "app": {
-			const m = matchArrow(synth(term.fn, env));
+			const m = matchArrow(synth(term.fn, env, registry));
 			if (!m) throw new TypeErr("not-a-function", term);
-			const a = synth(term.arg, env);
+			const a = synth(term.arg, env, registry);
 			if (!consistent(a, m.from)) throw new TypeErr("arg-mismatch", term, { want: m.from, got: a });
 			return m.to;
 		}
 	}
 }
 
-export function check(term: Term, want: Ty, env: readonly Ty[] = []): void {
+export function check(term: Term, want: Ty, env: readonly Ty[] = [], registry?: Registry): void {
 	if (term.kind === "lam") {
 		const m = matchArrow(want);
 		if (!m) throw new TypeErr("lam-vs-nonfunction", term);
-		check(term.body, m.to, [m.from, ...env]);
+		check(term.body, m.to, [m.from, ...env], registry);
 		return;
 	}
-	const got = synth(term, env);
+	const got = synth(term, env, registry);
 	if (!consistent(got, want)) throw new TypeErr("mismatch", term, { want, got });
 }
 
@@ -382,7 +318,7 @@ export function verifyNameplate(
 ): { readonly certified: boolean; readonly reason?: string } {
 	const declaredTy = fn(spec.inputs, spec.output);
 	try {
-		check(term, declaredTy, []);
+		check(term, declaredTy, [], registry);
 	} catch (err) {
 		return { certified: false, reason: err instanceof Error ? err.message : String(err) };
 	}

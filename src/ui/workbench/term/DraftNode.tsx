@@ -1,7 +1,6 @@
 import type { JSX } from "solid-js";
 import { getGadgetMeta } from "../../../content";
-import type { DraftTerm } from "../../../engine/draft";
-import type { Path } from "../../../engine/term";
+import type { DraftTerm, Path } from "../../../engine";
 import { getVariableColor } from "../../../styles";
 
 interface DraftNodeProps {

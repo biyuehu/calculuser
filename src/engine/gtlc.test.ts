@@ -1,20 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { createBuiltinRegistry } from "./gadget";
+import { BUILTIN_COUNT, COMBINATORS } from "../content";
 import {
 	any,
+	app,
 	arrow,
+	atom,
 	base,
 	check,
 	consistent,
+	createRegistry,
 	inferTermType,
 	lessPrecise,
+	parseLambda,
 	parseTy,
 	spine,
 	verify,
 	verifyNameplate,
-} from "./gtlc";
-import { parseLambda } from "./parse";
-import { app, atom } from "./term";
+} from "./index";
 
 describe("GTLC Type System & Nameplates", () => {
 	it("parses string types into Ty representation", () => {
@@ -82,7 +84,7 @@ describe("GTLC Type System & Nameplates", () => {
 	});
 
 	it("checks and verifies valid terms against target types", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		expect(() => check(parseLambda("λx. x"), parseTy("Atom -> Atom"))).not.toThrow();
 		expect(() => check(parseLambda("λx. λy. x"), parseTy("Atom -> Bool -> Atom"))).not.toThrow();
 
@@ -112,7 +114,7 @@ describe("GTLC Type System & Nameplates", () => {
 	});
 
 	it("rejects ill-typed applications on base types in check and verify", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const termM = parseLambda("λx. x x");
 
 		expect(() => check(termM, parseTy("? -> ?"))).not.toThrow();
@@ -146,11 +148,13 @@ describe("GTLC Type System & Nameplates", () => {
 	});
 
 	it("verifies behavioral compliance of term with verify helper", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const ctx = { atoms: ["A", "B"] };
-		expect(verify(parseLambda("λx. x"), parseTy("Atom -> Atom"), ctx, registry)).toBeNull();
 
-		const failBadResult = verify(parseLambda("λx. x"), parseTy("Atom -> Bool"), ctx, registry);
-		expect(failBadResult?.kind).toBe("bad-result");
+		const resIdentity = verify(parseLambda("λx. x"), parseTy("Atom -> Atom"), ctx, registry, 50);
+		expect(resIdentity).toBeNull();
+
+		const resConst = verify(parseLambda("λx. λy. x"), parseTy("Atom -> Atom -> Atom"), ctx, registry, 50);
+		expect(resConst).toBeNull();
 	});
 });

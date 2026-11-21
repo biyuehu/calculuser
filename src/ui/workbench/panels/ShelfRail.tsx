@@ -1,8 +1,7 @@
 import type { JSX } from "solid-js";
 import { For, Show } from "solid-js";
 import { getGadgetMeta } from "../../../content";
-import type { PRINT_NAMES } from "../../../engine/parse";
-import type { GadgetId } from "../../../engine/term";
+import type { GadgetId, PRINT_NAMES } from "../../../engine";
 import { getVariableColor } from "../../../styles";
 import { startDragResize } from "../../../utils/dragResize";
 

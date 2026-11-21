@@ -1,4 +1,4 @@
-import { PRINT_NAMES } from "../engine/parse";
+import { PRINT_NAMES } from "../engine";
 
 const VARIABLE_PALETTE: readonly string[] & { length: (typeof PRINT_NAMES)["length"] } = [
 	"#0284c7",

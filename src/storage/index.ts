@@ -1,49 +1,16 @@
-import type { DraftTerm } from "./draft";
+import type { DraftTerm } from "../engine";
+import {
+	DEFAULT_SESSION,
+	DEFAULT_SETTINGS,
+	DEFAULT_UI_PREFS,
+	STORAGE_KEY,
+	type SaveData,
+	type SessionState,
+	type SettingsState,
+	type UiPreferences,
+} from "./types";
 
-export interface SettingsState {
-	readonly volume: number;
-	readonly reducedMotion: boolean;
-	readonly judgeMode: boolean;
-	readonly autoSkipRead: boolean;
-	readonly xRayMode: boolean;
-}
-
-export interface UiPreferences {
-	readonly shelfWidth: number;
-	readonly orderSlipWidth: number;
-	readonly orderSlipCollapsed: boolean;
-}
-
-export type SessionState =
-	| { readonly screen: "title"; readonly lastOrderId?: string }
-	| { readonly screen: "workbench"; readonly lastOrderId: string };
-
-interface SaveData {
-	readonly workshop: { readonly stars: Record<string, number> };
-	readonly settings: SettingsState;
-	readonly uiPrefs: UiPreferences;
-	readonly session: SessionState;
-	readonly drafts: Record<string, DraftTerm>;
-	readonly seenDialogues: readonly string[];
-}
-
-export const STORAGE_KEY = "calculuser_save";
-
-const DEFAULT_SETTINGS: SettingsState = {
-	volume: 1,
-	reducedMotion: false,
-	judgeMode: false,
-	autoSkipRead: false,
-	xRayMode: false,
-};
-
-const DEFAULT_SESSION: SessionState = { screen: "title" };
-
-export const DEFAULT_UI_PREFS: UiPreferences = {
-	shelfWidth: 76,
-	orderSlipWidth: 290,
-	orderSlipCollapsed: false,
-};
+export * from "./types";
 
 const DEFAULT_SAVE_DATA: SaveData = {
 	workshop: { stars: {} },
@@ -161,68 +128,45 @@ function mutateSaveData(mutator: (draft: SaveData) => SaveData): void {
 	}
 }
 
-export function loadWorkshop(): { readonly stars: Record<string, number> } {
-	return loadSaveData().workshop;
-}
+export const loadWorkshop = (): { readonly stars: Record<string, number> } => loadSaveData().workshop;
 
-export function saveWorkshop(stars: ReadonlyMap<string, number>): void {
+export const saveWorkshop = (stars: ReadonlyMap<string, number>): void =>
 	mutateSaveData((prev) => ({ ...prev, workshop: { stars: Object.fromEntries(stars) } }));
-}
 
-export function clearSave(): void {
-	localStorage.removeItem(STORAGE_KEY);
-}
+export const clearSave = (): void => localStorage.removeItem(STORAGE_KEY);
 
-export function loadSettings(): SettingsState {
-	return loadSaveData().settings;
-}
+export const loadSettings = (): SettingsState => loadSaveData().settings;
 
-export function saveSettings(settings: SettingsState): void {
-	mutateSaveData((prev) => ({ ...prev, settings }));
-}
+export const saveSettings = (settings: SettingsState): void => mutateSaveData((prev) => ({ ...prev, settings }));
 
-export function loadUiPreferences(): UiPreferences {
-	return loadSaveData().uiPrefs;
-}
+export const loadUiPreferences = (): UiPreferences => loadSaveData().uiPrefs;
 
-export function saveUiPreferences(uiPrefs: UiPreferences): void {
-	mutateSaveData((prev) => ({ ...prev, uiPrefs }));
-}
+export const saveUiPreferences = (uiPrefs: UiPreferences): void => mutateSaveData((prev) => ({ ...prev, uiPrefs }));
 
-export function loadLevelDrafts(): Record<string, DraftTerm> {
-	return loadSaveData().drafts;
-}
+export const loadLevelDrafts = (): Record<string, DraftTerm> => loadSaveData().drafts;
 
-export function saveLevelDraft(orderId: string, draft: DraftTerm): void {
+export const saveLevelDraft = (orderId: string, draft: DraftTerm): void =>
 	mutateSaveData((prev) => ({ ...prev, drafts: { ...prev.drafts, [orderId]: draft } }));
-}
 
-export function clearLevelDraft(orderId: string): void {
+export const clearLevelDraft = (orderId: string): void =>
+	mutateSaveData((prev) => {
+		const nextDrafts = { ...prev.drafts };
+		delete nextDrafts[orderId];
+		return { ...prev, drafts: nextDrafts };
+	});
+
+export const clearLevelDrafts = (): void => mutateSaveData((prev) => ({ ...prev, drafts: {} }));
+
+export const loadSession = (): SessionState => loadSaveData().session;
+
+export const saveSession = (session: SessionState): void => mutateSaveData((prev) => ({ ...prev, session }));
+
+export const loadSeenDialogues = (): ReadonlySet<string> => new Set(loadSaveData().seenDialogues);
+
+export const isDialogueSeen = (dialogueId: string): boolean => loadSaveData().seenDialogues.includes(dialogueId);
+
+export const markDialogueSeen = (dialogueId: string): void =>
 	mutateSaveData((prev) => ({
 		...prev,
-		drafts: Object.fromEntries(Object.entries(prev.drafts).filter(([k]) => k !== orderId)),
+		seenDialogues: prev.seenDialogues.includes(dialogueId) ? prev.seenDialogues : [...prev.seenDialogues, dialogueId],
 	}));
-}
-
-export function clearLevelDrafts(): void {
-	mutateSaveData((prev) => ({ ...prev, drafts: {} }));
-}
-
-export function loadSession(): SessionState {
-	return loadSaveData().session;
-}
-
-export function saveSession(session: SessionState): void {
-	mutateSaveData((prev) => ({ ...prev, session }));
-}
-
-export function loadSeenDialogues(): ReadonlySet<string> {
-	return new Set(loadSaveData().seenDialogues);
-}
-
-export function markDialogueSeen(id: string): void {
-	mutateSaveData((prev) => ({
-		...prev,
-		seenDialogues: prev.seenDialogues.includes(id) ? prev.seenDialogues : [...prev.seenDialogues, id],
-	}));
-}

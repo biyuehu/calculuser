@@ -1,5 +1,5 @@
+import { type GadgetId, type Term, betaLam, termsEqual } from "../syntax/term";
 import type { Registry } from "./gadget";
-import { type GadgetId, type Term, betaLam, termsEqual } from "./term";
 
 export interface JudgeTestCase {
 	readonly args: readonly Term[];

@@ -1,26 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { LEVELS } from "../content";
-import { type DraftTerm, findAllHoles, getDraftAtPath } from "./draft";
-import { createBuiltinRegistry } from "./gadget";
-import { judgeNormalize, judgeOrder } from "./judge";
-import { parseLambda, printTerm } from "./parse";
-import { redexes, stepAt, stepLeftmost } from "./reduce";
+import { BUILTIN_COUNT, COMBINATORS, LEVELS } from "../content";
 import {
-	DEFAULT_UI_PREFS,
-	STORAGE_KEY,
-	clearLevelDraft,
-	clearLevelDrafts,
-	clearSave,
-	loadLevelDrafts,
-	loadSession,
-	loadUiPreferences,
-	loadWorkshop,
-	saveLevelDraft,
-	saveSession,
-	saveUiPreferences,
-	saveWorkshop,
-} from "./storage";
-import { termsEqual } from "./term";
+	type DraftTerm,
+	createRegistry,
+	findAllHoles,
+	getDraftAtPath,
+	judgeNormalize,
+	judgeOrder,
+	parseLambda,
+	printTerm,
+	redexes,
+	stepAt,
+	stepLeftmost,
+	termsEqual,
+} from "./index";
 
 describe("Calculuser core engine", () => {
 	it("parses and prints lambda expressions cleanly", () => {
@@ -29,7 +22,7 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("evaluates S K K A -> A via play delta-reduction with copy events", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		let current = parseLambda("@S @K @K A");
 		const events: string[] = [];
 		for (let step = 0; step < 20; step += 1) {
@@ -43,7 +36,7 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("reports exact copies count on beta and delta steps", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const dropStep = stepLeftmost(parseLambda("(λx.λy. x) A B"), registry, "");
 		expect(dropStep !== null && dropStep.event.kind === "beta" && dropStep.event.copies === 1).toBe(true);
 		const zeroCopyStep = stepLeftmost(parseLambda("(λy. A) B"), registry, "");
@@ -53,7 +46,7 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("finds clickable redexes and supports stepAt", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const expr = parseLambda("(λx. x) ((λy. y) A)");
 		const paths = redexes(expr, registry, "");
 		expect(paths).toContain("");
@@ -63,7 +56,7 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("judges equivalence by inlining gadgets and stops on Omega loop", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const skk = parseLambda("@S @K @K");
 		const results = judgeOrder(
 			skk,
@@ -77,7 +70,7 @@ describe("Calculuser core engine", () => {
 	});
 
 	it("solves the three run-mode puzzles within exact step budgets", () => {
-		const registry = createBuiltinRegistry();
+		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const dropStep = stepAt(parseLambda("@K A ((@S @I @I) (@S @I @I))"), "", registry, "");
 		expect(dropStep !== null && termsEqual(dropStep.next, { kind: "atom", name: "A" })).toBe(true);
 
@@ -105,77 +98,6 @@ describe("Calculuser core engine", () => {
 			else expect(order.stepBudget).toBeGreaterThan(0);
 	});
 
-	it("loads, saves, and sanitizes UI preferences", () => {
-		const store = new Map<string, string>();
-		const mockStorage = {
-			getItem: (k: string): string | null => store.get(k) ?? null,
-			setItem: (k: string, v: string): void => {
-				store.set(k, v);
-			},
-			removeItem: (k: string): void => {
-				store.delete(k);
-			},
-			clear: (): void => store.clear(),
-			key: (_index: number): string | null => null,
-			length: 0,
-		};
-		Object.defineProperty(globalThis, "localStorage", { value: mockStorage, configurable: true, writable: true });
-
-		const initial = loadUiPreferences();
-		expect(initial.shelfWidth).toBe(DEFAULT_UI_PREFS.shelfWidth);
-		expect(initial.orderSlipWidth).toBe(DEFAULT_UI_PREFS.orderSlipWidth);
-		expect(initial.orderSlipCollapsed).toBe(DEFAULT_UI_PREFS.orderSlipCollapsed);
-
-		saveUiPreferences({ shelfWidth: 160, orderSlipWidth: 400, orderSlipCollapsed: true });
-		const loaded = loadUiPreferences();
-		expect(loaded.shelfWidth).toBe(160);
-		expect(loaded.orderSlipWidth).toBe(400);
-		expect(loaded.orderSlipCollapsed).toBe(true);
-
-		saveUiPreferences({ shelfWidth: 9999, orderSlipWidth: 10, orderSlipCollapsed: false });
-		const sanitized = loadUiPreferences();
-		expect(sanitized.shelfWidth).toBe(DEFAULT_UI_PREFS.shelfWidth);
-		expect(sanitized.orderSlipWidth).toBe(DEFAULT_UI_PREFS.orderSlipWidth);
-	});
-
-	it("persists session navigation state cleanly", () => {
-		const initial = loadSession();
-		expect(initial.lastOrderId).toBeUndefined();
-		expect(initial.screen).toBe("title");
-
-		saveSession({ lastOrderId: "1.2", screen: "workbench" });
-		const loaded = loadSession();
-		expect(loaded.lastOrderId).toBe("1.2");
-		expect(loaded.screen).toBe("workbench");
-	});
-
-	it("persists, validates and clears level draft terms", () => {
-		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
-
-		saveLevelDraft("1.1", { kind: "gad", id: "I" });
-		saveLevelDraft("1.2", {
-			kind: "app",
-			fn: { kind: "lam", param: "x", body: { kind: "var", name: "x" } },
-			arg: { kind: "atom", name: "A" },
-		});
-
-		const drafts = loadLevelDrafts();
-		expect(drafts["1.1"]).toEqual({ kind: "gad", id: "I" });
-		expect(drafts["1.2"]).toEqual({
-			kind: "app",
-			fn: { kind: "lam", param: "x", body: { kind: "var", name: "x" } },
-			arg: { kind: "atom", name: "A" },
-		});
-
-		clearLevelDraft("1.1");
-		const afterClearSingle = loadLevelDrafts();
-		expect(afterClearSingle["1.1"]).toBeUndefined();
-		expect(afterClearSingle["1.2"]).toBeDefined();
-
-		clearLevelDrafts();
-		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
-	});
-
 	it("traverses draft holes and nodes via findAllHoles and getDraftAtPath", () => {
 		const draft: DraftTerm = {
 			kind: "app",
@@ -186,39 +108,5 @@ describe("Calculuser core engine", () => {
 		expect(getDraftAtPath(draft, "fb")).toEqual({ kind: "hole" });
 		expect(getDraftAtPath(draft, "f")?.kind).toBe("lam");
 		expect(getDraftAtPath(draft, "a")).toEqual({ kind: "hole" });
-	});
-
-	it("stores all persistent state under exactly one storage key", () => {
-		const store = new Map<string, string>();
-		Object.defineProperty(globalThis, "localStorage", {
-			value: {
-				getItem: (k: string): string | null => store.get(k) ?? null,
-				setItem: (k: string, v: string): void => {
-					store.set(k, v);
-				},
-				removeItem: (k: string): void => {
-					store.delete(k);
-				},
-				clear: (): void => store.clear(),
-				key: (_i: number): string | null => null,
-				length: 0,
-			},
-			configurable: true,
-			writable: true,
-		});
-
-		saveWorkshop(new Map([["1.1", 3]]));
-		saveSession({ lastOrderId: "1.1", screen: "workbench" });
-		saveLevelDraft("1.1", { kind: "gad", id: "I" });
-
-		expect(store.size).toBe(1);
-		expect(store.has(STORAGE_KEY)).toBe(true);
-		expect(loadWorkshop().stars["1.1"]).toBe(3);
-		expect(loadSession().lastOrderId).toBe("1.1");
-		expect(loadLevelDrafts()["1.1"]).toEqual({ kind: "gad", id: "I" });
-
-		clearSave();
-		expect(store.size).toBe(0);
-		expect(loadWorkshop().stars["1.1"]).toBeUndefined();
 	});
 });

@@ -1,6 +1,5 @@
-import { BUILTIN_COUNT, COMBINATORS } from "../content";
-import { parseLambda } from "./parse";
-import { type GadgetId, type Term, isClosed } from "./term";
+import { parseLambda } from "../syntax/parse";
+import { type GadgetId, type Term, isClosed } from "../syntax/term";
 
 export interface Gadget {
 	readonly id: GadgetId;
@@ -33,9 +32,9 @@ export function registerGadget(registry: Registry, id: GadgetId, def: Term, orig
 		.get(id) as Gadget;
 }
 
-export function createBuiltinRegistry(): Registry {
+export function createRegistry(tools: readonly { readonly id: string; readonly defText: string }[]): Registry {
 	const registry: Registry = new Map();
-	for (const tool of COMBINATORS.slice(0, BUILTIN_COUNT))
+	for (const tool of tools)
 		if (!registry.has(tool.id)) registerGadget(registry, tool.id, parseLambda(tool.defText), "builtin");
 	return registry;
 }

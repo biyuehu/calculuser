@@ -1,6 +1,6 @@
 import { type JSX, Show, createSignal } from "solid-js";
 import { setMasterVolume } from "../../audio/synth";
-import type { SettingsState } from "../../engine/storage";
+import type { SettingsState } from "../../storage";
 import { useKeyScope } from "../keybus";
 
 interface MachineryPanelProps {

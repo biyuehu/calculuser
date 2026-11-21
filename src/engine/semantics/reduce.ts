@@ -1,5 +1,5 @@
+import { type GadgetId, type Path, type Term, betaLam, countCopies } from "../syntax/term";
 import type { Gadget, Registry } from "./gadget";
-import { type GadgetId, type Path, type Term, betaLam, countCopies } from "./term";
 
 export type StepEvent =
 	| { readonly kind: "beta"; readonly path: Path; readonly copies: number }
@@ -42,8 +42,7 @@ function isDeltaRedex(term: Term, registry: Registry): Gadget | null {
 	const { head, args } = spine(term);
 	if (head.kind !== "gad") return null;
 	const gadget = registry.get(head.id);
-	if (gadget === void 0) return null;
-	return args.length === Math.max(1, gadget.arity) ? gadget : null;
+	return gadget !== void 0 && args.length === Math.max(1, gadget.arity) ? gadget : null;
 }
 
 function reduceAppRedex(term: Term, registry: Registry, path: Path): StepResult | null {
@@ -82,8 +81,7 @@ export function stepLeftmost(term: Term, registry: Registry, path: Path): StepRe
 		const fnStep = stepLeftmost(term.fn, registry, `${path}f`);
 		if (fnStep !== null) return { next: { kind: "app", fn: fnStep.next, arg: term.arg }, event: fnStep.event };
 		const argStep = stepLeftmost(term.arg, registry, `${path}a`);
-		if (argStep !== null) return { next: { kind: "app", fn: term.fn, arg: argStep.next }, event: argStep.event };
-		return null;
+		return argStep !== null ? { next: { kind: "app", fn: term.fn, arg: argStep.next }, event: argStep.event } : null;
 	}
 	if (term.kind === "lam") {
 		const bodyStep = stepLeftmost(term.body, registry, `${path}b`);

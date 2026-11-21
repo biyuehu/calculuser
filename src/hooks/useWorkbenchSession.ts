@@ -1,11 +1,16 @@
 import { type Accessor, createEffect, createMemo, onCleanup, onMount, untrack } from "solid-js";
 import type { OrderLevel } from "../content";
-import { type DraftTerm, draftToTerm } from "../engine/draft";
-import type { Registry } from "../engine/gadget";
-import { printXRayTerm } from "../engine/parse";
-import type { PRINT_NAMES } from "../engine/parse";
-import { loadLevelDrafts } from "../engine/storage";
-import type { GadgetId, Path, Term } from "../engine/term";
+import {
+	type DraftTerm,
+	type GadgetId,
+	type Path,
+	type Registry,
+	type Term,
+	type VarName,
+	draftToTerm,
+	printXRayTerm,
+} from "../engine";
+import { loadLevelDrafts } from "../storage";
 import type { RejectedInfo } from "../ui/workbench/panels/OrderSlip";
 import { useDraftWorkbench } from "./useDraftWorkbench";
 import { useOrderDelivery } from "./useOrderDelivery";
@@ -32,7 +37,7 @@ interface WorkbenchSession {
 	readonly xRayText: Accessor<string>;
 	readonly shelfUnlockedIds: Accessor<readonly GadgetId[]>;
 	readonly shelfLockedCount: Accessor<number>;
-	readonly currentScope: Accessor<readonly (typeof PRINT_NAMES)[number][]>;
+	readonly currentScope: Accessor<readonly VarName[]>;
 	readonly rejected: Accessor<RejectedInfo | null>;
 	readonly deliveredStars: Accessor<number | null>;
 	readonly partCount: Accessor<number>;

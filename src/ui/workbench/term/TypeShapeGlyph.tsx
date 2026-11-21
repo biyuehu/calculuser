@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { type Ty, formatTy } from "../../../engine/gtlc";
+import { type Ty, formatTy } from "../../../engine";
 
 interface TypeShapeGlyphProps {
 	readonly shape: Ty;

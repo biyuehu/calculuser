@@ -1,5 +1,5 @@
 import { type JSX, Show, createSignal } from "solid-js";
-import { type Ty, formatTy } from "../../../engine/gtlc";
+import { type Ty, formatTy } from "../../../engine";
 import { TypeShapeGlyph } from "../term/TypeShapeGlyph";
 
 interface CheckpointGateProps {

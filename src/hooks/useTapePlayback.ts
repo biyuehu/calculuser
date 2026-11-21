@@ -1,9 +1,16 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
 import { playBetaReductionMelody, playDropSound, playMoveSound, playSnapSound, playSplitSound } from "../audio/synth";
 import type { OrderLevel } from "../content";
-import type { Registry } from "../engine/gadget";
-import { type StepEvent, redexes, stepAt, stepLeftmost } from "../engine/reduce";
-import { type Path, type Term, termsEqual } from "../engine/term";
+import {
+	type Path,
+	type Registry,
+	type StepEvent,
+	type Term,
+	redexes,
+	stepAt,
+	stepLeftmost,
+	termsEqual,
+} from "../engine";
 
 function playStepEventSound(event: StepEvent, stepCount: number): void {
 	const count = event.kind === "beta" ? event.copies : event.copies.length > 0 ? event.copies[0] : 1;

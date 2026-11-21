@@ -1,6 +1,6 @@
 import { For, type JSX, Show } from "solid-js";
 import type { OrderLevel } from "../../../content";
-import type { JudgeTestCase, JudgeTestResult } from "../../../engine/judge";
+import type { JudgeTestCase, JudgeTestResult } from "../../../engine";
 import { useUiPreferences } from "../../../hooks/useUiPreferences";
 import { startDragResize } from "../../../utils/dragResize";
 import { TermVisual } from "../term/TermVisual";

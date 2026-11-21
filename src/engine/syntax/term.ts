@@ -1,11 +1,11 @@
-import type { PRINT_NAMES } from "./parse";
+import type { VarName } from "./names";
 
 export type GadgetId = string;
 export type Path = string;
 
 export type Term =
-	| { readonly kind: "var"; readonly index: number; readonly name: (typeof PRINT_NAMES)[number] }
-	| { readonly kind: "lam"; readonly param: (typeof PRINT_NAMES)[number]; readonly body: Term }
+	| { readonly kind: "var"; readonly index: number; readonly name: VarName }
+	| { readonly kind: "lam"; readonly param: VarName; readonly body: Term }
 	| { readonly kind: "app"; readonly fn: Term; readonly arg: Term }
 	| { readonly kind: "gad"; readonly id: GadgetId }
 	| { readonly kind: "atom"; readonly name: string };
@@ -45,10 +45,7 @@ export function subst(term: Term, targetIndex: number, replacement: Term): Term 
 	}
 }
 
-// Beta-reduces (λ. body) arg using de Bruijn shift-subst-unshift.
-export function betaLam(body: Term, arg: Term): Term {
-	return shift(subst(body, 0, shift(arg, 1, 0)), -1, 0);
-}
+export const betaLam = (body: Term, arg: Term): Term => shift(subst(body, 0, shift(arg, 1, 0)), -1, 0);
 
 export function termsEqual(first: Term, second: Term): boolean {
 	if (first.kind !== second.kind) return false;

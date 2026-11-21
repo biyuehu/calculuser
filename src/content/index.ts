@@ -1,4 +1,4 @@
-import type { GadgetId } from "../engine/term";
+import type { GadgetId } from "../engine";
 import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
 import type { GadgetMeta, ToolDefinition } from "./types";

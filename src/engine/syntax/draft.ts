@@ -1,12 +1,12 @@
-import type { PRINT_NAMES } from "./parse";
+import type { VarName } from "./names";
 import type { GadgetId, Path, Term } from "./term";
 
 export type DraftTerm =
 	| { readonly kind: "hole" }
-	| { readonly kind: "var"; readonly name: (typeof PRINT_NAMES)[number] }
+	| { readonly kind: "var"; readonly name: VarName }
 	| { readonly kind: "atom"; readonly name: string }
 	| { readonly kind: "gad"; readonly id: GadgetId }
-	| { readonly kind: "lam"; readonly param: (typeof PRINT_NAMES)[number]; readonly body: DraftTerm }
+	| { readonly kind: "lam"; readonly param: VarName; readonly body: DraftTerm }
 	| { readonly kind: "app"; readonly fn: DraftTerm; readonly arg: DraftTerm };
 
 export function findFirstHole(draft: DraftTerm, path: Path): Path | null {
@@ -46,8 +46,8 @@ export function setDraftAtPath(draft: DraftTerm, path: Path, replacement: DraftT
 	return draft;
 }
 
-export function getScopeAt(draft: DraftTerm, path: Path): readonly (typeof PRINT_NAMES)[number][] {
-	const scope: (typeof PRINT_NAMES)[number][] = [];
+export function getScopeAt(draft: DraftTerm, path: Path): readonly VarName[] {
+	const scope: VarName[] = [];
 	let current = draft;
 	for (const character of path)
 		if (character === "b" && current.kind === "lam") {

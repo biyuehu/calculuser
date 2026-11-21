@@ -1,6 +1,14 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
 import { playFailSound, playSnapSound, playUndoSound } from "../audio/synth";
-import { type DraftTerm, countDraftSize, findFirstHole, getScopeAt, setDraftAtPath } from "../engine/draft";
+import {
+	type DraftTerm,
+	countDraftSize,
+	findAllHoles,
+	findFirstHole,
+	getDraftAtPath,
+	getScopeAt,
+	setDraftAtPath,
+} from "../engine/draft";
 import { PRINT_NAMES } from "../engine/parse";
 import { clearLevelDraft, saveLevelDraft } from "../engine/storage";
 import type { Path } from "../engine/term";
@@ -49,6 +57,8 @@ interface DraftWorkbench {
 	readonly draftNotice: Accessor<string | null>;
 	readonly applyReplacement: (replacement: DraftTerm) => void;
 	readonly dismantleAtPath: (path: Path) => void;
+	readonly dismantleSelected: () => void;
+	readonly cycleHoleFocus: (direction: "left" | "right") => void;
 	readonly fillLam: () => void;
 	readonly selectHole: (path: Path) => void;
 	readonly undoDraft: () => void;
@@ -126,6 +136,37 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 		setSelectedPath(path);
 	};
 
+	const cycleHoleFocus = (direction: "left" | "right"): void => {
+		const holes = findAllHoles(draft(), "");
+		if (holes.length === 0) return;
+		const current = selectedPath();
+		const currentIndex = current !== null ? holes.indexOf(current) : -1;
+		const nextIndex =
+			direction === "right"
+				? currentIndex < 0
+					? 0
+					: (currentIndex + 1) % holes.length
+				: currentIndex <= 0
+					? holes.length - 1
+					: currentIndex - 1;
+		selectHole(holes[nextIndex]);
+	};
+
+	const dismantleSelected = (): void => {
+		const current = selectedPath();
+		if (current === null) {
+			if (draft().kind !== "hole") dismantleAtPath("");
+			return;
+		}
+		const node = getDraftAtPath(draft(), current);
+		if (node === null || node.kind === "hole") {
+			if (current.length > 0) dismantleAtPath(current.slice(0, -1));
+			else if (draft().kind !== "hole") dismantleAtPath("");
+			return;
+		}
+		dismantleAtPath(current);
+	};
+
 	const undoDraft = (): void => {
 		const past = history();
 		if (past.length === 0) return;
@@ -166,6 +207,8 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 		draftNotice,
 		applyReplacement,
 		dismantleAtPath,
+		dismantleSelected,
+		cycleHoleFocus,
 		fillLam,
 		selectHole,
 		undoDraft,

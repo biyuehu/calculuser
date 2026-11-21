@@ -43,8 +43,12 @@ interface WorkbenchSession {
 	readonly hasHoles: Accessor<boolean>;
 	readonly applyReplacement: (replacement: DraftTerm) => void;
 	readonly dismantleAtPath: (path: Path) => void;
+	readonly dismantleSelected: () => void;
+	readonly cycleHoleFocus: (direction: "left" | "right") => void;
 	readonly fillLam: () => void;
 	readonly jumpToTapeIndex: (targetIndex: number) => void;
+	readonly stepBackward: () => void;
+	readonly stepForward: () => void;
 	readonly undo: () => void;
 	readonly clearBench: () => void;
 	readonly startOrStepPlay: () => void;
@@ -144,21 +148,10 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		delivery.syncInitialDelivery(initialDraft, stars);
 	});
 
-	const handleKeyDown = (event: KeyboardEvent): void => {
-		if ((event.key === "z" || event.key === "Z") && (event.ctrlKey || !event.metaKey)) undo();
-		if (event.key === "x" || event.key === "X") options.onToggleXRay();
-		if (event.key === " " && options.order().mode === "build") {
-			event.preventDefault();
-			tapePlay.startOrStepPlay();
-		}
-	};
-
 	onMount(() => {
-		window.addEventListener("keydown", handleKeyDown);
 		window.addEventListener("beforeunload", draftBench.flushDraft);
 	});
 	onCleanup(() => {
-		window.removeEventListener("keydown", handleKeyDown);
 		window.removeEventListener("beforeunload", draftBench.flushDraft);
 		draftBench.flushDraft();
 	});
@@ -185,8 +178,12 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		hasHoles: draftBench.hasHoles,
 		applyReplacement: draftBench.applyReplacement,
 		dismantleAtPath: draftBench.dismantleAtPath,
+		dismantleSelected: draftBench.dismantleSelected,
+		cycleHoleFocus: draftBench.cycleHoleFocus,
 		fillLam: draftBench.fillLam,
 		jumpToTapeIndex: tapePlay.jumpToTapeIndex,
+		stepBackward: tapePlay.stepBackward,
+		stepForward: tapePlay.stepForward,
 		undo,
 		clearBench,
 		startOrStepPlay: tapePlay.startOrStepPlay,

@@ -16,6 +16,23 @@ export function findFirstHole(draft: DraftTerm, path: Path): Path | null {
 	return null;
 }
 
+export function findAllHoles(draft: DraftTerm, path: Path): readonly Path[] {
+	if (draft.kind === "hole") return [path];
+	if (draft.kind === "lam") return findAllHoles(draft.body, `${path}b`);
+	if (draft.kind === "app") return [...findAllHoles(draft.fn, `${path}f`), ...findAllHoles(draft.arg, `${path}a`)];
+	return [];
+}
+
+export function getDraftAtPath(draft: DraftTerm, path: Path): DraftTerm | null {
+	if (path.length === 0) return draft;
+	const segment = path[0];
+	const remaining = path.slice(1);
+	if (draft.kind === "lam" && segment === "b") return getDraftAtPath(draft.body, remaining);
+	if (draft.kind === "app")
+		return segment === "f" ? getDraftAtPath(draft.fn, remaining) : getDraftAtPath(draft.arg, remaining);
+	return null;
+}
+
 export function setDraftAtPath(draft: DraftTerm, path: Path, replacement: DraftTerm): DraftTerm {
 	if (path.length === 0) return replacement;
 	const segment = path[0];

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../content";
+import { type DraftTerm, findAllHoles, getDraftAtPath } from "./draft";
 import { createBuiltinRegistry } from "./gadget";
 import { judgeNormalize, judgeOrder } from "./judge";
 import { parseLambda, printTerm } from "./parse";
@@ -173,6 +174,18 @@ describe("Calculuser core engine", () => {
 
 		clearLevelDrafts();
 		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
+	});
+
+	it("traverses draft holes and nodes via findAllHoles and getDraftAtPath", () => {
+		const draft: DraftTerm = {
+			kind: "app",
+			fn: { kind: "lam", param: "x", body: { kind: "hole" } },
+			arg: { kind: "hole" },
+		};
+		expect(findAllHoles(draft, "")).toEqual(["fb", "a"]);
+		expect(getDraftAtPath(draft, "fb")).toEqual({ kind: "hole" });
+		expect(getDraftAtPath(draft, "f")?.kind).toBe("lam");
+		expect(getDraftAtPath(draft, "a")).toEqual({ kind: "hole" });
 	});
 
 	it("stores all persistent state under exactly one storage key", () => {

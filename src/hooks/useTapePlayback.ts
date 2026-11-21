@@ -1,12 +1,5 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
-import {
-	playBetaReductionMelody,
-	playDropSound,
-	playMoveSound,
-	playPassSound,
-	playSnapSound,
-	playSplitSound,
-} from "../audio/synth";
+import { playBetaReductionMelody, playDropSound, playMoveSound, playSnapSound, playSplitSound } from "../audio/synth";
 import type { OrderLevel } from "../content";
 import type { Registry } from "../engine/gadget";
 import { type StepEvent, redexes, stepAt, stepLeftmost } from "../engine/reduce";
@@ -44,6 +37,8 @@ interface TapePlayback {
 	readonly stopPlay: () => void;
 	readonly resetTape: (initialTerm: Term | null) => void;
 	readonly undoTape: () => void;
+	readonly stepBackward: () => void;
+	readonly stepForward: () => void;
 }
 
 export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
@@ -107,7 +102,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		}
 		const stepped = stepLeftmost(active, options.registry, "");
 		if (stepped === null) {
-			playPassSound();
+			stopPlay();
 			return;
 		}
 		playStepEventSound(stepped.event, tapeIndex() + 1);
@@ -152,6 +147,15 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		if (tapeIndex() > 0) jumpToTapeIndex(tapeIndex() - 1);
 	};
 
+	const stepBackward = (): void => {
+		if (tapeIndex() > 0) jumpToTapeIndex(tapeIndex() - 1);
+	};
+
+	const stepForward = (): void => {
+		if (tapeIndex() < tape().length - 1) jumpToTapeIndex(tapeIndex() + 1);
+		else startOrStepPlay();
+	};
+
 	return {
 		playTerm,
 		tape,
@@ -166,5 +170,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		stopPlay,
 		resetTape,
 		undoTape,
+		stepBackward,
+		stepForward,
 	};
 }

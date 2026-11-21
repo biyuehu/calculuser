@@ -1,5 +1,5 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
-import { playSnapSound, playUndoSound } from "../audio/synth";
+import { playFailSound, playSnapSound, playUndoSound } from "../audio/synth";
 import { type DraftTerm, countDraftSize, findFirstHole, getScopeAt, setDraftAtPath } from "../engine/draft";
 import { PRINT_NAMES } from "../engine/parse";
 import { clearLevelDraft, saveLevelDraft } from "../engine/storage";
@@ -42,10 +42,11 @@ interface UseDraftWorkbenchOptions {
 interface DraftWorkbench {
 	readonly draft: Accessor<DraftTerm>;
 	readonly selectedPath: Accessor<Path | null>;
-	readonly currentScope: Accessor<readonly string[]>;
+	readonly currentScope: Accessor<readonly (typeof PRINT_NAMES)[number][]>;
 	readonly hasHoles: Accessor<boolean>;
 	readonly partCount: Accessor<number>;
 	readonly canUndoDraft: Accessor<boolean>;
+	readonly draftNotice: Accessor<string | null>;
 	readonly applyReplacement: (replacement: DraftTerm) => void;
 	readonly dismantleAtPath: (path: Path) => void;
 	readonly fillLam: () => void;
@@ -62,6 +63,17 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 	const [selectedPath, setSelectedPath] = createSignal<Path | null>("");
 	const [history, setHistory] = createSignal<readonly DraftTerm[]>([]);
 	const [combo, setCombo] = createSignal<number>(0);
+	const [draftNotice, setDraftNotice] = createSignal<string | null>(null);
+	let noticeTimer: ReturnType<typeof setTimeout> | null = null;
+
+	const showNotice = (message: string): void => {
+		if (noticeTimer !== null) clearTimeout(noticeTimer);
+		setDraftNotice(message);
+		noticeTimer = setTimeout(() => {
+			setDraftNotice(null);
+			noticeTimer = null;
+		}, 2600);
+	};
 
 	const currentScope = createMemo(() => {
 		const path = selectedPath();
@@ -96,8 +108,17 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 	};
 
 	const fillLam = (): void => {
+		const f = () => ((_) => showNotice(`已达到最大插槽深度限制（${PRINT_NAMES.length} 层）`))(playFailSound());
+		if (currentScope().length >= PRINT_NAMES.length) {
+			f();
+			return;
+		}
 		const available = PRINT_NAMES.find((candidate) => !currentScope().includes(candidate));
-		if (available !== void 0) applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });
+		if (available === void 0) {
+			f();
+			return;
+		}
+		applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });
 	};
 
 	const selectHole = (path: Path): void => {
@@ -142,6 +163,7 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 		hasHoles,
 		partCount,
 		canUndoDraft,
+		draftNotice,
 		applyReplacement,
 		dismantleAtPath,
 		fillLam,

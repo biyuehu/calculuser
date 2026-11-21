@@ -3,6 +3,7 @@ import type { OrderLevel } from "../content";
 import { type DraftTerm, draftToTerm } from "../engine/draft";
 import type { Registry } from "../engine/gadget";
 import { printXRayTerm } from "../engine/parse";
+import type { PRINT_NAMES } from "../engine/parse";
 import { loadLevelDrafts } from "../engine/storage";
 import type { GadgetId, Path, Term } from "../engine/term";
 import type { RejectedInfo } from "../ui/workbench/panels/OrderSlip";
@@ -31,13 +32,14 @@ interface WorkbenchSession {
 	readonly xRayText: Accessor<string>;
 	readonly shelfUnlockedIds: Accessor<readonly GadgetId[]>;
 	readonly shelfLockedCount: Accessor<number>;
-	readonly currentScope: Accessor<readonly string[]>;
+	readonly currentScope: Accessor<readonly (typeof PRINT_NAMES)[number][]>;
 	readonly rejected: Accessor<RejectedInfo | null>;
 	readonly deliveredStars: Accessor<number | null>;
 	readonly partCount: Accessor<number>;
 	readonly runSteps: Accessor<number>;
 	readonly runFailed: Accessor<boolean>;
 	readonly canUndo: Accessor<boolean>;
+	readonly draftNotice: Accessor<string | null>;
 	readonly hasHoles: Accessor<boolean>;
 	readonly applyReplacement: (replacement: DraftTerm) => void;
 	readonly dismantleAtPath: (path: Path) => void;
@@ -121,7 +123,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	const xRayText = createMemo((): string => {
 		try {
 			const term = tapePlay.playTerm();
-			return printXRayTerm(term !== null ? term : draftToTerm(draftBench.draft(), []), options.registry, 0);
+			return printXRayTerm(term !== null ? term : draftToTerm(draftBench.draft(), []), options.registry);
 		} catch {
 			return "装置尚有空槽未填满";
 		}
@@ -178,6 +180,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		partCount: draftBench.partCount,
 		runSteps: tapePlay.runSteps,
 		runFailed,
+		draftNotice: draftBench.draftNotice,
 		canUndo: () => (tapePlay.playTerm() !== null ? tapePlay.canUndoTape() : draftBench.canUndoDraft()),
 		hasHoles: draftBench.hasHoles,
 		applyReplacement: draftBench.applyReplacement,

@@ -61,13 +61,13 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 									<For each={testCase.args}>
 										{(argTerm) => (
 											<div class="mini-scale">
-												<TermVisual term={argTerm} depth={0} path="" redexPaths={[]} />
+												<TermVisual term={argTerm} path="" redexPaths={[]} />
 											</div>
 										)}
 									</For>
 									<span class="order-case-arrow">→</span>
 									<div class="mini-scale">
-										<TermVisual term={testCase.expect} depth={0} path="" redexPaths={[]} />
+										<TermVisual term={testCase.expect} path="" redexPaths={[]} />
 									</div>
 								</div>
 							)}
@@ -80,7 +80,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 						<div class="order-sample-row">
 							<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>目标结果：</span>
 							<div class="mini-scale">
-								<TermVisual term={runOrder().targetTerm} depth={0} path="" redexPaths={[]} />
+								<TermVisual term={runOrder().targetTerm} path="" redexPaths={[]} />
 							</div>
 						</div>
 					)}
@@ -101,7 +101,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 										<div style={{ display: "flex", "align-items": "center", gap: "6px", "flex-wrap": "wrap" }}>
 											<span>实际吐出：</span>
 											<div class="mini-scale">
-												<TermVisual term={actualTerm()} depth={0} path="" redexPaths={[]} />
+												<TermVisual term={actualTerm()} path="" redexPaths={[]} />
 											</div>
 										</div>
 									)}

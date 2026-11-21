@@ -1,11 +1,10 @@
 import type { JSX } from "solid-js";
 import { getGadgetMeta } from "../../../content";
 import type { Path, Term } from "../../../engine/term";
-import { getColorAtDepth } from "../../../styles";
+import { getVariableColor } from "../../../styles";
 
 interface TermVisualProps {
 	readonly term: Term;
-	readonly depth: number;
 	readonly path: Path;
 	readonly redexPaths: readonly Path[];
 	readonly onStepRedex?: (path: Path) => void;
@@ -18,7 +17,7 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 				const node = props.term;
 				switch (node.kind) {
 					case "var": {
-						const color = getColorAtDepth(props.depth - 1 - node.index);
+						const color = getVariableColor(node.name);
 						return <span class="signal-orb" style={{ background: color, "--orb-glow": color }} />;
 					}
 					case "atom":
@@ -35,7 +34,7 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 						);
 					}
 					case "lam": {
-						const color = getColorAtDepth(props.depth);
+						const color = getVariableColor(node.param);
 						return (
 							<span class="machine-lam" style={{ "--socket-color": color }}>
 								<span class="machine-socket">
@@ -44,7 +43,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 								<span class="machine-chamber">
 									<TermVisual
 										term={node.body}
-										depth={props.depth + 1}
 										path={`${props.path}b`}
 										redexPaths={props.redexPaths}
 										onStepRedex={props.onStepRedex}
@@ -74,7 +72,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 							>
 								<TermVisual
 									term={node.fn}
-									depth={props.depth}
 									path={`${props.path}f`}
 									redexPaths={props.redexPaths}
 									onStepRedex={props.onStepRedex}
@@ -82,7 +79,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 								<span class="feed-connector">◀</span>
 								<TermVisual
 									term={node.arg}
-									depth={props.depth}
 									path={`${props.path}a`}
 									redexPaths={props.redexPaths}
 									onStepRedex={props.onStepRedex}

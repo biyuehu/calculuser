@@ -171,7 +171,6 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							{(term) => (
 								<TermVisual
 									term={term()}
-									depth={0}
 									path=""
 									redexPaths={session.activeRedexes()}
 									onStepRedex={session.stepRedexAt}
@@ -186,6 +185,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						透视：{session.xRayText()}
 					</div>
 				</Show>
+
+				<Show when={session.draftNotice()}>{(notice) => <div class="workbench-toast-notice">{notice()}</div>}</Show>
 
 				<Show when={props.order.mode === "build" ? props.order : null}>
 					{(buildOrder) => (

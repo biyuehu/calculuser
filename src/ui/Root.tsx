@@ -23,12 +23,12 @@ import {
 	saveSettings,
 	saveWorkshop,
 } from "../engine/storage";
+import { transitionView } from "../utils/transition";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { CounterView } from "./views/CounterView";
 import { TitleView } from "./views/TitleView";
 import { WorkbenchView } from "./views/WorkbenchView";
-import { transitionView } from "../utils/transition";
 
 function syncRegistryWithUnlocked(registry: Registry, stars: ReadonlyMap<string, number>, isJudge: boolean): void {
 	for (const key of Array.from(registry.keys())) {

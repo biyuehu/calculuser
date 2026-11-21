@@ -1,33 +1,35 @@
-const VARIABLE_COLORS: Record<string, string> = {
-	x: "var(--var-x)",
-	y: "var(--var-y)",
-	z: "var(--var-z)",
-	w: "var(--var-w)",
-};
+import { PRINT_NAMES } from "../engine/parse";
 
-const VARIABLE_PALETTE: readonly string[] = [
-	"var(--var-x)",
-	"var(--var-y)",
-	"var(--var-z)",
-	"var(--var-w)",
-	"#06b6d4",
+const VARIABLE_PALETTE: readonly string[] & { length: (typeof PRINT_NAMES)["length"] } = [
+	"#0284c7",
+	"#16a34a",
+	"#eab308",
 	"#8b5cf6",
+	"#06b6d4",
+	"#f97316",
 	"#ec4899",
 	"#10b981",
-	"#f59e0b",
+	"#d97706",
 	"#3b82f6",
-	"#6366f1",
-	"#14b8a6",
-	"#f97316",
+	"#a855f7",
+	"#0d9488",
+	"#ef4444",
 	"#84cc16",
 	"#e11d48",
-	"#0284c7",
+	"#6366f1",
+	"#14b8a6",
+	"#f43f5e",
+	"#854d0e",
+	"#059669",
+	"#c026d3",
+	"#ea580c",
+	"#2563eb",
+	"#4ade80",
+	"#db2777",
+	"#0891b2",
 ];
 
-export function getVariableColor(name: string): string {
-	return VARIABLE_COLORS[name] ?? VARIABLE_PALETTE[name.charCodeAt(0) % VARIABLE_PALETTE.length];
-}
-
-export function getColorAtDepth(depth: number): string {
-	return depth >= 0 && depth < VARIABLE_PALETTE.length ? VARIABLE_PALETTE[depth] : "#94a3b8";
+export function getVariableColor<T extends (typeof PRINT_NAMES)[number]>(name: T): string {
+	const index = PRINT_NAMES.indexOf(name);
+	return index >= 0 && index < VARIABLE_PALETTE.length ? VARIABLE_PALETTE[index] : "#94a3b8";
 }

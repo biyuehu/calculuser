@@ -22,10 +22,6 @@
 	--accent-danger: #dc2626;
 	--accent-danger-strong: #b91c1c;
 	--accent-danger-subtle: #fee2e2;
-	--var-x: #0284c7;
-	--var-y: #16a34a;
-	--var-z: #eab308;
-	--var-w: #8b5cf6;
 	--ease-overshoot: cubic-bezier(0.34, 1.3, 0.64, 1);
 	--ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 	--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -793,6 +789,24 @@ body {
 	box-shadow: 0 2px 8px rgba(32, 32, 31, 0.08);
 }
 
+.workbench-toast-notice {
+	position: absolute;
+	top: 14px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: #18130e;
+	color: #ffffff;
+	border: 1px solid var(--accent-warning);
+	border-radius: 8px;
+	padding: 6px 14px;
+	font-size: 12px;
+	font-weight: 500;
+	z-index: 40;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+	animation: partPop 0.2s var(--ease-overshoot);
+	pointer-events: none;
+}
+
 .modal-backdrop {
 	position: fixed;
 	inset: 0;
@@ -1408,7 +1422,7 @@ body {
 	width: 20px;
 	height: 20px;
 	border-radius: 4px;
-	background: var(--var-x);
+	background: #0284c7;
 	color: #fff;
 	display: inline-flex;
 	align-items: center;

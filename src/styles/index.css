@@ -412,6 +412,19 @@ body {
 	color: var(--text-primary);
 }
 
+.order-samples-container {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-height: 42px;
+	max-height: 180px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	flex-shrink: 0;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border-strong) transparent;
+}
+
 .order-sample-row {
 	display: flex;
 	align-items: center;
@@ -421,11 +434,15 @@ body {
 	background: var(--surface-2);
 	font-size: 12px;
 	max-width: 100%;
+	min-height: 32px;
+	max-height: 100px;
 	overflow-x: auto;
-	overflow-y: hidden;
+	overflow-y: auto;
 	white-space: nowrap;
 	scrollbar-width: thin;
 	scrollbar-color: var(--border-strong) transparent;
+	flex-shrink: 0;
+	box-sizing: border-box;
 }
 
 .order-reject-box {
@@ -437,8 +454,37 @@ body {
 	color: var(--accent-danger-strong);
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 6px;
 	animation: shakeBox 0.38s ease-in-out;
+	flex-shrink: 0;
+}
+
+.order-reject-actual-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 2px;
+}
+
+.order-reject-actual-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 8px;
+	border-radius: 7px;
+	background: rgba(255, 255, 255, 0.7);
+	border: 1px solid rgba(184, 58, 58, 0.2);
+	font-size: 12px;
+	max-width: 100%;
+	min-height: 32px;
+	max-height: 120px;
+	overflow-x: auto;
+	overflow-y: auto;
+	white-space: nowrap;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border-strong) transparent;
+	box-sizing: border-box;
+	flex-shrink: 0;
 }
 
 .order-reject-hint {
@@ -482,7 +528,9 @@ body {
 .shelf-rail::-webkit-scrollbar,
 .order-slip::-webkit-scrollbar,
 .delivery-counter::-webkit-scrollbar,
-.order-sample-row::-webkit-scrollbar {
+.order-sample-row::-webkit-scrollbar,
+.order-samples-container::-webkit-scrollbar,
+.order-reject-actual-row::-webkit-scrollbar {
 	width: 5px;
 	height: 5px;
 }
@@ -490,7 +538,9 @@ body {
 .shelf-rail::-webkit-scrollbar-thumb,
 .order-slip::-webkit-scrollbar-thumb,
 .delivery-counter::-webkit-scrollbar-thumb,
-.order-sample-row::-webkit-scrollbar-thumb {
+.order-sample-row::-webkit-scrollbar-thumb,
+.order-samples-container::-webkit-scrollbar-thumb,
+.order-reject-actual-row::-webkit-scrollbar-thumb {
 	background: var(--border-strong);
 	border-radius: 3px;
 }
@@ -498,7 +548,9 @@ body {
 .shelf-rail::-webkit-scrollbar-track,
 .order-slip::-webkit-scrollbar-track,
 .delivery-counter::-webkit-scrollbar-track,
-.order-sample-row::-webkit-scrollbar-track {
+.order-sample-row::-webkit-scrollbar-track,
+.order-samples-container::-webkit-scrollbar-track,
+.order-reject-actual-row::-webkit-scrollbar-track {
 	background: transparent;
 }
 .delivery-counter {

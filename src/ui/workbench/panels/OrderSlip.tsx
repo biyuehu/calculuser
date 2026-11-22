@@ -73,32 +73,36 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 
 				<Show when={props.order.mode === "build" ? props.order : null}>
 					{(buildOrder) => (
-						<For each={buildOrder().tests}>
-							{(testCase) => (
-								<div class="order-sample-row">
-									<For each={testCase.args}>
-										{(argTerm) => (
-											<div class="mini-scale">
-												<TermVisual term={argTerm} path="" redexPaths={[]} />
-											</div>
-										)}
-									</For>
-									<span class="order-case-arrow">→</span>
-									<div class="mini-scale">
-										<TermVisual term={testCase.expect} path="" redexPaths={[]} />
+						<div class="order-samples-container">
+							<For each={buildOrder().tests}>
+								{(testCase) => (
+									<div class="order-sample-row">
+										<For each={testCase.args}>
+											{(argTerm) => (
+												<div class="mini-scale">
+													<TermVisual term={argTerm} path="" redexPaths={[]} />
+												</div>
+											)}
+										</For>
+										<span class="order-case-arrow">→</span>
+										<div class="mini-scale">
+											<TermVisual term={testCase.expect} path="" redexPaths={[]} />
+										</div>
 									</div>
-								</div>
-							)}
-						</For>
+								)}
+							</For>
+						</div>
 					)}
 				</Show>
 
 				<Show when={props.order.mode === "run" ? props.order : null}>
 					{(runOrder) => (
-						<div class="order-sample-row">
-							<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>目标结果：</span>
-							<div class="mini-scale">
-								<TermVisual term={runOrder().targetTerm} path="" redexPaths={[]} />
+						<div class="order-samples-container">
+							<div class="order-sample-row">
+								<span style={{ color: "var(--text-muted)", "flex-shrink": 0 }}>目标结果：</span>
+								<div class="mini-scale">
+									<TermVisual term={runOrder().targetTerm} path="" redexPaths={[]} />
+								</div>
 							</div>
 						</div>
 					)}
@@ -116,10 +120,12 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 									fallback={<span>机器冒烟卡死了（死循环）！</span>}
 								>
 									{(actualTerm) => (
-										<div style={{ display: "flex", "align-items": "center", gap: "6px", "flex-wrap": "wrap" }}>
-											<span>实际吐出：</span>
-											<div class="mini-scale">
-												<TermVisual term={actualTerm()} path="" redexPaths={[]} />
+										<div class="order-reject-actual-wrap">
+											<span style={{ "font-weight": "600", "flex-shrink": 0 }}>实际吐出：</span>
+											<div class="order-reject-actual-row">
+												<div class="mini-scale">
+													<TermVisual term={actualTerm()} path="" redexPaths={[]} />
+												</div>
 											</div>
 										</div>
 									)}

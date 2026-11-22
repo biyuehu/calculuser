@@ -1,4 +1,5 @@
 import type { Registry } from "../semantics/gadget";
+import { formatTy } from "../types/ty";
 import type { Term } from "./term";
 
 export function printTerm(term: Term): string {
@@ -9,8 +10,12 @@ export function printTerm(term: Term): string {
 			return term.name;
 		case "gad":
 			return term.id;
+		case "ann":
+			return `(${printTerm(term.term)} : ${formatTy(term.ty)})`;
 		case "lam":
-			return `λ${term.param}.${printTerm(term.body)}`;
+			return term.ty !== void 0
+				? `λ(${term.param}: ${formatTy(term.ty)}).${printTerm(term.body)}`
+				: `λ${term.param}.${printTerm(term.body)}`;
 		case "app": {
 			const fnStr = term.fn.kind === "lam" ? `(${printTerm(term.fn)})` : printTerm(term.fn);
 			const argStr =
@@ -31,6 +36,8 @@ export function printXRayTerm(term: Term, registry: Registry): string {
 			const entry = registry.get(term.id);
 			return entry !== void 0 ? `(${printXRayTerm(entry.def, registry)})` : term.id;
 		}
+		case "ann":
+			return printXRayTerm(term.term, registry);
 		case "lam":
 			return `λ${term.param}.${printXRayTerm(term.body, registry)}`;
 		case "app": {

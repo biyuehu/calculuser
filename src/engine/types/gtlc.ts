@@ -1,83 +1,9 @@
 import type { Registry } from "../semantics/gadget";
 import { judgeNormalize } from "../semantics/judge";
 import { type Term, app, atom } from "../syntax/term";
+import { type Ty, any, arrow, consistent, fn, formatTy, matchArrow, spine } from "./ty";
 
-export type Ty =
-	| { readonly k: "any" }
-	| { readonly k: "base"; readonly name: string }
-	| { readonly k: "var"; readonly id: number }
-	| { readonly k: "arrow"; readonly from: Ty; readonly to: Ty };
-
-export const any: Ty = { k: "any" };
-export const base = (name: string): Ty => ({ k: "base", name });
-export const arrow = (from: Ty, to: Ty): Ty => ({ k: "arrow", from, to });
-export const fn = (ps: readonly Ty[], r: Ty): Ty => ps.reduceRight((acc, p) => arrow(p, acc), r);
-export const dyn = (arity: number): Ty => fn(Array(arity).fill(any), any);
-
-export function parseTy(src: string): Ty {
-	const toks = src.replace(/→/g, "->").match(/->|\?|\(|\)|[A-Za-z_][\w']*/g) ?? [];
-	let i = 0;
-	const parseAtom = (): Ty => {
-		const t = toks[i++];
-		if (t === "?") return any;
-		if (t === "(") {
-			const r = parseExpr();
-			i++;
-			return r;
-		}
-		return base(t);
-	};
-	const parseExpr = (): Ty => {
-		const l = parseAtom();
-		if (toks[i] === "->") {
-			i++;
-			return arrow(l, parseExpr());
-		}
-		return l;
-	};
-	const r = parseExpr();
-	if (i !== toks.length) throw new Error(`Type parse error: ${src}`);
-	return r;
-}
-
-export function spine(t: Ty): { readonly params: readonly Ty[]; readonly result: Ty } {
-	const params: Ty[] = [];
-	let curr = t;
-	while (curr.k === "arrow") {
-		params.push(curr.from);
-		curr = curr.to;
-	}
-	return { params, result: curr };
-}
-
-export const consistent = (a: Ty, b: Ty): boolean =>
-	a.k === "any" ||
-	b.k === "any" ||
-	(a.k === "base" && b.k === "base" && a.name === b.name) ||
-	(a.k === "arrow" && b.k === "arrow" && consistent(a.from, b.from) && consistent(a.to, b.to));
-
-export const lessPrecise = (a: Ty, b: Ty): boolean =>
-	a.k === "any" ||
-	(a.k === "base" && b.k === "base" && a.name === b.name) ||
-	(a.k === "arrow" && b.k === "arrow" && lessPrecise(a.from, b.from) && lessPrecise(a.to, b.to));
-
-export const matchArrow = (t: Ty): { readonly from: Ty; readonly to: Ty } | null =>
-	t.k === "arrow" ? t : t.k === "any" ? { from: any, to: any } : null;
-
-export function formatTy(t: Ty): string {
-	switch (t.k) {
-		case "any":
-			return "?";
-		case "base":
-			return t.name;
-		case "var":
-			return `α${t.id}`;
-		case "arrow": {
-			const fromStr = t.from.k === "arrow" ? `(${formatTy(t.from)})` : formatTy(t.from);
-			return `${fromStr} -> ${formatTy(t.to)}`;
-		}
-	}
-}
+export * from "./ty";
 
 export class TypeErr extends Error {
 	constructor(
@@ -111,7 +37,7 @@ export const BASE_TYPES: Record<string, BaseTypeSpec> = {
 		name: "样品",
 		shape: "circle",
 		note: "不透明的东西，只能被传递",
-		samples: (c) => c.atoms.map(atom),
+		samples: (c) => c.atoms.map((name) => atom(name)),
 		check: (t) => t.kind === "atom",
 	},
 	Bool: {
@@ -191,13 +117,18 @@ function inferRaw(term: Term, env: readonly Ty[], ctx: InferContext, registry?: 
 		case "var":
 			return term.index < env.length ? ctx.find(env[term.index]) : any;
 		case "atom":
-			return base("Atom");
+			return term.ty;
 		case "gad": {
 			const entry = registry ? registry.get(term.id) : void 0;
 			return entry !== void 0 ? inferRaw(entry.def, [], ctx, registry) : any;
 		}
+		case "ann": {
+			const inferred = inferRaw(term.term, env, ctx, registry);
+			ctx.unify(inferred, term.ty);
+			return term.ty;
+		}
 		case "lam": {
-			const paramTy = ctx.fresh();
+			const paramTy = term.ty !== void 0 ? term.ty : ctx.fresh();
 			return arrow(paramTy, inferRaw(term.body, [paramTy, ...env], ctx, registry));
 		}
 		case "app": {
@@ -220,13 +151,19 @@ export function synth(term: Term, env: readonly Ty[] = [], registry?: Registry):
 		case "var":
 			return term.index < env.length ? env[term.index] : any;
 		case "atom":
-			return base("Atom");
+			return term.ty;
 		case "gad": {
 			const entry = registry ? registry.get(term.id) : void 0;
 			return entry !== void 0 ? inferTermType(entry.def, registry) : any;
 		}
-		case "lam":
-			return arrow(any, synth(term.body, [any, ...env], registry));
+		case "ann": {
+			check(term.term, term.ty, env, registry);
+			return term.ty;
+		}
+		case "lam": {
+			const paramTy = term.ty ?? any;
+			return arrow(paramTy, synth(term.body, [paramTy, ...env], registry));
+		}
 		case "app": {
 			const m = matchArrow(synth(term.fn, env, registry));
 			if (!m) throw new TypeErr("not-a-function", term);
@@ -241,7 +178,15 @@ export function check(term: Term, want: Ty, env: readonly Ty[] = [], registry?: 
 	if (term.kind === "lam") {
 		const m = matchArrow(want);
 		if (!m) throw new TypeErr("lam-vs-nonfunction", term);
-		check(term.body, m.to, [m.from, ...env], registry);
+		if (term.ty !== void 0 && !consistent(term.ty, m.from))
+			throw new TypeErr("arg-mismatch", term, { want: m.from, got: term.ty });
+		const paramTy = term.ty ?? m.from;
+		check(term.body, m.to, [paramTy, ...env], registry);
+		return;
+	}
+	if (term.kind === "ann") {
+		if (!consistent(term.ty, want)) throw new TypeErr("mismatch", term, { want, got: term.ty });
+		check(term.term, term.ty, env, registry);
 		return;
 	}
 	const got = synth(term, env, registry);
@@ -277,7 +222,9 @@ export function verify(
 ): VerifyFailure | null {
 	const { params, result } = spine(plate);
 	const pools = params.map((p) =>
-		p.k === "base" && BASE_TYPES[p.name] !== void 0 ? BASE_TYPES[p.name].samples(ctx) : ctx.atoms.map(atom),
+		p.k === "base" && BASE_TYPES[p.name] !== void 0
+			? BASE_TYPES[p.name].samples(ctx)
+			: ctx.atoms.map((name) => atom(name)),
 	);
 	for (const args of cartesianProduct(pools, 30)) {
 		const norm = judgeNormalize(

@@ -1,0 +1,76 @@
+export type Ty =
+	| { readonly k: "any" }
+	| { readonly k: "base"; readonly name: string }
+	| { readonly k: "var"; readonly id: number }
+	| { readonly k: "arrow"; readonly from: Ty; readonly to: Ty };
+
+export const any: Ty = { k: "any" };
+export const base = (name: string): Ty => ({ k: "base", name });
+export const arrow = (from: Ty, to: Ty): Ty => ({ k: "arrow", from, to });
+export const fn = (ps: readonly Ty[], r: Ty): Ty => ps.reduceRight((acc, p) => arrow(p, acc), r);
+export const dyn = (arity: number): Ty => fn(Array(arity).fill(any), any);
+
+export function parseTy(src: string): Ty {
+	const toks = src.replace(/→/g, "->").match(/->|\?|\(|\)|[A-Za-z_][\w']*/g) ?? [];
+	let i = 0;
+	const parseAtom = (): Ty => {
+		const t = toks[i++];
+		if (t === "?") return any;
+		if (t === "(") {
+			const r = parseExpr();
+			i++;
+			return r;
+		}
+		return base(t);
+	};
+	const parseExpr = (): Ty => {
+		const l = parseAtom();
+		if (toks[i] === "->") {
+			i++;
+			return arrow(l, parseExpr());
+		}
+		return l;
+	};
+	const r = parseExpr();
+	if (i !== toks.length) throw new Error(`Type parse error: ${src}`);
+	return r;
+}
+
+export function spine(t: Ty): { readonly params: readonly Ty[]; readonly result: Ty } {
+	const params: Ty[] = [];
+	let curr = t;
+	while (curr.k === "arrow") {
+		params.push(curr.from);
+		curr = curr.to;
+	}
+	return { params, result: curr };
+}
+
+export const consistent = (a: Ty, b: Ty): boolean =>
+	a.k === "any" ||
+	b.k === "any" ||
+	(a.k === "base" && b.k === "base" && a.name === b.name) ||
+	(a.k === "arrow" && b.k === "arrow" && consistent(a.from, b.from) && consistent(a.to, b.to));
+
+export const lessPrecise = (a: Ty, b: Ty): boolean =>
+	a.k === "any" ||
+	(a.k === "base" && b.k === "base" && a.name === b.name) ||
+	(a.k === "arrow" && b.k === "arrow" && lessPrecise(a.from, b.from) && lessPrecise(a.to, b.to));
+
+export const matchArrow = (t: Ty): { readonly from: Ty; readonly to: Ty } | null =>
+	t.k === "arrow" ? t : t.k === "any" ? { from: any, to: any } : null;
+
+export function formatTy(t: Ty): string {
+	switch (t.k) {
+		case "any":
+			return "?";
+		case "base":
+			return t.name;
+		case "var":
+			return `α${t.id}`;
+		case "arrow": {
+			const fromStr = t.from.k === "arrow" ? `(${formatTy(t.from)})` : formatTy(t.from);
+			return `${fromStr} -> ${formatTy(t.to)}`;
+		}
+	}
+}

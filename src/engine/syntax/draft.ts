@@ -1,5 +1,5 @@
 import type { VarName } from "./names";
-import type { GadgetId, Path, Term } from "./term";
+import { type GadgetId, type Path, type Term, atom } from "./term";
 
 export type DraftTerm =
 	| { readonly kind: "hole" }
@@ -84,7 +84,7 @@ export function draftToTerm(draft: DraftTerm, env: readonly string[]): Term {
 		case "hole":
 			throw new Error("Draft contains unfilled hole");
 		case "atom":
-			return { kind: "atom", name: draft.name };
+			return atom(draft.name);
 		case "gad":
 			return { kind: "gad", id: draft.id };
 		case "var": {

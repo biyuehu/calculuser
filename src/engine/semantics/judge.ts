@@ -28,7 +28,9 @@ function inlineGadgets(term: Term, registry: Registry, cache: Map<GadgetId, Term
 			return expanded;
 		}
 		case "lam":
-			return { kind: "lam", param: term.param, body: inlineGadgets(term.body, registry, cache) };
+			return { kind: "lam", param: term.param, ty: term.ty, body: inlineGadgets(term.body, registry, cache) };
+		case "ann":
+			return inlineGadgets(term.term, registry, cache);
 		case "app":
 			return {
 				kind: "app",

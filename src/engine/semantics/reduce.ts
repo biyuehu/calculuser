@@ -71,6 +71,7 @@ export function redexes(term: Term, registry: Registry, path: Path): readonly Pa
 		return [...selfList, ...redexes(term.fn, registry, `${path}f`), ...redexes(term.arg, registry, `${path}a`)];
 	}
 	if (term.kind === "lam") return redexes(term.body, registry, `${path}b`);
+	if (term.kind === "ann") return redexes(term.term, registry, `${path}n`);
 	return [];
 }
 
@@ -86,8 +87,12 @@ export function stepLeftmost(term: Term, registry: Registry, path: Path): StepRe
 	if (term.kind === "lam") {
 		const bodyStep = stepLeftmost(term.body, registry, `${path}b`);
 		return bodyStep !== null
-			? { next: { kind: "lam", param: term.param, body: bodyStep.next }, event: bodyStep.event }
+			? { next: { kind: "lam", param: term.param, ty: term.ty, body: bodyStep.next }, event: bodyStep.event }
 			: null;
+	}
+	if (term.kind === "ann") {
+		const inner = stepLeftmost(term.term, registry, `${path}n`);
+		return inner !== null ? { next: { kind: "ann", term: inner.next, ty: term.ty }, event: inner.event } : null;
 	}
 	return null;
 }
@@ -97,7 +102,13 @@ export function stepAt(term: Term, targetPath: Path, registry: Registry, current
 	const segment = targetPath[currentPath.length];
 	if (term.kind === "lam" && segment === "b") {
 		const res = stepAt(term.body, targetPath, registry, `${currentPath}b`);
-		return res !== null ? { next: { kind: "lam", param: term.param, body: res.next }, event: res.event } : null;
+		return res !== null
+			? { next: { kind: "lam", param: term.param, ty: term.ty, body: res.next }, event: res.event }
+			: null;
+	}
+	if (term.kind === "ann" && segment === "n") {
+		const res = stepAt(term.term, targetPath, registry, `${currentPath}n`);
+		return res !== null ? { next: { kind: "ann", term: res.next, ty: term.ty }, event: res.event } : null;
 	}
 	if (term.kind === "app" && segment === "f") {
 		const res = stepAt(term.fn, targetPath, registry, `${currentPath}f`);

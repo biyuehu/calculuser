@@ -1,7 +1,16 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
 import { playFailSound, playPassSound, playPopExplosionSound } from "../audio/synth";
 import { BUILTIN_COUNT, COMBINATORS, type OrderLevel, getToolDefinition, isToolUnlocked } from "../content";
-import { type DraftTerm, type GadgetId, type Registry, draftToTerm, findFirstHole, judgeOrder } from "../engine";
+import {
+	type DraftTerm,
+	type GadgetId,
+	type Registry,
+	check,
+	draftToTerm,
+	findFirstHole,
+	judgeNormalize,
+	judgeOrder,
+} from "../engine";
 import type { RejectedInfo } from "../ui/workbench/panels/OrderSlip";
 
 const JUDGE_MAX_STEPS = 300;
@@ -16,6 +25,7 @@ interface UseOrderDeliveryOptions {
 
 interface OrderDelivery {
 	readonly rejected: Accessor<RejectedInfo | null>;
+	readonly typeError: Accessor<string | null>;
 	readonly deliveredStars: Accessor<number | null>;
 	readonly shelfUnlockedIds: Accessor<readonly GadgetId[]>;
 	readonly shelfLockedCount: Accessor<number>;
@@ -29,6 +39,7 @@ interface OrderDelivery {
 
 export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDelivery {
 	const [rejected, setRejected] = createSignal<RejectedInfo | null>(null);
+	const [typeError, setTypeError] = createSignal<string | null>(null);
 	const [deliveredStars, setDeliveredStars] = createSignal<number | null>(null);
 
 	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {
@@ -62,33 +73,66 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 
 	const deliverBuildOrder = (draft: DraftTerm, partCount: number): void => {
 		const order = options.order();
-		if (order.mode !== "build") return;
-		const candidate = draftToTerm(draft, []);
-		const results = judgeOrder(candidate, order.tests, options.registry, JUDGE_MAX_STEPS);
-		const firstFailIndex = results.findIndex((item) => !item.passed);
-		if (firstFailIndex >= 0) {
-			playFailSound();
-			setRejected({ testCase: order.tests[firstFailIndex], result: results[firstFailIndex] });
+		if (order.mode === "build") {
+			const candidate = draftToTerm(draft, []);
+			const results = judgeOrder(candidate, order.tests, options.registry, JUDGE_MAX_STEPS);
+			const firstFailIndex = results.findIndex((item) => !item.passed);
+			if (firstFailIndex >= 0) {
+				playFailSound();
+				setRejected({ testCase: order.tests[firstFailIndex], result: results[firstFailIndex] });
+				return;
+			}
+			playPassSound();
+			setRejected(null);
+			const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
+			setDeliveredStars(stars);
+			options.onRecordStars(order.id, stars);
 			return;
 		}
-		playPassSound();
-		setRejected(null);
-		const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
-		setDeliveredStars(stars);
-		options.onRecordStars(order.id, stars);
+		if (order.mode === "typebuild") {
+			try {
+				const candidate = draftToTerm(draft, []);
+				check(candidate, order.targetTy, [], options.registry);
+				const norm = judgeNormalize(candidate, options.registry, JUDGE_MAX_STEPS);
+				if (!norm.terminated) {
+					playFailSound();
+					setTypeError("求值超时或产生发散循环");
+					return;
+				}
+				playPassSound();
+				setTypeError(null);
+				const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
+				setDeliveredStars(stars);
+				options.onRecordStars(order.id, stars);
+			} catch (err) {
+				playFailSound();
+				setTypeError(err instanceof Error ? err.message : String(err));
+			}
+		}
 	};
 
 	const evaluateDraftPassed = (draft: DraftTerm): boolean => {
 		const order = options.order();
-		return (
-			order.mode === "build" &&
-			findFirstHole(draft, "") === null &&
-			judgeOrder(draftToTerm(draft, []), order.tests, options.registry, JUDGE_MAX_STEPS).every((item) => item.passed)
-		);
+		if (findFirstHole(draft, "") !== null) return false;
+		if (order.mode === "build") {
+			return judgeOrder(draftToTerm(draft, []), order.tests, options.registry, JUDGE_MAX_STEPS).every(
+				(item) => item.passed,
+			);
+		}
+		if (order.mode === "typebuild") {
+			try {
+				check(draftToTerm(draft, []), order.targetTy, [], options.registry);
+				return true;
+			} catch {
+				return false;
+			}
+		}
+		return false;
 	};
 
 	const syncInitialDelivery = (initialDraft: DraftTerm, recordedStars?: number): void => {
 		setRejected(null);
+		setTypeError(null);
 		setDeliveredStars(recordedStars !== void 0 && evaluateDraftPassed(initialDraft) ? recordedStars : null);
 	};
 
@@ -104,11 +148,13 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 
 	const resetDelivery = (): void => {
 		setRejected(null);
+		setTypeError(null);
 		setDeliveredStars(null);
 	};
 
 	return {
 		rejected,
+		typeError,
 		deliveredStars,
 		shelfUnlockedIds,
 		shelfLockedCount,

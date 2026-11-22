@@ -2,7 +2,7 @@ import { For, type JSX, Show } from "solid-js";
 import { getGadgetMeta } from "../../../content";
 
 interface DeliveryCounterProps {
-	readonly mode: "build" | "run";
+	readonly mode: "build" | "run" | "typebuild";
 	readonly canDeliver: boolean;
 	readonly delivered: boolean;
 	readonly stars: number;
@@ -23,10 +23,10 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 				props.delivered ? "delivered" : ""
 			} ${props.rejected ? "rejected" : ""}`}
 			onClick={() => {
-				if (props.canDeliver && !props.delivered && props.mode === "build") props.onDeliver();
+				if (props.canDeliver && !props.delivered && props.mode !== "run") props.onDeliver();
 			}}
 			onKeyDown={(event) => {
-				if (event.key === "Enter" && props.canDeliver && !props.delivered && props.mode === "build") props.onDeliver();
+				if (event.key === "Enter" && props.canDeliver && !props.delivered && props.mode !== "run") props.onDeliver();
 			}}
 		>
 			<Show when={props.delivered}>

@@ -45,6 +45,7 @@ interface WorkbenchSession {
 	readonly runFailed: Accessor<boolean>;
 	readonly canUndo: Accessor<boolean>;
 	readonly draftNotice: Accessor<string | null>;
+	readonly typeError: Accessor<string | null>;
 	readonly hasHoles: Accessor<boolean>;
 	readonly applyReplacement: (replacement: DraftTerm) => void;
 	readonly dismantleAtPath: (path: Path) => void;
@@ -174,6 +175,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		shelfLockedCount: delivery.shelfLockedCount,
 		currentScope: draftBench.currentScope,
 		rejected: delivery.rejected,
+		typeError: delivery.typeError,
 		deliveredStars: delivery.deliveredStars,
 		partCount: draftBench.partCount,
 		runSteps: tapePlay.runSteps,

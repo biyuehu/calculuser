@@ -121,7 +121,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				predicate: (event) => /^[0-9]$/.test(event.key),
 				handle: (event) => {
-					if (props.order.mode === "build" && session.playTerm() === null) {
+					if ((props.order.mode === "build" || props.order.mode === "typebuild") && session.playTerm() === null) {
 						const digit = Number.parseInt(event.key, 10);
 						const scope = session.currentScope();
 						const targetIndex = scope.length - 1 - digit;
@@ -155,7 +155,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				handle: () => {
 					if (session.deliveredStars() !== null) {
 						if (!props.isLastOrder) props.onNextOrder();
-					} else if (props.order.mode === "build" && !session.hasHoles()) {
+					} else if ((props.order.mode === "build" || props.order.mode === "typebuild") && !session.hasHoles()) {
 						session.deliverOrder();
 					}
 				},
@@ -304,25 +304,23 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<Show when={session.draftNotice()}>{(notice) => <div class="workbench-toast-notice">{notice()}</div>}</Show>
 
-				<Show when={props.order.mode === "build" ? props.order : null}>
-					{(buildOrder) => (
-						<ShelfRail
-							width={ui.shelfWidth()}
-							onResize={ui.setShelfWidth}
-							unlockedIds={session.shelfUnlockedIds()}
-							lockedCount={session.shelfLockedCount()}
-							scopeVariables={session.currentScope()}
-							atoms={buildOrder().atoms}
-							allowBlueprint={buildOrder().allowBlueprint}
-							canAddLam={session.currentScope().length < PRINT_NAMES.length}
-							hasSelectedHole={session.selectedPath() !== null && session.playTerm() === null}
-							onFillGad={(id) => session.applyReplacement({ kind: "gad", id })}
-							onFillVar={(name) => session.applyReplacement({ kind: "var", name })}
-							onFillAtom={(name) => session.applyReplacement({ kind: "atom", name })}
-							onFillLam={session.fillLam}
-							onFillApp={() => session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
-						/>
-					)}
+				<Show when={props.order.mode === "build" || props.order.mode === "typebuild"}>
+					<ShelfRail
+						width={ui.shelfWidth()}
+						onResize={ui.setShelfWidth}
+						unlockedIds={props.order.mode === "build" ? session.shelfUnlockedIds() : []}
+						lockedCount={props.order.mode === "build" ? session.shelfLockedCount() : 0}
+						scopeVariables={session.currentScope()}
+						atoms={props.order.mode === "build" ? props.order.atoms : []}
+						allowBlueprint={props.order.mode === "build" ? props.order.allowBlueprint : true}
+						canAddLam={session.currentScope().length < PRINT_NAMES.length}
+						hasSelectedHole={session.selectedPath() !== null && session.playTerm() === null}
+						onFillGad={(id) => session.applyReplacement({ kind: "gad", id })}
+						onFillVar={(name) => session.applyReplacement({ kind: "var", name })}
+						onFillAtom={(name) => session.applyReplacement({ kind: "atom", name })}
+						onFillLam={session.fillLam}
+						onFillApp={() => session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
+					/>
 				</Show>
 
 				<Show when={props.order.mode === "run" ? props.order : null}>
@@ -349,7 +347,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<DeliveryCounter
 					mode={props.order.mode}
-					canDeliver={props.order.mode === "build" && !session.hasHoles()}
+					canDeliver={(props.order.mode === "build" || props.order.mode === "typebuild") && !session.hasHoles()}
 					delivered={session.deliveredStars() !== null}
 					stars={session.deliveredStars() ?? 0}
 					countValue={props.order.mode === "run" ? session.runSteps() : session.partCount()}
@@ -364,7 +362,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<div
 					class="zoom-controls"
-					style={{ left: props.order.mode === "build" ? `${ui.shelfWidth() + 24}px` : "16px" }}
+					style={{
+						left:
+							props.order.mode === "build" || props.order.mode === "typebuild" ? `${ui.shelfWidth() + 24}px` : "16px",
+					}}
 				>
 					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))} title="放大 (+)">
 						＋

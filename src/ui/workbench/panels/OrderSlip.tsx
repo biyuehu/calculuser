@@ -1,6 +1,6 @@
 import { For, type JSX, Show } from "solid-js";
 import type { OrderLevel } from "../../../content";
-import type { JudgeTestCase, JudgeTestResult } from "../../../engine";
+import { type JudgeTestCase, type JudgeTestResult, formatTy } from "../../../engine";
 import { useUiPreferences } from "../../../hooks/useUiPreferences";
 import { startDragResize } from "../../../utils/dragResize";
 import { TermVisual } from "../term/TermVisual";
@@ -13,6 +13,7 @@ export interface RejectedInfo {
 interface OrderSlipProps {
 	readonly order: OrderLevel;
 	readonly rejected?: RejectedInfo;
+	readonly typeError?: string | null;
 	readonly runSteps: number;
 	readonly runFailed: boolean;
 	readonly transitioning: boolean;
@@ -34,7 +35,9 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 		>
 			<div class="order-resize-handle" onPointerDown={handleResize} title="拖动调整订单栏宽度" />
 			<div class="order-slip-header">
-				<span>{props.order.mode === "run" ? "运转试炼" : "客人的订单"}</span>
+				<span>
+					{props.order.mode === "run" ? "运转试炼" : props.order.mode === "typebuild" ? "类型构筑" : "客人的订单"}
+				</span>
 				<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
 					<button
 						type="button"
@@ -45,7 +48,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 					>
 						💡
 					</button>
-					<Show when={props.order.mode === "build" ? props.order : null}>
+					<Show when={props.order.mode === "build" || props.order.mode === "typebuild" ? props.order : null}>
 						{(buildOrder) => (
 							<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>标准 {buildOrder().parSize} 件</span>
 						)}
@@ -104,6 +107,38 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 									<TermVisual term={runOrder().targetTerm} path="" redexPaths={[]} />
 								</div>
 							</div>
+						</div>
+					)}
+				</Show>
+
+				<Show when={props.order.mode === "typebuild" ? props.order : null}>
+					{(typeOrder) => (
+						<div class="order-samples-container">
+							<div
+								class="order-sample-row"
+								style={{ "flex-direction": "column", "align-items": "flex-start", gap: "4px" }}
+							>
+								<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>目标类型签名：</span>
+								<div
+									style={{
+										"font-family": "monospace",
+										"font-size": "13px",
+										"font-weight": "600",
+										color: "var(--accent)",
+									}}
+								>
+									{formatTy(typeOrder().targetTy)}
+								</div>
+							</div>
+						</div>
+					)}
+				</Show>
+
+				<Show when={props.typeError}>
+					{(err) => (
+						<div class="order-reject-box">
+							<span style={{ "font-weight": "700" }}>类型检验未通过：</span>
+							<span class="order-reject-hint">{err()}</span>
 						</div>
 					)}
 				</Show>

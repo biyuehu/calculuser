@@ -212,19 +212,19 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						<div class="shortcut-group">
 							<div class="shortcut-group-title">装配与零件填入</div>
 							<div class="shortcut-row">
-								<span>开槽（λ 抽象机身）</span>
+								<span>开槽（抽象机）</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">Q</span>
 								</div>
 							</div>
 							<div class="shortcut-row">
-								<span>喂入（应用连接器 ◀）</span>
+								<span>喂入（应用连接器）</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">E</span>
 								</div>
 							</div>
 							<div class="shortcut-row">
-								<span>填入对应组合子（需未被禁用）</span>
+								<span>填入对应工具</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">I</span>
 									<span class="key-cap">S</span>
@@ -247,7 +247,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								</div>
 							</div>
 							<div class="shortcut-row">
-								<span>拆解零件（回退为空槽）</span>
+								<span>拆解零件</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">Del</span>
 									<span>/</span>
@@ -297,7 +297,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						<div class="shortcut-group">
 							<div class="shortcut-group-title">视口与界面辅助</div>
 							<div class="shortcut-row">
-								<span>集中画布（回到全景 100%）</span>
+								<span>集中画布</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">F</span>
 								</div>
@@ -311,13 +311,13 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								</div>
 							</div>
 							<div class="shortcut-row">
-								<span>透视模式（展开组合子 λ 式）</span>
+								<span>透视模式</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">X</span>
 								</div>
 							</div>
 							<div class="shortcut-row">
-								<span>显示 / 收起客人过关提示</span>
+								<span>显示 / 收起提示</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">H</span>
 								</div>

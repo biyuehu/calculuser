@@ -25,6 +25,27 @@ const SPEAKER_NAMES: Record<DialogueSpeaker, string> = {
 	master: "老师傅的旧信件",
 };
 
+const STANDEE_FACES: Record<DialogueFace, string> = {
+	default: "/characters/hen_default.png",
+	happy: "/characters/hen_happy.png",
+	proud: "/characters/hen_happy.png",
+	wow: "/characters/hen_wow.png",
+	think: "/characters/hen_default.png",
+	sad: "/characters/hen_wow.png",
+};
+
+const PRELOAD_STANDEES = [
+	"/characters/hen_default.png",
+	"/characters/hen_happy.png",
+	"/characters/hen_wow.png",
+] as const;
+
+if (typeof window !== "undefined")
+	for (const src of PRELOAD_STANDEES) {
+		const img = new Image();
+		img.src = src;
+	}
+
 export function CounterView(props: CounterViewProps): JSX.Element {
 	const [activeLines, setActiveLines] = createSignal<readonly DialogueLine[]>([]);
 	const [lineIndex, setLineIndex] = createSignal<number>(0);
@@ -152,14 +173,12 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 				{(_) => (
 					<>
 						<div class={`avatar-standee avatar-${currentFace()}`}>
-							<div class="avatar-head">
-								<div class="avatar-eye-left" />
-								<div class="avatar-eye-right" />
-								<div class={`avatar-mouth ${charCount() < currentText().length ? "talking" : ""}`} />
-							</div>
-							<div class="avatar-body-shape">
-								<span class="avatar-sigil">λ</span>
-							</div>
+							<img
+								src={STANDEE_FACES[currentFace()] ?? STANDEE_FACES.default}
+								alt={SPEAKER_NAMES[currentSpeaker()]}
+								class="standee-image"
+								draggable={false}
+							/>
 						</div>
 
 						<div

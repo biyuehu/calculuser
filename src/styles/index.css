@@ -1063,94 +1063,46 @@ body {
 /* Standee Character (Hen) */
 .avatar-standee {
 	position: absolute;
-	bottom: 105px;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
 	display: flex;
-	flex-direction: column;
-	align-items: center;
+	justify-content: center;
+	align-items: flex-end;
 	z-index: 4;
-	transition: transform 0.25s var(--ease-overshoot);
-	animation: standeeBreath 3.2s ease-in-out infinite alternate;
+	pointer-events: none;
+	user-select: none;
+	animation: standeeBreath 3.6s ease-in-out infinite alternate;
 }
 
 @keyframes standeeBreath {
 	0% {
-		transform: translateY(0) scaleY(1);
+		transform: translateX(-50%) translateY(0) scale(1);
 	}
 	100% {
-		transform: translateY(-4px) scaleY(1.02);
+		transform: translateX(-50%) translateY(-6px) scale(1.008);
 	}
 }
 
-.avatar-head {
-	width: 100px;
-	height: 90px;
-	background: #ffffff;
-	border: 3.5px solid #20201f;
-	border-radius: 28px;
-	position: relative;
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 22px;
+.standee-image {
+	height: clamp(420px, 70vh, 640px);
+	width: auto;
+	aspect-ratio: 1024 / 2048;
+	max-width: min(90vw, 360px);
+	object-fit: contain;
+	filter: drop-shadow(0 14px 28px rgba(32, 28, 24, 0.22));
+	transition: transform 0.24s var(--ease-overshoot), filter 0.24s ease;
 }
 
-.avatar-eye-left,
-.avatar-eye-right {
-	width: 9px;
-	height: 14px;
-	background: #20201f;
-	border-radius: 5px;
-	transition: all 0.15s ease;
+.avatar-standee.avatar-happy .standee-image,
+.avatar-standee.avatar-proud .standee-image {
+	transform: translateY(-5px) scale(1.015);
+	filter: drop-shadow(0 16px 32px rgba(217, 112, 78, 0.28));
 }
 
-.avatar-happy .avatar-eye-left,
-.avatar-happy .avatar-eye-right {
-	height: 5px;
-	border-radius: 4px;
-	transform: translateY(-2px);
-}
-
-.avatar-wow .avatar-eye-left,
-.avatar-wow .avatar-eye-right {
-	width: 14px;
-	height: 14px;
-	border-radius: 50%;
-}
-
-.avatar-mouth {
-	position: absolute;
-	bottom: 16px;
-	width: 12px;
-	height: 4px;
-	background: #20201f;
-	border-radius: 3px;
-	transition: height 0.08s ease;
-}
-
-.avatar-mouth.talking {
-	height: 10px;
-	border-radius: 6px;
-}
-
-.avatar-body-shape {
-	margin-top: -6px;
-	width: 76px;
-	height: 64px;
-	background: var(--accent-clay);
-	border: 3.5px solid #20201f;
-	border-radius: 14px 14px 24px 24px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-.avatar-sigil {
-	font-family: var(--font-mono);
-	font-size: 24px;
-	font-weight: 700;
-	color: #ffffff;
+.avatar-standee.avatar-wow .standee-image {
+	transform: translateY(-8px) scale(1.025);
+	filter: drop-shadow(0 18px 36px rgba(44, 94, 158, 0.25));
 }
 
 /* Dialogue Box Bottom HUD */

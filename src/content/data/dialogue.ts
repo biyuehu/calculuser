@@ -1,38 +1,5 @@
-export type DialogueSpeaker = "me" | "hen" | "guest" | "master";
-
-export type DialogueFace = "default" | "happy" | "wow" | "think" | "sad" | "proud";
-
-export interface TextLine {
-	readonly text: string;
-	readonly speaker?: DialogueSpeaker;
-	readonly face?: DialogueFace;
-}
-
-export type ChoiceBranch = DialogueLine | readonly DialogueLine[];
-
-export interface ChoicesLine {
-	readonly choices: readonly [string, ChoiceBranch][];
-}
-
-export type DialogueLine = TextLine | ChoicesLine;
-
-export interface DialogueBeat {
-	readonly id: string;
-	readonly title?: string;
-	readonly lines: readonly DialogueLine[];
-}
-
-export const textLine = (text: string, speaker?: DialogueSpeaker, face?: DialogueFace): TextLine => ({
-	text,
-	speaker,
-	face,
-});
-
-export const dialogueLine = textLine;
-
-export const choicesLine = (choices: readonly [string, ChoiceBranch][]): ChoicesLine => ({ choices });
-
-export const isChoicesLine = (line: DialogueLine): line is ChoicesLine => "choices" in line;
+import { choicesLine, textLine } from "../types";
+import type { DialogueBeat } from "../types";
 
 const ch1BossBeat: DialogueBeat = {
 	id: "ch1_boss_cleared",

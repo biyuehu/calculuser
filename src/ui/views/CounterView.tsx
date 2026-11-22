@@ -7,7 +7,7 @@ import {
 	type DialogueSpeaker,
 	type TextLine,
 	isChoicesLine,
-} from "../../content/dialogue";
+} from "../../content";
 import { useKeyScope } from "../keybus";
 
 interface CounterViewProps {

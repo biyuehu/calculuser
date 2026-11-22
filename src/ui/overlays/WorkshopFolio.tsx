@@ -171,7 +171,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 					<Show when={activeTab() === "parts"}>
 						<div class="overview-parts-section">
 							<div class="chapter-block" style={{ "margin-bottom": "20px" }}>
-								<h3 class="chapter-title">基础工具（公理工具）</h3>
+								<h3 class="chapter-title">基本工具</h3>
 								<div
 									class="compendium-grid"
 									style={{ "grid-template-columns": "repeat(auto-fill, minmax(240px, 1fr))" }}
@@ -186,7 +186,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 													<div>
 														<div style={{ "font-weight": 700, "font-size": "13px" }}>{tool.name}</div>
 														<div style={{ "font-size": "10.5px", color: "var(--text-muted)" }}>
-															公理工具 · 元数 {tool.arity}
+															基本工具 · 元数 {tool.arity}
 														</div>
 													</div>
 												</div>

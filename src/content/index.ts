@@ -4,9 +4,9 @@ import { LEVELS } from "./data/levels";
 import type { GadgetMeta, ToolDefinition } from "./types";
 
 export * from "./types";
-export * from "./dialogue";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
+export { LEVEL_DIALOGUES } from "./data/dialogue";
 
 export function getToolSource(toolId: string): string | null {
 	return LEVELS.find((item) => item.mode === "build" && item.unlocksToolId === toolId)?.id ?? null;

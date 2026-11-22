@@ -1,4 +1,4 @@
-import type { GadgetId, JudgeTestCase, Term } from "../engine";
+import type { GadgetId, JudgeTestCase, Term, Ty } from "../engine";
 
 export type GadgetShape = "circle" | "square" | "diamond" | "hex";
 
@@ -59,4 +59,51 @@ export interface RunOrder {
 	readonly note: string;
 }
 
-export type OrderLevel = BuildOrder | RunOrder;
+export interface TypeBuildOrder {
+	readonly mode: "typebuild";
+	readonly id: string;
+	readonly chapter?: number;
+	readonly code: string;
+	readonly title: string;
+	readonly guestLine: string;
+	readonly hintOnFail: string;
+	readonly targetTy: Ty;
+	readonly parSize: number;
+	readonly note: string;
+}
+
+export type OrderLevel = BuildOrder | RunOrder | TypeBuildOrder;
+
+export type DialogueSpeaker = "me" | "hen" | "guest" | "master";
+
+export type DialogueFace = "default" | "happy" | "wow" | "think" | "sad" | "proud";
+
+export interface TextLine {
+	readonly text: string;
+	readonly speaker?: DialogueSpeaker;
+	readonly face?: DialogueFace;
+}
+
+export type ChoiceBranch = DialogueLine | readonly DialogueLine[];
+
+export interface ChoicesLine {
+	readonly choices: readonly [string, ChoiceBranch][];
+}
+
+export type DialogueLine = TextLine | ChoicesLine;
+
+export interface DialogueBeat {
+	readonly id: string;
+	readonly title?: string;
+	readonly lines: readonly DialogueLine[];
+}
+
+export const textLine = (text: string, speaker?: DialogueSpeaker, face?: DialogueFace): TextLine => ({
+	text,
+	speaker,
+	face,
+});
+
+export const choicesLine = (choices: readonly [string, ChoiceBranch][]): ChoicesLine => ({ choices });
+
+export const isChoicesLine = (line: DialogueLine): line is ChoicesLine => "choices" in line;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { BUILTIN_COUNT, COMBINATORS, LEVELS } from "../content";
 import {
 	type DraftTerm,
+	atom,
 	createRegistry,
 	findAllHoles,
 	getDraftAtPath,
@@ -31,7 +32,7 @@ describe("Calculuser core engine", () => {
 			events.push(res.event.kind);
 			current = res.next;
 		}
-		expect(termsEqual(current, { kind: "atom", name: "A" })).toBe(true);
+		expect(termsEqual(current, atom("A"))).toBe(true);
 		expect(events).toContain("delta");
 	});
 
@@ -58,12 +59,7 @@ describe("Calculuser core engine", () => {
 	it("judges equivalence by inlining gadgets and stops on Omega loop", () => {
 		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const skk = parseLambda("@S @K @K");
-		const results = judgeOrder(
-			skk,
-			[{ args: [{ kind: "atom", name: "A" }], expect: { kind: "atom", name: "A" } }],
-			registry,
-			100,
-		);
+		const results = judgeOrder(skk, [{ args: [atom("A")], expect: atom("A") }], registry, 100);
 		expect(results[0].passed).toBe(true);
 		const omega = judgeNormalize(parseLambda("(λx. x x) (λx. x x)"), registry, 40);
 		expect(omega.terminated).toBe(false);
@@ -72,7 +68,7 @@ describe("Calculuser core engine", () => {
 	it("solves the three run-mode puzzles within exact step budgets", () => {
 		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const dropStep = stepAt(parseLambda("@K A ((@S @I @I) (@S @I @I))"), "", registry, "");
-		expect(dropStep !== null && termsEqual(dropStep.next, { kind: "atom", name: "A" })).toBe(true);
+		expect(dropStep !== null && termsEqual(dropStep.next, atom("A"))).toBe(true);
 
 		let innerTerm = parseLambda("(@S @I @I) (@I A)");
 		for (const path of ["a", "", "f", "a"]) {

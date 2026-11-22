@@ -157,4 +157,45 @@ describe("GTLC Type System & Nameplates", () => {
 		const resConst = verify(parseLambda("λx. λy. x"), parseTy("Atom -> Atom -> Atom"), ctx, registry, 50);
 		expect(resConst).toBeNull();
 	});
+
+	it("parses and prints type-annotated lambdas and type ascriptions", () => {
+		const t1 = parseLambda("λ(x: Atom). x");
+		expect(t1.kind).toBe("lam");
+		if (t1.kind === "lam") expect(t1.ty).toEqual(base("Atom"));
+
+		const t2 = parseLambda("λx: Atom -> Bool. x");
+		expect(t2.kind).toBe("lam");
+		if (t2.kind === "lam") expect(t2.ty).toEqual(arrow(base("Atom"), base("Bool")));
+
+		const t3 = parseLambda("λ(x: ?). x");
+		expect(t3.kind).toBe("lam");
+		if (t3.kind === "lam") expect(t3.ty).toEqual(any);
+
+		const t4 = parseLambda("λx. (x : Atom)");
+		expect(t4.kind).toBe("lam");
+		if (t4.kind === "lam") {
+			expect(t4.body.kind).toBe("ann");
+			if (t4.body.kind === "ann") {
+				expect(t4.body.ty).toEqual(base("Atom"));
+				expect(t4.body.term.kind).toBe("var");
+			}
+		}
+
+		const t5 = parseLambda("(A : Atom)");
+		expect(t5.kind).toBe("ann");
+		if (t5.kind === "ann") {
+			expect(t5.ty).toEqual(base("Atom"));
+			expect(t5.term.kind).toBe("atom");
+			if (t5.term.kind === "atom") expect(t5.term.ty).toEqual(base("Atom"));
+		}
+
+		const boolAtom = atom("#T", base("Bool"));
+		expect(boolAtom.kind).toBe("atom");
+		if (boolAtom.kind === "atom") expect(boolAtom.ty).toEqual(base("Bool"));
+		expect(inferTermType(boolAtom)).toEqual(base("Bool"));
+
+		expect(inferTermType(t1)).toEqual(arrow(base("Atom"), base("Atom")));
+		expect(inferTermType(t2)).toEqual(arrow(arrow(base("Atom"), base("Bool")), arrow(base("Atom"), base("Bool"))));
+		expect(() => check(t1, parseTy("Bool -> Bool"))).toThrow();
+	});
 });

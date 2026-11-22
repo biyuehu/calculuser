@@ -1,6 +1,6 @@
 import { For, type JSX, Show } from "solid-js";
 import { getGadgetMeta } from "../../../content";
-
+// TODO： 类型改为铭牌等游戏用语优化，css优化，
 interface DeliveryCounterProps {
 	readonly mode: "build" | "run" | "typebuild";
 	readonly canDeliver: boolean;
@@ -11,6 +11,7 @@ interface DeliveryCounterProps {
 	readonly note: string;
 	readonly isLastOrder: boolean;
 	readonly rejected: boolean;
+	readonly rejectReason?: string;
 	readonly unlocksToolId?: string;
 	readonly onDeliver: () => void;
 	readonly onNextOrder: () => void;
@@ -39,19 +40,30 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 			<Show
 				when={props.delivered}
 				fallback={
-					<>
-						<span style={{ "font-size": "22px" }}>{props.mode === "run" ? "⚡" : "📦"}</span>
-						<span style={{ "font-size": "13px", "font-weight": "600", color: "var(--accent-clay)" }}>
-							{props.mode === "run"
-								? "点击桌面发光连接进行运转"
-								: props.canDeliver
-									? "交货台（点击验货）"
-									: "先填满工作台空槽"}
+					<Show
+						when={props.rejected}
+						fallback={
+							<>
+								<span style={{ "font-size": "22px" }}>{props.mode === "run" ? "⚡" : "📦"}</span>
+								<span style={{ "font-size": "13px", "font-weight": "600", color: "var(--accent-clay)" }}>
+									{props.mode === "run"
+										? "点击桌面发光连接进行运转"
+										: props.canDeliver
+											? "交货台（点击验货）"
+											: "先填满工作台空槽"}
+								</span>
+								<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>
+									{props.mode === "run" ? "达标后自动停机" : `当前零件 ${props.countValue} / 标准 ${props.targetValue}`}
+								</span>
+							</>
+						}
+					>
+						<span style={{ "font-size": "22px" }}>⚠️</span>
+						<span style={{ "font-size": "13px", "font-weight": "600", color: "var(--accent-danger)" }}>
+							{props.mode === "typebuild" ? "铭牌不匹配" : "验货未通过"}
 						</span>
-						<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-							{props.mode === "run" ? "达标后自动停机" : `当前零件 ${props.countValue} / 标准 ${props.targetValue}`}
-						</span>
-					</>
+						<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>点击重新验货</span>
+					</Show>
 				}
 			>
 				<div class="star-row">

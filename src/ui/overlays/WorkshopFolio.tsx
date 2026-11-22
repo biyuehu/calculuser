@@ -120,7 +120,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 														<button
 															type="button"
 															disabled={!unlocked}
-															class={`order-card-cell ${stars !== void 0 ? "ok" : ""} ${
+															class={`order-card-cell mode-${order.mode} ${stars !== void 0 ? "ok" : ""} ${
 																unlocked && stars === void 0 ? "available" : ""
 															} ${!unlocked ? "locked" : ""} ${
 																group.isBossEligible &&
@@ -155,7 +155,11 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 																		</>
 																	);
 																}
-																return <span class="card-mode-tag">{order.mode === "build" ? "造" : "解"}</span>;
+																return (
+																	<span class="card-mode-tag">
+																		{order.mode === "build" ? "造" : order.mode === "typebuild" ? "型" : "解"}
+																	</span>
+																);
 															})()}
 														</button>
 													);

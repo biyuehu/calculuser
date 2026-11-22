@@ -1,7 +1,15 @@
-import { type JSX, Show, createEffect, createSignal } from "solid-js";
+import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
 import { playFailSound } from "../../audio/synth";
 import type { OrderLevel } from "../../content";
-import { PRINT_NAMES, type Registry } from "../../engine";
+import {
+	PRINT_NAMES,
+	type Path,
+	type Registry,
+	type Ty,
+	collectBaseTypes,
+	formatTy,
+	inferDraftType,
+} from "../../engine";
 import { useUiPreferences } from "../../hooks/useUiPreferences";
 import { useWorkbenchSession } from "../../hooks/useWorkbenchSession";
 import { useKeyScope } from "../keybus";
@@ -12,6 +20,7 @@ import { ShelfRail } from "../workbench/panels/ShelfRail";
 import { TapeTimeline } from "../workbench/panels/TapeTimeline";
 import { DraftNode } from "../workbench/term/DraftNode";
 import { TermVisual } from "../workbench/term/TermVisual";
+import { TypeEditorModal } from "../workbench/term/TypeEditorModal";
 
 interface WorkbenchViewProps {
 	readonly active?: boolean;
@@ -46,6 +55,9 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 	const [panY, setPanY] = createSignal<number>(0);
 	const [levelTransitioning, setLevelTransitioning] = createSignal<boolean>(false);
 	const [showHint, setShowHint] = createSignal<boolean>(false);
+	const [editingLamType, setEditingLamType] = createSignal<{ readonly path: Path; readonly currentTy: Ty } | null>(
+		null,
+	);
 	let isPanning = false;
 	let panStartX = 0;
 	let panStartY = 0;
@@ -76,7 +88,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				key: "q",
 				handle: () => {
 					if (
-						props.order.mode === "build" &&
+						(props.order.mode === "build" || props.order.mode === "typebuild") &&
 						session.playTerm() === null &&
 						props.order.allowBlueprint !== false &&
 						session.currentScope().length < PRINT_NAMES.length
@@ -88,7 +100,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				key: "e",
 				handle: () => {
-					if (props.order.mode === "build" && session.playTerm() === null && props.order.allowBlueprint !== false)
+					if ((props.order.mode === "build" || props.order.mode === "typebuild") && session.playTerm() === null)
 						session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } });
 					else playFailSound();
 				},
@@ -124,9 +136,19 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					if ((props.order.mode === "build" || props.order.mode === "typebuild") && session.playTerm() === null) {
 						const digit = Number.parseInt(event.key, 10);
 						const scope = session.currentScope();
-						const targetIndex = scope.length - 1 - digit;
-						if (targetIndex >= 0 && targetIndex < scope.length)
-							session.applyReplacement({ kind: "var", name: scope[targetIndex] });
+						if (scope.length === 0) {
+							playFailSound();
+							return;
+						}
+						const targetVar =
+							digit === 0
+								? scope[scope.length - 1]
+								: scope.length - 1 - digit >= 0
+									? scope[scope.length - 1 - digit]
+									: digit <= scope.length
+										? scope[digit - 1]
+										: void 0;
+						if (targetVar !== void 0) session.applyReplacement({ kind: "var", name: targetVar });
 						else playFailSound();
 					}
 				},
@@ -278,6 +300,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 								<DraftNode
 									draft={session.draft()}
 									path=""
+									isTypeMode={props.order.mode === "typebuild"}
+									onEditType={(path, currentTy) => setEditingLamType({ path, currentTy })}
 									selectedPath={session.selectedPath() ?? void 0}
 									onSelectHole={session.selectHole}
 									onDismantle={session.dismantleAtPath}
@@ -297,7 +321,13 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				</div>
 
 				<Show when={session.isXRay()}>
-					<div class="xray-pill" style={{ left: props.order.mode === "build" ? `${ui.shelfWidth() + 24}px` : "16px" }}>
+					<div
+						class="xray-pill"
+						style={{
+							left:
+								props.order.mode === "build" || props.order.mode === "typebuild" ? `${ui.shelfWidth() + 24}px` : "16px",
+						}}
+					>
 						透视：{session.xRayText()}
 					</div>
 				</Show>
@@ -338,6 +368,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				<OrderSlip
 					order={props.order}
 					rejected={session.rejected() ?? void 0}
+					typeError={session.typeError() ?? void 0}
 					runSteps={session.runSteps()}
 					runFailed={session.runFailed()}
 					transitioning={levelTransitioning()}
@@ -354,7 +385,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					targetValue={props.order.mode === "run" ? props.order.stepBudget : props.order.parSize}
 					note={props.order.note}
 					isLastOrder={props.isLastOrder}
-					rejected={session.rejected() !== null}
+					rejected={session.rejected() !== null || session.typeError() !== null}
+					rejectReason={session.typeError() ?? (session.rejected() !== null ? "未能通过客人测试用例" : void 0)}
 					unlocksToolId={props.order.mode === "build" ? props.order.unlocksToolId : void 0}
 					onDeliver={session.deliverOrder}
 					onNextOrder={props.onNextOrder}
@@ -413,6 +445,27 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						}
 						onRewind={() => session.jumpToTapeIndex(0)}
 					/>
+				</Show>
+
+				<Show when={props.order.mode === "typebuild" ? props.order : null}>
+					{(_) => {
+						const inferred = createMemo(() => inferDraftType(session.draft(), props.registry));
+						return <div class="typebuild-footer-pill">⊢ {inferred().ty ? formatTy(inferred().ty as Ty) : "?"}</div>;
+					}}
+				</Show>
+
+				<Show when={editingLamType()}>
+					{(info) => (
+						<TypeEditorModal
+							currentTy={info().currentTy}
+							baseTypes={props.order.mode === "typebuild" ? collectBaseTypes(props.order.targetTy) : []}
+							onConfirm={(newTy) => {
+								session.updateLamTypeAtPath(info().path, newTy);
+								setEditingLamType(null);
+							}}
+							onClose={() => setEditingLamType(null)}
+						/>
+					)}
 				</Show>
 			</main>
 		</div>

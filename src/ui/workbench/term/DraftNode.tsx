@@ -1,12 +1,14 @@
-import type { JSX } from "solid-js";
+import { type JSX, Show } from "solid-js";
 import { getGadgetMeta } from "../../../content";
-import type { DraftTerm, Path } from "../../../engine";
+import { type DraftTerm, type Path, type Ty, any, formatTy } from "../../../engine";
 import { getVariableColor } from "../../../styles";
 
 interface DraftNodeProps {
 	readonly draft: DraftTerm;
 	readonly path: Path;
 	readonly selectedPath?: Path;
+	readonly isTypeMode?: boolean;
+	readonly onEditType?: (path: Path, currentTy: Ty) => void;
 	readonly onSelectHole: (path: Path) => void;
 	readonly onDismantle: (path: Path) => void;
 }
@@ -79,11 +81,26 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 											"--orb-glow": getVariableColor(node.param),
 										}}
 									/>
+									<Show when={props.isTypeMode}>
+										<button
+											type="button"
+											class="lam-type-badge"
+											onClick={(event) => {
+												event.stopPropagation();
+												props.onEditType?.(props.path, node.ty ?? any);
+											}}
+											title="点击编辑参数类型"
+										>
+											: {formatTy(node.ty ?? any)}
+										</button>
+									</Show>
 								</span>
 								<span class="machine-chamber">
 									<DraftNode
 										draft={node.body}
 										path={`${props.path}b`}
+										isTypeMode={props.isTypeMode}
+										onEditType={props.onEditType}
 										selectedPath={props.selectedPath}
 										onSelectHole={props.onSelectHole}
 										onDismantle={props.onDismantle}
@@ -97,6 +114,8 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 								<DraftNode
 									draft={node.fn}
 									path={`${props.path}f`}
+									isTypeMode={props.isTypeMode}
+									onEditType={props.onEditType}
 									selectedPath={props.selectedPath}
 									onSelectHole={props.onSelectHole}
 									onDismantle={props.onDismantle}
@@ -105,6 +124,8 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 								<DraftNode
 									draft={node.arg}
 									path={`${props.path}a`}
+									isTypeMode={props.isTypeMode}
+									onEditType={props.onEditType}
 									selectedPath={props.selectedPath}
 									onSelectHole={props.onSelectHole}
 									onDismantle={props.onDismantle}

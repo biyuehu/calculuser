@@ -67,6 +67,7 @@ export interface TypeBuildOrder {
 	readonly title: string;
 	readonly guestLine: string;
 	readonly hintOnFail: string;
+	readonly allowBlueprint?: boolean;
 	readonly targetTy: Ty;
 	readonly parSize: number;
 	readonly note: string;
@@ -76,7 +77,7 @@ export type OrderLevel = BuildOrder | RunOrder | TypeBuildOrder;
 
 export type DialogueSpeaker = "me" | "hen" | "guest" | "master";
 
-export type DialogueFace = "default" | "happy" | "wow" | "think" | "sad" | "proud";
+export type DialogueFace = "default" | "happy" | "wow";
 
 export interface TextLine {
 	readonly text: string;

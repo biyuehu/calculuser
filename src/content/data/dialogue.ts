@@ -19,7 +19,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("太好了，第一件机器顺利交货！", "hen", "happy"),
 			textLine("原样进、原样出，可别小看它——这是整座工坊流转的基石。", "hen", "default"),
 			choicesLine([
-				["感觉并不难，接着来！", textLine("很有干劲嘛，下一张图纸已经备好了。", "hen", "proud")],
+				["感觉并不难，接着来！", textLine("很有干劲嘛，下一张图纸已经备好了。", "hen", "happy")],
 				[
 					"这公理零件有什么来头？",
 					[
@@ -39,7 +39,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		lines: [
 			textLine("师傅，给！这是工坊刚拟定的「类型铭牌」。", "hen", "happy"),
 			textLine("以前我们造机器全凭感觉，裸机虽然自由，可一旦接错就会冒烟卡死！", "hen", "wow"),
-			textLine("挂上牌子、标清入口和出口形状，经出厂检验盖上合格章，就能保证安全运转！", "hen", "proud"),
+			textLine("挂上牌子、标清入口和出口形状，经出厂检验盖上合格章，就能保证安全运转！", "hen", "happy"),
 			textLine("随时按下键盘上的 T 键，就能开启铭牌透视视角。", "hen", "default"),
 		],
 	},

@@ -25,13 +25,12 @@ const SPEAKER_NAMES: Record<DialogueSpeaker, string> = {
 	master: "老师傅的旧信件",
 };
 
-const STANDEE_FACES: Record<DialogueFace, string> = {
-	default: "/characters/hen_default.png",
-	happy: "/characters/hen_happy.png",
-	proud: "/characters/hen_happy.png",
-	wow: "/characters/hen_wow.png",
-	think: "/characters/hen_default.png",
-	sad: "/characters/hen_wow.png",
+const CHARACTER_STANDEES: Partial<Record<DialogueSpeaker, Partial<Record<DialogueFace, string>>>> = {
+	hen: {
+		default: "/characters/hen_default.png",
+		happy: "/characters/hen_happy.png",
+		wow: "/characters/hen_wow.png",
+	},
 };
 
 const PRELOAD_STANDEES = [
@@ -45,6 +44,12 @@ if (typeof window !== "undefined")
 		const img = new Image();
 		img.src = src;
 	}
+
+interface VisibleStandee {
+	readonly speaker: DialogueSpeaker;
+	readonly face: DialogueFace;
+	readonly src: string;
+}
 
 export function CounterView(props: CounterViewProps): JSX.Element {
 	const [activeLines, setActiveLines] = createSignal<readonly DialogueLine[]>([]);
@@ -90,13 +95,25 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 				"me",
 			);
 
-	const currentFace = (): DialogueFace =>
-		activeLines()
-			.slice(0, lineIndex() + 1)
-			.reduce<DialogueFace>(
-				(prev, cur) => (!isChoicesLine(cur) ? (cur.face ?? (cur.speaker !== void 0 ? "default" : prev)) : prev),
-				"default",
-			);
+	const currentStandee = (): VisibleStandee | null => {
+		let visible: VisibleStandee | null = null;
+		let speaker: DialogueSpeaker = "me";
+		let face: DialogueFace = "default";
+		const lines = activeLines().slice(0, lineIndex() + 1);
+		for (const line of lines) {
+			if (isChoicesLine(line)) continue;
+			if (line.speaker !== void 0) speaker = line.speaker;
+			if (line.face !== void 0) face = line.face;
+			const standees = CHARACTER_STANDEES[speaker];
+			if (standees !== void 0) {
+				const src = standees[face] ?? standees.default;
+				if (src !== void 0) visible = { speaker, face, src };
+			} else if (speaker !== "me") {
+				visible = null;
+			}
+		}
+		return visible;
+	};
 
 	createEffect(() => {
 		const text = currentText();
@@ -172,14 +189,18 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 			<Show when={props.beat}>
 				{(_) => (
 					<>
-						<div class={`avatar-standee avatar-${currentFace()}`}>
-							<img
-								src={STANDEE_FACES[currentFace()] ?? STANDEE_FACES.default}
-								alt={SPEAKER_NAMES[currentSpeaker()]}
-								class="standee-image"
-								draggable={false}
-							/>
-						</div>
+						<Show when={currentStandee()}>
+							{(standee) => (
+								<div class={`avatar-standee avatar-${standee().face}`}>
+									<img
+										src={standee().src}
+										alt={SPEAKER_NAMES[standee().speaker]}
+										class="standee-image"
+										draggable={false}
+									/>
+								</div>
+							)}
+						</Show>
 
 						<div
 							class="dialogue-box"

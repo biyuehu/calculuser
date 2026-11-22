@@ -4,6 +4,7 @@ import {
 	type DraftTerm,
 	PRINT_NAMES,
 	type Path,
+	type Ty,
 	countDraftSize,
 	findAllHoles,
 	findFirstHole,
@@ -60,6 +61,7 @@ interface DraftWorkbench {
 	readonly dismantleSelected: () => void;
 	readonly cycleHoleFocus: (direction: "left" | "right") => void;
 	readonly fillLam: () => void;
+	readonly updateLamTypeAtPath: (path: Path, ty?: Ty) => void;
 	readonly selectHole: (path: Path) => void;
 	readonly undoDraft: () => void;
 	readonly clearBenchDraft: () => void;
@@ -129,6 +131,17 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 			return;
 		}
 		applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });
+	};
+
+	const updateLamTypeAtPath = (path: Path, ty?: Ty): void => {
+		const node = getDraftAtPath(draft(), path);
+		if (node?.kind !== "lam") return;
+		playSnapSound(0);
+		setHistory([...history(), draft()]);
+		const updated = setDraftAtPath(draft(), path, { ...node, ty });
+		setDraft(updated);
+		draftSaver.schedule(options.orderId(), updated);
+		options.onDraftMutated?.();
 	};
 
 	const selectHole = (path: Path): void => {
@@ -210,6 +223,7 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 		dismantleSelected,
 		cycleHoleFocus,
 		fillLam,
+		updateLamTypeAtPath,
 		selectHole,
 		undoDraft,
 		clearBenchDraft,

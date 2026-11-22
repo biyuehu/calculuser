@@ -6,6 +6,7 @@ import {
 	type Path,
 	type Registry,
 	type Term,
+	type Ty,
 	type VarName,
 	draftToTerm,
 	printXRayTerm,
@@ -52,6 +53,7 @@ interface WorkbenchSession {
 	readonly dismantleSelected: () => void;
 	readonly cycleHoleFocus: (direction: "left" | "right") => void;
 	readonly fillLam: () => void;
+	readonly updateLamTypeAtPath: (path: Path, ty?: Ty) => void;
 	readonly jumpToTapeIndex: (targetIndex: number) => void;
 	readonly stepBackward: () => void;
 	readonly stepForward: () => void;
@@ -188,6 +190,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		dismantleSelected: draftBench.dismantleSelected,
 		cycleHoleFocus: draftBench.cycleHoleFocus,
 		fillLam: draftBench.fillLam,
+		updateLamTypeAtPath: draftBench.updateLamTypeAtPath,
 		jumpToTapeIndex: tapePlay.jumpToTapeIndex,
 		stepBackward: tapePlay.stepBackward,
 		stepForward: tapePlay.stepForward,

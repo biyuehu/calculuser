@@ -1,5 +1,6 @@
 import type { Registry } from "../semantics/gadget";
 import { judgeNormalize } from "../semantics/judge";
+import { type DraftTerm, draftToInferTerm } from "../syntax/draft";
 import { type Term, app, atom } from "../syntax/term";
 import { type Ty, any, arrow, consistent, fn, formatTy, matchArrow, spine } from "./ty";
 
@@ -277,4 +278,19 @@ export function verifyNameplate(
 		};
 	}
 	return { certified: true };
+}
+
+export function inferDraftType(
+	draft: DraftTerm,
+	registry?: Registry,
+): { readonly ty: Ty | null; readonly error: string | null } {
+	try {
+		const term = draftToInferTerm(draft, []);
+		return { ty: inferTermType(term, registry), error: null };
+	} catch (err) {
+		return {
+			ty: null,
+			error: err instanceof Error ? err.message : String(err),
+		};
+	}
 }

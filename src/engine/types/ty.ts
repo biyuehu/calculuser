@@ -74,3 +74,34 @@ export function formatTy(t: Ty): string {
 		}
 	}
 }
+
+export function collectBaseTypes(ty: Ty): readonly string[] {
+	const set = new Set<string>();
+	const walk = (t: Ty): void => {
+		if (t.k === "base") set.add(t.name);
+		else if (t.k === "arrow") {
+			walk(t.from);
+			walk(t.to);
+		}
+	};
+	walk(ty);
+	return Array.from(set).sort();
+}
+
+export function collectSubTypes(ty: Ty): readonly Ty[] {
+	const list: Ty[] = [];
+	const seen = new Set<string>();
+	const walk = (t: Ty): void => {
+		const str = formatTy(t);
+		if (!seen.has(str)) {
+			seen.add(str);
+			list.push(t);
+		}
+		if (t.k === "arrow") {
+			walk(t.from);
+			walk(t.to);
+		}
+	};
+	walk(ty);
+	return list;
+}

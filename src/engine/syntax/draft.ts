@@ -1,3 +1,4 @@
+import { type Ty, any } from "../types/ty";
 import type { VarName } from "./names";
 import { type GadgetId, type Path, type Term, atom } from "./term";
 
@@ -6,7 +7,7 @@ export type DraftTerm =
 	| { readonly kind: "var"; readonly name: VarName }
 	| { readonly kind: "atom"; readonly name: string }
 	| { readonly kind: "gad"; readonly id: GadgetId }
-	| { readonly kind: "lam"; readonly param: VarName; readonly body: DraftTerm }
+	| { readonly kind: "lam"; readonly param: VarName; readonly ty?: Ty; readonly body: DraftTerm }
 	| { readonly kind: "app"; readonly fn: DraftTerm; readonly arg: DraftTerm };
 
 export function findFirstHole(draft: DraftTerm, path: Path): Path | null {
@@ -38,7 +39,12 @@ export function setDraftAtPath(draft: DraftTerm, path: Path, replacement: DraftT
 	const segment = path[0];
 	const remaining = path.slice(1);
 	if (draft.kind === "lam" && segment === "b")
-		return { kind: "lam", param: draft.param, body: setDraftAtPath(draft.body, remaining, replacement) };
+		return {
+			kind: "lam",
+			param: draft.param,
+			ty: draft.ty,
+			body: setDraftAtPath(draft.body, remaining, replacement),
+		};
 	if (draft.kind === "app")
 		return segment === "f"
 			? { kind: "app", fn: setDraftAtPath(draft.fn, remaining, replacement), arg: draft.arg }
@@ -93,8 +99,43 @@ export function draftToTerm(draft: DraftTerm, env: readonly string[]): Term {
 			return { kind: "var", index: env.length - 1 - foundPosition, name: draft.name };
 		}
 		case "lam":
-			return { kind: "lam", param: draft.param, body: draftToTerm(draft.body, [...env, draft.param]) };
+			return {
+				kind: "lam",
+				param: draft.param,
+				ty: draft.ty,
+				body: draftToTerm(draft.body, [...env, draft.param]),
+			};
 		case "app":
 			return { kind: "app", fn: draftToTerm(draft.fn, env), arg: draftToTerm(draft.arg, env) };
+	}
+}
+
+export function draftToInferTerm(draft: DraftTerm, env: readonly string[]): Term {
+	switch (draft.kind) {
+		case "hole":
+			return { kind: "atom", name: "?", ty: any };
+		case "atom":
+			return atom(draft.name);
+		case "gad":
+			return { kind: "gad", id: draft.id };
+		case "var": {
+			const foundPosition = env.lastIndexOf(draft.name);
+			return foundPosition < 0
+				? { kind: "var", index: 0, name: draft.name }
+				: { kind: "var", index: env.length - 1 - foundPosition, name: draft.name };
+		}
+		case "lam":
+			return {
+				kind: "lam",
+				param: draft.param,
+				ty: draft.ty,
+				body: draftToInferTerm(draft.body, [...env, draft.param]),
+			};
+		case "app":
+			return {
+				kind: "app",
+				fn: draftToInferTerm(draft.fn, env),
+				arg: draftToInferTerm(draft.arg, env),
+			};
 	}
 }

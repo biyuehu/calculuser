@@ -39,7 +39,9 @@ export function printXRayTerm(term: Term, registry: Registry): string {
 		case "ann":
 			return printXRayTerm(term.term, registry);
 		case "lam":
-			return `λ${term.param}.${printXRayTerm(term.body, registry)}`;
+			return term.ty !== void 0
+				? `λ(${term.param}: ${formatTy(term.ty)}).${printXRayTerm(term.body, registry)}`
+				: `λ${term.param}.${printXRayTerm(term.body, registry)}`;
 		case "app": {
 			const fnStr = term.fn.kind === "lam" ? `(${printXRayTerm(term.fn, registry)})` : printXRayTerm(term.fn, registry);
 			const argStr =

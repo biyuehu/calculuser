@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import { BUILTIN_COUNT, COMBINATORS, LEVELS } from "../src/content";
 import {
 	type DraftTerm,
+	base,
 	check,
+	collectBaseTypes,
 	countDraftSize,
 	createRegistry,
 	formatTy,
+	inferDraftType,
 	judgeNormalize,
 	parseLambda,
 	parseTy,
@@ -145,5 +148,29 @@ describe("TypeBuild Mode & Level Verification", () => {
 		const omega = parseLambda("(λx. x x) (λx. x x)");
 		const norm = judgeNormalize(omega, registry, 30);
 		expect(norm.terminated).toBe(false);
+	});
+
+	it("extracts base types and infers draft types with holes and annotations", () => {
+		const ty = parseTy("(B -> C) -> (A -> B) -> A -> C");
+		expect(collectBaseTypes(ty)).toEqual(["A", "B", "C"]);
+
+		const holeDraft: DraftTerm = { kind: "hole" };
+		expect(formatTy(inferDraftType(holeDraft, registry).ty ?? parseTy("?"))).toBe("?");
+
+		const annotatedDraft: DraftTerm = {
+			kind: "lam",
+			param: "x",
+			ty: base("A"),
+			body: { kind: "var", name: "x" },
+		};
+		expect(formatTy(inferDraftType(annotatedDraft, registry).ty ?? parseTy("?"))).toBe("A -> A");
+
+		const partialDraft: DraftTerm = {
+			kind: "lam",
+			param: "x",
+			ty: base("A"),
+			body: { kind: "hole" },
+		};
+		expect(formatTy(inferDraftType(partialDraft, registry).ty ?? parseTy("?"))).toBe("A -> ?");
 	});
 });

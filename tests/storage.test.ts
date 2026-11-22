@@ -13,7 +13,7 @@ import {
 	saveSession,
 	saveUiPreferences,
 	saveWorkshop,
-} from "./index";
+} from "../src/storage";
 
 describe("Storage Persistence Layer", () => {
 	it("loads, saves, and sanitizes UI preferences", () => {

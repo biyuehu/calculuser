@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUILTIN_COUNT, COMBINATORS } from "../content";
+import { BUILTIN_COUNT, COMBINATORS } from "../src/content";
 import {
 	any,
 	app,
@@ -16,7 +16,7 @@ import {
 	spine,
 	verify,
 	verifyNameplate,
-} from "./index";
+} from "../src/engine";
 
 describe("GTLC Type System & Nameplates", () => {
 	it("parses string types into Ty representation", () => {

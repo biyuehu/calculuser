@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUILTIN_COUNT, COMBINATORS, LEVELS } from "../content";
+import { BUILTIN_COUNT, COMBINATORS, LEVELS } from "../src/content";
 import {
 	type DraftTerm,
 	atom,
@@ -14,7 +14,7 @@ import {
 	stepAt,
 	stepLeftmost,
 	termsEqual,
-} from "./index";
+} from "../src/engine";
 
 describe("Calculuser core engine", () => {
 	it("parses and prints lambda expressions cleanly", () => {
@@ -91,7 +91,8 @@ describe("Calculuser core engine", () => {
 		expect(LEVELS.length).toBeGreaterThanOrEqual(27);
 		for (const order of LEVELS)
 			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
-			else expect(order.stepBudget).toBeGreaterThan(0);
+			else if (order.mode === "run") expect(order.stepBudget).toBeGreaterThan(0);
+			else expect(order.parSize).toBeGreaterThan(0);
 	});
 
 	it("traverses draft holes and nodes via findAllHoles and getDraftAtPath", () => {

@@ -8,7 +8,11 @@ export default defineConfig({
 		environment: "node",
 	},
 	server: {
-		port: 3000, // TODO
+		port: 3000,
+		strictPort: true,
+		watch: {
+			ignored: ["**/src-tauri/**"],
+		},
 	},
 	build: {
 		target: "esnext",

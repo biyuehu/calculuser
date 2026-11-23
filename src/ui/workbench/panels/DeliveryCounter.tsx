@@ -2,7 +2,7 @@ import { For, type JSX, Show } from "solid-js";
 import { getGadgetMeta } from "../../../content";
 // TODO： 类型改为铭牌等游戏用语优化，css优化，
 interface DeliveryCounterProps {
-	readonly mode: "build" | "run" | "typebuild";
+	readonly mode: "build" | "run" | "typebuild" | "sandbox";
 	readonly canDeliver: boolean;
 	readonly delivered: boolean;
 	readonly stars: number;
@@ -44,16 +44,26 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 						when={props.rejected}
 						fallback={
 							<>
-								<span style={{ "font-size": "22px" }}>{props.mode === "run" ? "⚡" : "📦"}</span>
+								<span style={{ "font-size": "22px" }}>
+									{props.mode === "run" || props.mode === "sandbox" ? "⚡" : "📦"}
+								</span>
 								<span style={{ "font-size": "13px", "font-weight": "600", color: "var(--accent-clay)" }}>
 									{props.mode === "run"
 										? "点击桌面发光连接进行运转"
-										: props.canDeliver
-											? "交货台（点击验货）"
-											: "先填满工作台空槽"}
+										: props.mode === "sandbox"
+											? props.canDeliver
+												? "推演就绪（按空格单步）"
+												: "先填满工作台空槽"
+											: props.canDeliver
+												? "交货台（点击验货）"
+												: "先填满工作台空槽"}
 								</span>
 								<span style={{ "font-size": "11px", color: "var(--text-muted)" }}>
-									{props.mode === "run" ? "达标后自动停机" : `当前零件 ${props.countValue} / 标准 ${props.targetValue}`}
+									{props.mode === "run"
+										? "达标后自动停机"
+										: props.mode === "sandbox"
+											? `当前零件 ${props.countValue}`
+											: `当前零件 ${props.countValue} / 标准 ${props.targetValue}`}
 								</span>
 							</>
 						}

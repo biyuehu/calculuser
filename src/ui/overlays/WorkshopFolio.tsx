@@ -14,10 +14,12 @@ import { useKeyScope } from "../keybus";
 interface WorkshopFolioProps {
 	readonly initialTab?: "orders" | "parts";
 	readonly currentOrderIndex: number;
+	readonly isSandboxActive?: boolean;
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly judgeMode: boolean;
 	readonly reducedMotion: boolean;
 	readonly onSelectOrder: (index: number) => void;
+	readonly onSelectSandbox?: () => void;
 	readonly onClose: () => void;
 }
 
@@ -102,6 +104,34 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 
 				<main class="folio-body">
 					<Show when={activeTab() === "orders"}>
+						<div style={{ "margin-bottom": "16px" }}>
+							<button
+								type="button"
+								class={`order-card-cell available ${props.isSandboxActive ? "current" : ""}`}
+								style={{
+									width: "100%",
+									"text-align": "left",
+									padding: "10px 14px",
+									display: "flex",
+									"align-items": "center",
+									"justify-content": "space-between",
+								}}
+								onClick={() => {
+									transitionView(() => {
+										props.onSelectSandbox?.();
+										props.onClose();
+									});
+								}}
+							>
+								<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
+									<span class="card-code" style={{ "font-size": "16px" }}>
+										⚡
+									</span>
+									<span style={{ "font-weight": "700" }}>自由沙盒实验台</span>
+								</div>
+								<span style={{ "font-size": "12px", color: "var(--text-muted)" }}>无约束组合子装配与推演</span>
+							</button>
+						</div>
 						<div class="overview-chapters-list">
 							<For each={CHAPTER_GROUPS}>
 								{(group) => (

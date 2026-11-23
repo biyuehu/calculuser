@@ -46,6 +46,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		const stars = options.clearedStars();
 		const isJudge = options.judgeMode();
 		const order = options.order();
+		if (order.mode === "sandbox") return Array.from(options.registry.keys());
 		if (order.mode !== "build") return [];
 		const forbiddenSet = new Set(order.forbidden);
 		return Array.from(options.registry.keys()).filter(

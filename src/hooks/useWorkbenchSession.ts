@@ -88,6 +88,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 	const getExecutableTerm = (): Term | null => {
 		if (draftBench.hasHoles()) return null;
 		const order = options.order();
+		if (order.mode === "sandbox") return draftToTerm(draftBench.draft(), []);
 		if (order.mode !== "build") return null;
 		return order.tests[0].args.reduce<Term>(
 			(fn, arg) => ({ kind: "app", fn, arg }),

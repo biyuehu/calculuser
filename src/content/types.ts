@@ -73,7 +73,21 @@ export interface TypeBuildOrder {
 	readonly note: string;
 }
 
-export type OrderLevel = BuildOrder | RunOrder | TypeBuildOrder;
+export interface SandboxOrder {
+	readonly mode: "sandbox";
+	readonly id: string;
+	readonly code: string;
+	readonly title: string;
+	readonly chapter?: 1 | 2 | 3 | 4;
+	readonly guestLine: string;
+	readonly hintOnFail?: string;
+	readonly parSize?: number;
+	readonly allowBlueprint: true;
+	readonly atoms: readonly string[];
+	readonly note: string;
+}
+
+export type OrderLevel = BuildOrder | RunOrder | TypeBuildOrder | SandboxOrder;
 
 export type DialogueSpeaker = "me" | "hen" | "guest" | "master";
 

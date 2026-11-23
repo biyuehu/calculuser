@@ -88,7 +88,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				key: "q",
 				handle: () => {
 					if (
-						(props.order.mode === "build" || props.order.mode === "typebuild") &&
+						(props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox") &&
 						session.playTerm() === null &&
 						props.order.allowBlueprint !== false &&
 						session.currentScope().length < PRINT_NAMES.length
@@ -100,7 +100,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				key: "e",
 				handle: () => {
-					if ((props.order.mode === "build" || props.order.mode === "typebuild") && session.playTerm() === null)
+					if (
+						(props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox") &&
+						session.playTerm() === null
+					)
 						session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } });
 					else playFailSound();
 				},
@@ -108,7 +111,11 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				key: "i",
 				handle: () => {
-					if (props.order.mode === "build" && session.playTerm() === null && session.shelfUnlockedIds().includes("I"))
+					if (
+						(props.order.mode === "build" || props.order.mode === "sandbox") &&
+						session.playTerm() === null &&
+						session.shelfUnlockedIds().includes("I")
+					)
 						session.applyReplacement({ kind: "gad", id: "I" });
 					else playFailSound();
 				},
@@ -116,7 +123,11 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				key: "s",
 				handle: () => {
-					if (props.order.mode === "build" && session.playTerm() === null && session.shelfUnlockedIds().includes("S"))
+					if (
+						(props.order.mode === "build" || props.order.mode === "sandbox") &&
+						session.playTerm() === null &&
+						session.shelfUnlockedIds().includes("S")
+					)
 						session.applyReplacement({ kind: "gad", id: "S" });
 					else playFailSound();
 				},
@@ -125,7 +136,11 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				key: "k",
 				handle: () => {
-					if (props.order.mode === "build" && session.playTerm() === null && session.shelfUnlockedIds().includes("K"))
+					if (
+						(props.order.mode === "build" || props.order.mode === "sandbox") &&
+						session.playTerm() === null &&
+						session.shelfUnlockedIds().includes("K")
+					)
 						session.applyReplacement({ kind: "gad", id: "K" });
 					else playFailSound();
 				},
@@ -133,7 +148,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 			{
 				predicate: (event) => /^[0-9]$/.test(event.key),
 				handle: (event) => {
-					if ((props.order.mode === "build" || props.order.mode === "typebuild") && session.playTerm() === null) {
+					if (
+						(props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox") &&
+						session.playTerm() === null
+					) {
 						const digit = Number.parseInt(event.key, 10);
 						const scope = session.currentScope();
 						if (scope.length === 0) {
@@ -210,7 +228,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						<span>↩</span>
 						<span>回退</span>
 					</button>
-					<Show when={props.order.mode === "build"}>
+					<Show when={props.order.mode === "build" || props.order.mode === "sandbox"}>
 						<button
 							type="button"
 							class="icon-btn"
@@ -325,7 +343,9 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						class="xray-pill"
 						style={{
 							left:
-								props.order.mode === "build" || props.order.mode === "typebuild" ? `${ui.shelfWidth() + 24}px` : "16px",
+								props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox"
+									? `${ui.shelfWidth() + 24}px`
+									: "16px",
 						}}
 					>
 						透视：{session.xRayText()}
@@ -334,15 +354,19 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<Show when={session.draftNotice()}>{(notice) => <div class="workbench-toast-notice">{notice()}</div>}</Show>
 
-				<Show when={props.order.mode === "build" || props.order.mode === "typebuild"}>
+				<Show when={props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox"}>
 					<ShelfRail
 						width={ui.shelfWidth()}
 						onResize={ui.setShelfWidth}
-						unlockedIds={props.order.mode === "build" ? session.shelfUnlockedIds() : []}
+						unlockedIds={
+							props.order.mode === "build" || props.order.mode === "sandbox" ? session.shelfUnlockedIds() : []
+						}
 						lockedCount={props.order.mode === "build" ? session.shelfLockedCount() : 0}
 						scopeVariables={session.currentScope()}
-						atoms={props.order.mode === "build" ? props.order.atoms : []}
-						allowBlueprint={props.order.mode === "build" ? props.order.allowBlueprint : true}
+						atoms={props.order.mode === "build" || props.order.mode === "sandbox" ? props.order.atoms : []}
+						allowBlueprint={
+							props.order.mode === "build" || props.order.mode === "sandbox" ? props.order.allowBlueprint : true
+						}
 						canAddLam={session.currentScope().length < PRINT_NAMES.length}
 						hasSelectedHole={session.selectedPath() !== null && session.playTerm() === null}
 						onFillGad={(id) => session.applyReplacement({ kind: "gad", id })}
@@ -378,17 +402,26 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<DeliveryCounter
 					mode={props.order.mode}
-					canDeliver={(props.order.mode === "build" || props.order.mode === "typebuild") && !session.hasHoles()}
-					delivered={session.deliveredStars() !== null}
+					canDeliver={
+						(props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox") &&
+						!session.hasHoles()
+					}
+					delivered={props.order.mode !== "sandbox" && session.deliveredStars() !== null}
 					stars={session.deliveredStars() ?? 0}
 					countValue={props.order.mode === "run" ? session.runSteps() : session.partCount()}
-					targetValue={props.order.mode === "run" ? props.order.stepBudget : props.order.parSize}
+					targetValue={
+						props.order.mode === "run"
+							? props.order.stepBudget
+							: props.order.mode === "sandbox"
+								? 0
+								: props.order.parSize
+					}
 					note={props.order.note}
 					isLastOrder={props.isLastOrder}
-					rejected={session.rejected() !== null || session.typeError() !== null}
+					rejected={props.order.mode !== "sandbox" && (session.rejected() !== null || session.typeError() !== null)}
 					rejectReason={session.typeError() ?? (session.rejected() !== null ? "未能通过客人测试用例" : void 0)}
 					unlocksToolId={props.order.mode === "build" ? props.order.unlocksToolId : void 0}
-					onDeliver={session.deliverOrder}
+					onDeliver={props.order.mode === "sandbox" ? session.startOrStepPlay : session.deliverOrder}
 					onNextOrder={props.onNextOrder}
 				/>
 
@@ -396,7 +429,9 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					class="zoom-controls"
 					style={{
 						left:
-							props.order.mode === "build" || props.order.mode === "typebuild" ? `${ui.shelfWidth() + 24}px` : "16px",
+							props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox"
+								? `${ui.shelfWidth() + 24}px`
+								: "16px",
 					}}
 				>
 					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))} title="放大 (+)">
@@ -439,7 +474,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						onJumpToStep={session.jumpToTapeIndex}
 						onStepBack={() => session.jumpToTapeIndex(session.tapeIndex() - 1)}
 						onStepForward={() =>
-							props.order.mode === "build"
+							props.order.mode === "build" || props.order.mode === "sandbox"
 								? session.startOrStepPlay()
 								: session.jumpToTapeIndex(session.tapeIndex() + 1)
 						}

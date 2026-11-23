@@ -6,6 +6,7 @@ import {
 	type DialogueBeat,
 	LEVELS,
 	LEVEL_DIALOGUES,
+	SANDBOX_ORDER,
 	getContinueOrderIndex,
 	getOrderCode,
 	getToolDefinition,
@@ -30,6 +31,12 @@ import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { CounterView } from "./views/CounterView";
 import { TitleView } from "./views/TitleView";
 import { WorkbenchView } from "./views/WorkbenchView";
+
+function registerAllCombinators(registry: Registry): void {
+	for (const def of COMBINATORS) {
+		if (!registry.has(def.id)) registerGadget(registry, def.id, parseLambda(def.defText), "level");
+	}
+}
 
 function syncRegistryWithUnlocked(registry: Registry, stars: ReadonlyMap<string, number>, isJudge: boolean): void {
 	for (const key of Array.from(registry.keys())) {
@@ -56,7 +63,8 @@ export function Root(): JSX.Element {
 
 	const registry: Registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 	const initialStars = new Map(Object.entries(saved.stars));
-	syncRegistryWithUnlocked(registry, initialStars, initialSettings.judgeMode);
+	if (initialSession.lastOrderId === "sandbox") registerAllCombinators(registry);
+	else syncRegistryWithUnlocked(registry, initialStars, initialSettings.judgeMode);
 
 	const initialIndex = (() => {
 		const savedIdx =
@@ -76,6 +84,7 @@ export function Root(): JSX.Element {
 		if (typeof document !== "undefined")
 			document.documentElement.classList.toggle("reduced-motion", settings().reducedMotion);
 	});
+	const [isSandbox, setIsSandbox] = createSignal<boolean>(initialSession.lastOrderId === "sandbox");
 	const [orderIndex, setOrderIndex] = createSignal<number>(initialIndex);
 	const [clearedStars, setClearedStars] = createSignal<ReadonlyMap<string, number>>(
 		new Map(Object.entries(saved.stars)),
@@ -83,15 +92,24 @@ export function Root(): JSX.Element {
 	const [activeBeat, setActiveBeat] = createSignal<DialogueBeat | null>(null);
 	const [cameraView, setCameraView] = createSignal<"bench" | "counter">("bench");
 
-	createEffect(() => syncRegistryWithUnlocked(registry, clearedStars(), settings().judgeMode));
+	createEffect(() => {
+		if (isSandbox()) registerAllCombinators(registry);
+		else syncRegistryWithUnlocked(registry, clearedStars(), settings().judgeMode);
+	});
 
-	const currentOrder = createMemo(() => LEVELS[orderIndex()]);
+	const currentOrder = createMemo(() => (isSandbox() ? SANDBOX_ORDER : LEVELS[orderIndex()]));
 
-	const continueCode = createMemo((): string => getOrderCode(LEVELS[orderIndex()].id));
+	const continueCode = createMemo((): string => (isSandbox() ? "∞" : getOrderCode(LEVELS[orderIndex()].id)));
 
 	const selectOrder = (index: number): void => {
+		setIsSandbox(false);
 		setOrderIndex(index);
 		saveSession({ lastOrderId: LEVELS[index].id, screen: "workbench" });
+	};
+
+	const selectSandbox = (): void => {
+		setIsSandbox(true);
+		saveSession({ lastOrderId: "sandbox", screen: "workbench" });
 	};
 
 	const recordStars = (orderId: string, stars: number): void => {
@@ -205,7 +223,13 @@ export function Root(): JSX.Element {
 					continueOrderCode={continueCode()}
 					onStart={() => {
 						transitionView(() => {
-							selectOrder(orderIndex());
+							if (!isSandbox()) selectOrder(orderIndex());
+							setScreen("workbench");
+						}, "forward");
+					}}
+					onOpenSandbox={() => {
+						transitionView(() => {
+							selectSandbox();
 							setScreen("workbench");
 						}, "forward");
 					}}
@@ -219,6 +243,7 @@ export function Root(): JSX.Element {
 				<WorkshopFolio
 					initialTab={folioTab()}
 					currentOrderIndex={orderIndex()}
+					isSandboxActive={isSandbox()}
 					clearedStars={clearedStars()}
 					judgeMode={settings().judgeMode}
 					reducedMotion={settings().reducedMotion}
@@ -228,6 +253,12 @@ export function Root(): JSX.Element {
 							selectOrder(index);
 							setScreen("workbench");
 						}, dir);
+					}}
+					onSelectSandbox={() => {
+						transitionView(() => {
+							selectSandbox();
+							setScreen("workbench");
+						}, "forward");
 					}}
 					onClose={() => setShowFolio(false)}
 				/>

@@ -6,6 +6,7 @@ import { useKeyScope } from "../keybus";
 interface TitleViewProps {
 	readonly continueOrderCode: string;
 	readonly onStart: () => void;
+	readonly onOpenSandbox: () => void;
 	readonly onOpenWorkshop: () => void;
 	readonly onOpenSettings: () => void;
 	readonly onOpenAbout: () => void;
@@ -94,6 +95,23 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 					>
 						<span>▶</span>
 						<span>{props.continueOrderCode === "1.1" ? "开始体验" : `继续关卡 · ${props.continueOrderCode}`}</span>
+					</button>
+
+					<button
+						type="button"
+						class="title-primary-btn"
+						style={{
+							"margin-top": "8px",
+							background: "var(--paper-card)",
+							color: "var(--text-primary)",
+							border: "1px solid var(--border-color)",
+						}}
+						onClick={props.onOpenSandbox}
+						disabled={isStarting()}
+						title="自由沙盒实验台"
+					>
+						<span>⚡</span>
+						<span>自由沙盒实验台</span>
 					</button>
 
 					<div class="title-secondary-row">

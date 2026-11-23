@@ -8,6 +8,17 @@ export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 export { LEVEL_DIALOGUES } from "./data/dialogue";
 
+export const SANDBOX_ORDER: import("./types").SandboxOrder = {
+	mode: "sandbox",
+	id: "sandbox",
+	code: "∞",
+	title: "自由实验台",
+	guestLine: "无约束的组合项装配与逻辑推演台",
+	allowBlueprint: true,
+	atoms: ["A", "B", "C", "D", "x", "y", "z"],
+	note: "支持任意自由组合子、开槽与规约观察",
+};
+
 function getToolSource(toolId: string): string | null {
 	return LEVELS.find((item) => item.mode === "build" && item.unlocksToolId === toolId)?.id ?? null;
 }

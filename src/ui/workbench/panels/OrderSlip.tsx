@@ -36,22 +36,33 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 			<div class="order-resize-handle" onPointerDown={handleResize} title="拖动调整订单栏宽度" />
 			<div class="order-slip-header">
 				<span>
-					{props.order.mode === "run" ? "运转试炼" : props.order.mode === "typebuild" ? "类型构筑" : "客人的订单"}
+					{props.order.mode === "run"
+						? "运转试炼"
+						: props.order.mode === "typebuild"
+							? "类型构筑"
+							: props.order.mode === "sandbox"
+								? "自由实验"
+								: "客人的订单"}
 				</span>
 				<div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
-					<button
-						type="button"
-						class={`icon-btn ${props.showHint ? "active" : ""}`}
-						style={{ height: "22px", padding: "0 6px", "font-size": "11px" }}
-						onClick={props.onToggleHint}
-						title="切换提示 (H)"
-					>
-						💡
-					</button>
+					<Show when={props.order.mode !== "sandbox"}>
+						<button
+							type="button"
+							class={`icon-btn ${props.showHint ? "active" : ""}`}
+							style={{ height: "22px", padding: "0 6px", "font-size": "11px" }}
+							onClick={props.onToggleHint}
+							title="切换提示 (H)"
+						>
+							💡
+						</button>
+					</Show>
 					<Show when={props.order.mode === "build" || props.order.mode === "typebuild" ? props.order : null}>
 						{(buildOrder) => (
 							<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>标准 {buildOrder().parSize} 件</span>
 						)}
+					</Show>
+					<Show when={props.order.mode === "sandbox"}>
+						<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>自由测试</span>
 					</Show>
 					<button
 						type="button"
@@ -67,10 +78,10 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 			<Show when={!ui.orderSlipCollapsed()}>
 				<p class="order-guest-line">{props.order.guestLine}</p>
 
-				<Show when={props.showHint}>
+				<Show when={props.showHint && props.order.mode !== "sandbox"}>
 					<div class="order-hint-box">
 						<span class="order-hint-label">💡 提示：</span>
-						<span class="order-reject-hint">{props.order.hintOnFail}</span>
+						<span class="order-reject-hint">{props.order.mode !== "sandbox" ? props.order.hintOnFail : ""}</span>
 					</div>
 				</Show>
 
@@ -132,6 +143,24 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 							</div>
 						</div>
 					)}
+				</Show>
+
+				<Show when={props.order.mode === "sandbox"}>
+					<div
+						class="order-samples-container"
+						style={{ padding: "8px 12px", "font-size": "12px", color: "var(--text-muted)" }}
+					>
+						<p style={{ margin: "0 0 6px 0" }}>
+							⚡ <strong>测试运行方式：</strong>
+						</p>
+						<p style={{ margin: "0 0 4px 0" }}>
+							• 按 <code>Space</code> 或点击下方运行栏开始逐步规约
+						</p>
+						<p style={{ margin: "0 0 4px 0" }}>• 点击桌面发光红色节点可进行指定单步规约</p>
+						<p style={{ margin: 0 }}>
+							• 按 <code>X</code> 展开/收起项透视查看 De Bruijn 索引结构
+						</p>
+					</div>
 				</Show>
 
 				<Show when={props.typeError}>

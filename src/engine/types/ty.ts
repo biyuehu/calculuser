@@ -8,7 +8,6 @@ export const any: Ty = { k: "any" };
 export const base = (name: string): Ty => ({ k: "base", name });
 export const arrow = (from: Ty, to: Ty): Ty => ({ k: "arrow", from, to });
 export const fn = (ps: readonly Ty[], r: Ty): Ty => ps.reduceRight((acc, p) => arrow(p, acc), r);
-export const dyn = (arity: number): Ty => fn(Array(arity).fill(any), any);
 
 export function parseTy(src: string): Ty {
 	const toks = src.replace(/→/g, "->").match(/->|\?|\(|\)|[A-Za-z_][\w']*/g) ?? [];
@@ -88,20 +87,31 @@ export function collectBaseTypes(ty: Ty): readonly string[] {
 	return Array.from(set).sort();
 }
 
-export function collectSubTypes(ty: Ty): readonly Ty[] {
-	const list: Ty[] = [];
-	const seen = new Set<string>();
-	const walk = (t: Ty): void => {
-		const str = formatTy(t);
-		if (!seen.has(str)) {
-			seen.add(str);
-			list.push(t);
-		}
-		if (t.k === "arrow") {
-			walk(t.from);
-			walk(t.to);
-		}
-	};
-	walk(ty);
-	return list;
+export function hasAny(t: Ty): boolean {
+	switch (t.k) {
+		case "any":
+			return true;
+		case "base":
+		case "var":
+			return false;
+		case "arrow":
+			return hasAny(t.from) || hasAny(t.to);
+	}
+}
+
+export function tyEquals(a: Ty, b: Ty): boolean {
+	if (a.k !== b.k) return false;
+	switch (a.k) {
+		case "any":
+			return true;
+		case "base":
+			return a.name === (b as { readonly name: string }).name;
+		case "var":
+			return a.id === (b as { readonly id: number }).id;
+		case "arrow":
+			return (
+				tyEquals(a.from, (b as { readonly from: Ty; readonly to: Ty }).from) &&
+				tyEquals(a.to, (b as { readonly from: Ty; readonly to: Ty }).to)
+			);
+	}
 }

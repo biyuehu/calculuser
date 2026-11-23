@@ -15,10 +15,9 @@ import {
 	parseTy,
 	spine,
 	verify,
-	verifyNameplate,
 } from "../src/engine";
 
-describe("GTLC Type System & Nameplates", () => {
+describe("GTLC Type System", () => {
 	it("parses string types into Ty representation", () => {
 		expect(parseTy("?")).toEqual(any);
 		expect(parseTy("Atom")).toEqual(base("Atom"));
@@ -88,29 +87,17 @@ describe("GTLC Type System & Nameplates", () => {
 		expect(() => check(parseLambda("λx. x"), parseTy("Atom -> Atom"))).not.toThrow();
 		expect(() => check(parseLambda("λx. λy. x"), parseTy("Atom -> Bool -> Atom"))).not.toThrow();
 
-		const resI = verifyNameplate(
-			parseLambda("λx. x"),
-			{
-				inputs: [base("Atom")],
-				output: base("Atom"),
-				status: "unverified",
-			},
-			{ atoms: ["A", "B"] },
-			registry,
-		);
-		expect(resI.certified).toBe(true);
+		const resI = verify(parseLambda("λx. x"), parseTy("Atom -> Atom"), { atoms: ["A", "B"] }, registry, 100);
+		expect(resI).toBeNull();
 
-		const resK = verifyNameplate(
+		const resK = verify(
 			parseLambda("λx. λy. x"),
-			{
-				inputs: [base("Atom"), base("Bool")],
-				output: base("Atom"),
-				status: "unverified",
-			},
+			parseTy("Atom -> Bool -> Atom"),
 			{ atoms: ["A", "B"] },
 			registry,
+			100,
 		);
-		expect(resK.certified).toBe(true);
+		expect(resK).toBeNull();
 	});
 
 	it("rejects ill-typed applications on base types in check and verify", () => {
@@ -121,30 +108,10 @@ describe("GTLC Type System & Nameplates", () => {
 		expect(() => check(termM, parseTy("Atom -> ?"))).toThrow("基础类型无法作为函数调用");
 		expect(() => check(termM, parseTy("Atom -> Atom"))).toThrow("基础类型无法作为函数调用");
 
-		const resDynamic = verifyNameplate(
-			termM,
-			{
-				inputs: [any],
-				output: any,
-				status: "unverified",
-			},
-			{ atoms: ["A", "B"] },
-			registry,
-		);
-		expect(resDynamic.certified).toBe(true);
+		const resDynamic = verify(termM, parseTy("? -> ?"), { atoms: ["A", "B"] }, registry, 100);
+		expect(resDynamic).toBeNull();
 
-		const resMonotype = verifyNameplate(
-			termM,
-			{
-				inputs: [base("Atom")],
-				output: any,
-				status: "unverified",
-			},
-			{ atoms: ["A", "B"] },
-			registry,
-		);
-		expect(resMonotype.certified).toBe(false);
-		expect(resMonotype.reason).toContain("基础类型无法作为函数调用");
+		expect(() => check(termM, parseTy("Atom -> ?"), [], registry)).toThrow("基础类型无法作为函数调用");
 	});
 
 	it("verifies behavioral compliance of term with verify helper", () => {

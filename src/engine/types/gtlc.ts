@@ -2,11 +2,11 @@ import type { Registry } from "../semantics/gadget";
 import { judgeNormalize } from "../semantics/judge";
 import { type DraftTerm, draftToInferTerm } from "../syntax/draft";
 import { type Term, app, atom } from "../syntax/term";
-import { type Ty, any, arrow, consistent, fn, formatTy, matchArrow, spine } from "./ty";
+import { type Ty, any, arrow, consistent, formatTy, hasAny, matchArrow, spine, tyEquals } from "./ty";
 
 export * from "./ty";
 
-export class TypeErr extends Error {
+class TypeErr extends Error {
 	constructor(
 		public readonly reason: string,
 		public readonly term: Term,
@@ -24,7 +24,7 @@ export class TypeErr extends Error {
 	}
 }
 
-export interface BaseTypeSpec {
+interface BaseTypeSpec {
 	readonly name: string;
 	readonly shape: "circle" | "square" | "hexagon";
 	readonly note: string;
@@ -33,7 +33,7 @@ export interface BaseTypeSpec {
 	readonly check: (nf: Term, registry: Registry) => boolean;
 }
 
-export const BASE_TYPES: Record<string, BaseTypeSpec> = {
+const BASE_TYPES: Record<string, BaseTypeSpec> = {
 	Atom: {
 		name: "样品",
 		shape: "circle",
@@ -147,7 +147,7 @@ export function inferTermType(term: Term, registry?: Registry): Ty {
 	return ctx.finalize(inferRaw(term, [], ctx, registry));
 }
 
-export function synth(term: Term, env: readonly Ty[] = [], registry?: Registry): Ty {
+function synth(term: Term, env: readonly Ty[] = [], registry?: Registry): Ty {
 	switch (term.kind) {
 		case "var":
 			return term.index < env.length ? env[term.index] : any;
@@ -245,41 +245,6 @@ export function verify(
 	return null;
 }
 
-export type NameplateStatus =
-	| "unplated"
-	| "unverified"
-	| "certified"
-	| { readonly kind: "rejected"; readonly reason: string }
-	| { readonly kind: "inconsistent"; readonly reason: string };
-
-export interface NameplateSpec {
-	readonly inputs: readonly Ty[];
-	readonly output: Ty;
-	readonly status: NameplateStatus;
-}
-
-export function verifyNameplate(
-	term: Term,
-	spec: NameplateSpec,
-	ctx: { readonly atoms: readonly string[] },
-	registry: Registry,
-): { readonly certified: boolean; readonly reason?: string } {
-	const declaredTy = fn(spec.inputs, spec.output);
-	try {
-		check(term, declaredTy, [], registry);
-	} catch (err) {
-		return { certified: false, reason: err instanceof Error ? err.message : String(err) };
-	}
-	const verifyRes = verify(term, declaredTy, ctx, registry, 100);
-	if (verifyRes !== null) {
-		return {
-			certified: false,
-			reason: verifyRes.kind === "diverge" ? "求值超时或产生发散循环" : "输出结果不符合目标类型的特征规范",
-		};
-	}
-	return { certified: true };
-}
-
 export function inferDraftType(
 	draft: DraftTerm,
 	registry?: Registry,
@@ -293,4 +258,42 @@ export function inferDraftType(
 			error: err instanceof Error ? err.message : String(err),
 		};
 	}
+}
+
+export class TypeBuildErr extends Error {
+	constructor(public readonly reason: string) {
+		super(reason);
+	}
+}
+
+export function checkTypeBuild(term: Term, targetTy: Ty, registry?: Registry): void {
+	const checkParams = (t: Term): void => {
+		switch (t.kind) {
+			case "var":
+			case "gad":
+				break;
+			case "atom":
+				if (hasAny(t.ty)) throw new TypeBuildErr("样品类型不能包含动态类型 ?");
+				break;
+			case "ann":
+				if (hasAny(t.ty)) throw new TypeBuildErr("类型注记不能包含动态类型 ?");
+				checkParams(t.term);
+				break;
+			case "lam":
+				if (t.ty === void 0) throw new TypeBuildErr(`参数 ${t.param} 未指定类型，不能留空为 ?`);
+				if (hasAny(t.ty)) throw new TypeBuildErr(`参数 ${t.param} 的类型不能包含动态类型 ?`);
+				checkParams(t.body);
+				break;
+			case "app":
+				checkParams(t.fn);
+				checkParams(t.arg);
+				break;
+		}
+	};
+	checkParams(term);
+	check(term, targetTy, [], registry);
+	const inferred = inferTermType(term, registry);
+	if (hasAny(inferred)) throw new TypeBuildErr(`整体推导类型包含未确定的动态类型 ?（当前为 ${formatTy(inferred)}）`);
+	if (!tyEquals(inferred, targetTy))
+		throw new TypeBuildErr(`类型不匹配：期望 ${formatTy(targetTy)}，但实际推导为 ${formatTy(inferred)}`);
 }

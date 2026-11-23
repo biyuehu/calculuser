@@ -91,7 +91,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 											}}
 											title="点击编辑参数类型"
 										>
-											: {formatTy(node.ty ?? any)}
+											{formatTy(node.ty ?? any)}
 										</button>
 									</Show>
 								</span>

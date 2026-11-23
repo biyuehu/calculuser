@@ -163,8 +163,6 @@ export const saveSession = (session: SessionState): void => mutateSaveData((prev
 
 export const loadSeenDialogues = (): ReadonlySet<string> => new Set(loadSaveData().seenDialogues);
 
-export const isDialogueSeen = (dialogueId: string): boolean => loadSaveData().seenDialogues.includes(dialogueId);
-
 export const markDialogueSeen = (dialogueId: string): void =>
 	mutateSaveData((prev) => ({
 		...prev,

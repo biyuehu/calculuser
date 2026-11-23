@@ -1,6 +1,6 @@
 import type { GadgetId, JudgeTestCase, Term, Ty } from "../engine";
 
-export type GadgetShape = "circle" | "square" | "diamond" | "hex";
+type GadgetShape = "circle" | "square" | "diamond" | "hex";
 
 export interface ToolDefinition {
 	readonly id: string;

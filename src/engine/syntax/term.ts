@@ -15,7 +15,7 @@ export type Term =
 export const atom = (name: string, ty: Ty = base("Atom")): Term => ({ kind: "atom", name, ty });
 export const app = (fn: Term, arg: Term): Term => ({ kind: "app", fn, arg });
 
-export function shift(term: Term, delta: number, cutoff: number): Term {
+function shift(term: Term, delta: number, cutoff: number): Term {
 	switch (term.kind) {
 		case "var":
 			return term.index >= cutoff ? { kind: "var", index: term.index + delta, name: term.name } : term;
@@ -31,7 +31,7 @@ export function shift(term: Term, delta: number, cutoff: number): Term {
 	}
 }
 
-export function subst(term: Term, targetIndex: number, replacement: Term): Term {
+function subst(term: Term, targetIndex: number, replacement: Term): Term {
 	switch (term.kind) {
 		case "var":
 			return term.index === targetIndex ? replacement : term;

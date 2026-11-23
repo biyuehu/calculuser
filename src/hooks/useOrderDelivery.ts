@@ -5,7 +5,7 @@ import {
 	type DraftTerm,
 	type GadgetId,
 	type Registry,
-	check,
+	checkTypeBuild,
 	draftToTerm,
 	findFirstHole,
 	judgeNormalize,
@@ -92,7 +92,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		if (order.mode === "typebuild") {
 			try {
 				const candidate = draftToTerm(draft, []);
-				check(candidate, order.targetTy, [], options.registry);
+				checkTypeBuild(candidate, order.targetTy, options.registry);
 				const norm = judgeNormalize(candidate, options.registry, JUDGE_MAX_STEPS);
 				if (!norm.terminated) {
 					playFailSound();
@@ -121,7 +121,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		}
 		if (order.mode === "typebuild") {
 			try {
-				check(draftToTerm(draft, []), order.targetTy, [], options.registry);
+				checkTypeBuild(draftToTerm(draft, []), order.targetTy, options.registry);
 				return true;
 			} catch {
 				return false;

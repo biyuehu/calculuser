@@ -36,12 +36,14 @@
 	user-select: none;
 }
 
+html,
 body {
 	background: var(--desk-bg);
 	color: var(--text-primary);
 	font-family: var(--font-sans);
 	height: 100vh;
 	overflow: hidden;
+	overscroll-behavior: none;
 }
 
 .workshop-root {

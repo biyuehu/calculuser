@@ -26,12 +26,12 @@ interface WorkshopFolioProps {
 const CHAPTER_GROUPS = [
 	...CHAPTERS.map((chapterInfo) => ({
 		title: chapterInfo.title,
-		levels: LEVELS.filter((level) => level.chapter === chapterInfo.id),
+		levels: LEVELS.filter((level) => level.mode !== "sandbox" && level.chapter === chapterInfo.id),
 		isBossEligible: true,
 	})),
 	{
 		title: "其它",
-		levels: LEVELS.filter((level) => !level.chapter),
+		levels: LEVELS.filter((level) => level.mode !== "sandbox" && !level.chapter),
 		isBossEligible: false,
 	},
 ].filter((group) => group.levels.length > 0);

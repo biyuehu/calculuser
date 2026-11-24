@@ -92,7 +92,7 @@ describe("Calculuser core engine", () => {
 		for (const order of LEVELS)
 			if (order.mode === "build") expect(order.tests.length).toBeGreaterThan(0);
 			else if (order.mode === "run") expect(order.stepBudget).toBeGreaterThan(0);
-			else expect(order.parSize).toBeGreaterThan(0);
+			else if (order.mode === "typebuild") expect(order.parSize).toBeGreaterThan(0);
 	});
 
 	it("traverses draft holes and nodes via findAllHoles and getDraftAtPath", () => {

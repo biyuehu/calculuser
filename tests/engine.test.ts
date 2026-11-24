@@ -27,7 +27,7 @@ describe("Calculuser core engine", () => {
 		let current = parseLambda("@S @K @K A");
 		const events: string[] = [];
 		for (let step = 0; step < 20; step += 1) {
-			const res = stepLeftmost(current, registry, "");
+			const res = stepLeftmost(current, registry, "", "free");
 			if (res === null) break;
 			events.push(res.event.kind);
 			current = res.next;
@@ -38,21 +38,21 @@ describe("Calculuser core engine", () => {
 
 	it("reports exact copies count on beta and delta steps", () => {
 		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
-		const dropStep = stepLeftmost(parseLambda("(λx.λy. x) A B"), registry, "");
+		const dropStep = stepLeftmost(parseLambda("(λx.λy. x) A B"), registry, "", "free");
 		expect(dropStep !== null && dropStep.event.kind === "beta" && dropStep.event.copies === 1).toBe(true);
-		const zeroCopyStep = stepLeftmost(parseLambda("(λy. A) B"), registry, "");
+		const zeroCopyStep = stepLeftmost(parseLambda("(λy. A) B"), registry, "", "free");
 		expect(zeroCopyStep !== null && zeroCopyStep.event.kind === "beta" && zeroCopyStep.event.copies === 0).toBe(true);
-		const twoCopyStep = stepLeftmost(parseLambda("(λx. x x) A"), registry, "");
+		const twoCopyStep = stepLeftmost(parseLambda("(λx. x x) A"), registry, "", "free");
 		expect(twoCopyStep !== null && twoCopyStep.event.kind === "beta" && twoCopyStep.event.copies === 2).toBe(true);
 	});
 
 	it("finds clickable redexes and supports stepAt", () => {
 		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 		const expr = parseLambda("(λx. x) ((λy. y) A)");
-		const paths = redexes(expr, registry, "");
+		const paths = redexes(expr, registry, "", "free");
 		expect(paths).toContain("");
 		expect(paths).toContain("a");
-		const innerReduced = stepAt(expr, "a", registry, "");
+		const innerReduced = stepAt(expr, "a", registry, "", "free");
 		expect(innerReduced !== null && termsEqual(innerReduced.next, parseLambda("(λx. x) A"))).toBe(true);
 	});
 
@@ -67,12 +67,12 @@ describe("Calculuser core engine", () => {
 
 	it("solves the three run-mode puzzles within exact step budgets", () => {
 		const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
-		const dropStep = stepAt(parseLambda("@K A ((@S @I @I) (@S @I @I))"), "", registry, "");
+		const dropStep = stepAt(parseLambda("@K A ((@S @I @I) (@S @I @I))"), "", registry, "", "run");
 		expect(dropStep !== null && termsEqual(dropStep.next, atom("A"))).toBe(true);
 
 		let innerTerm = parseLambda("(@S @I @I) (@I A)");
 		for (const path of ["a", "", "f", "a"]) {
-			const res = stepAt(innerTerm, path, registry, "");
+			const res = stepAt(innerTerm, path, registry, "", "run");
 			expect(res).not.toBeNull();
 			if (res !== null) innerTerm = res.next;
 		}
@@ -80,7 +80,7 @@ describe("Calculuser core engine", () => {
 
 		let bossTerm = parseLambda("@K ((@S @I @I) (@I A)) (@I (@I (@I B)))");
 		for (const path of ["", "a", "", "f", "a"]) {
-			const res = stepAt(bossTerm, path, registry, "");
+			const res = stepAt(bossTerm, path, registry, "", "run");
 			expect(res).not.toBeNull();
 			if (res !== null) bossTerm = res.next;
 		}

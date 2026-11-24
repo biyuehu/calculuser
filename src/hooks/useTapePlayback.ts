@@ -53,9 +53,11 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 	const [tape, setTape] = createSignal<readonly Term[]>([]);
 	const [tapeIndex, setTapeIndex] = createSignal<number>(0);
 
+	const reductionMode = (): "run" | "free" => (options.order().mode === "run" ? "run" : "free");
+
 	const activeRedexes = createMemo(() => {
 		const term = playTerm();
-		return term !== null ? redexes(term, options.registry, "") : [];
+		return term !== null ? redexes(term, options.registry, "", reductionMode()) : [];
 	});
 	const runSteps = createMemo(() => tapeIndex());
 	const canUndoTape = createMemo(() => tapeIndex() > 0);
@@ -72,7 +74,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		const active = playTerm();
 		if (active === null) return;
 		const order = options.order();
-		const stepped = stepAt(active, path, options.registry, "");
+		const stepped = stepAt(active, path, options.registry, "", reductionMode());
 		if (stepped === null) return;
 		playStepEventSound(stepped.event, tapeIndex() + 1);
 		const updatedTape = [...tape().slice(0, tapeIndex() + 1), stepped.next];
@@ -83,7 +85,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 			if (
 				updatedTape.length - 1 <= order.stepBudget &&
 				termsEqual(stepped.next, order.targetTerm) &&
-				redexes(stepped.next, options.registry, "").length === 0
+				redexes(stepped.next, options.registry, "", "run").length === 0
 			)
 				options.onRunPass?.(stepped.next, updatedTape);
 			else if (updatedTape.length - 1 >= order.stepBudget) options.onRunExceeded?.();
@@ -107,7 +109,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 			setTapeIndex(0);
 			return;
 		}
-		const stepped = stepLeftmost(active, options.registry, "");
+		const stepped = stepLeftmost(active, options.registry, "", reductionMode());
 		if (stepped === null) {
 			stopPlay();
 			return;
@@ -127,7 +129,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		if (current === null) return;
 		const recorded = tape().length > 0 ? [...tape().slice(0, tapeIndex() + 1)] : [current];
 		for (let step = 0; step < 80; step += 1) {
-			const stepped = stepLeftmost(current, options.registry, "");
+			const stepped = stepLeftmost(current, options.registry, "", reductionMode());
 			if (stepped === null) break;
 			current = stepped.next;
 			recorded.push(current);

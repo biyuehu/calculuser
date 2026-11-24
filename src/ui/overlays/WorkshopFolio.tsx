@@ -219,9 +219,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 													</span>
 													<div>
 														<div style={{ "font-weight": 700, "font-size": "13px" }}>{tool.name}</div>
-														<div style={{ "font-size": "10.5px", color: "var(--text-muted)" }}>
-															基本工具 · 元数 {tool.arity}
-														</div>
 													</div>
 												</div>
 												<div
@@ -263,9 +260,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 															</span>
 															<div>
 																<div style={{ "font-weight": 700, "font-size": "13px" }}>{tool.name}</div>
-																<div style={{ "font-size": "10.5px", color: "var(--text-muted)" }}>
-																	元数 {tool.arity}
-																</div>
 															</div>
 														</div>
 													</div>

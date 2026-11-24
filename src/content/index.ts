@@ -1,14 +1,14 @@
 import type { GadgetId } from "../engine";
 import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
-import type { GadgetMeta, ToolDefinition } from "./types";
+import type { GadgetMeta, SandboxOrder, ToolDefinition } from "./types";
 
 export * from "./types";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 export { LEVEL_DIALOGUES } from "./data/dialogue";
 
-export const SANDBOX_ORDER: import("./types").SandboxOrder = {
+export const SANDBOX_ORDER: SandboxOrder = {
 	mode: "sandbox",
 	id: "sandbox",
 	code: "∞",

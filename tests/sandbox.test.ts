@@ -1,6 +1,6 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { COMBINATORS, SANDBOX_ORDER } from "../src/content";
-import { createRegistry, draftToTerm, redexes, stepLeftmost } from "../src/engine";
+import { atom, createRegistry, draftToTerm, redexes, stepLeftmost } from "../src/engine";
 
 describe("Sandbox Mode", () => {
 	it("provides a valid sandbox order definition", () => {
@@ -25,10 +25,27 @@ describe("Sandbox Mode", () => {
 			[],
 		);
 
-		expect(redexes(term, registry, "").length).toBe(1);
-		const stepped = stepLeftmost(term, registry, "");
-		expect(stepped).not.toBeNull();
-		expect(stepped?.next.kind).toBe("atom");
-		expect((stepped?.next as { readonly name: string }).name).toBe("A");
+		expect(redexes(term, registry, "", "free").length).toBe(1);
+		let current = term;
+		while (true) {
+			const stepped = stepLeftmost(current, registry, "", "free");
+			if (stepped === null) break;
+			current = stepped.next;
+		}
+		expect(current.kind).toBe("atom");
+		expect((current as { readonly name: string }).name).toBe("A");
+	});
+
+	it("allows standalone gadget or partial application to reduce in free mode without arity gate", () => {
+		const registry = createRegistry(COMBINATORS);
+		const standaloneI = { kind: "gad" as const, id: "I" };
+		expect(redexes(standaloneI, registry, "", "free").length).toBe(1);
+		expect(redexes(standaloneI, registry, "", "run").length).toBe(0);
+		const steppedI = stepLeftmost(standaloneI, registry, "", "free");
+		expect(steppedI !== null && steppedI.next.kind === "lam").toBe(true);
+
+		const partialK = { kind: "app" as const, fn: { kind: "gad" as const, id: "K" }, arg: atom("A") };
+		expect(redexes(partialK, registry, "", "free").length).toBe(1);
+		expect(redexes(partialK, registry, "", "run").length).toBe(0);
 	});
 });

@@ -1,7 +1,9 @@
 import type { JSX } from "solid-js";
-import { For, Show } from "solid-js";
+import { For, Show, createEffect, createSignal, onCleanup } from "solid-js";
+import { Portal } from "solid-js/web";
 import { getGadgetMeta } from "../../../content";
 import type { GadgetId, PRINT_NAMES } from "../../../engine";
+import type { CustomGadgetRecord } from "../../../storage";
 import { getVariableColor } from "../../../styles";
 import { startDragResize } from "../../../utils/dragResize";
 
@@ -9,6 +11,7 @@ interface ShelfRailProps {
 	readonly width: number;
 	readonly onResize: (width: number) => void;
 	readonly unlockedIds: readonly GadgetId[];
+	readonly customGadgets?: readonly CustomGadgetRecord[];
 	readonly lockedCount: number;
 	readonly scopeVariables: readonly (typeof PRINT_NAMES)[number][];
 	readonly atoms: readonly string[];
@@ -20,9 +23,26 @@ interface ShelfRailProps {
 	readonly onFillAtom: (name: string) => void;
 	readonly onFillLam: () => void;
 	readonly onFillApp: () => void;
+	readonly onExpandGadget?: (gadget: CustomGadgetRecord) => void;
+	readonly onDeleteGadget?: (id: string) => void;
 }
 
 export function ShelfRail(props: ShelfRailProps): JSX.Element {
+	const [contextMenu, setContextMenu] = createSignal<{
+		readonly x: number;
+		readonly y: number;
+		readonly gadget: CustomGadgetRecord;
+	} | null>(null);
+
+	createEffect(() => {
+		if (contextMenu() === null) return;
+		const handleKeyDown = (event: KeyboardEvent): void => {
+			if (event.key === "Escape") setContextMenu(null);
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		onCleanup(() => window.removeEventListener("keydown", handleKeyDown));
+	});
+
 	const handleResize = (downEvent: PointerEvent): void =>
 		startDragResize(downEvent, props.width, 1, 72, 480, props.onResize);
 
@@ -109,6 +129,36 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 				</Show>
 			</div>
 
+			<Show when={props.customGadgets && props.customGadgets.length > 0}>
+				<div class="shelf-group">
+					<For each={props.customGadgets}>
+						{(custom) => {
+							const meta = getGadgetMeta(custom.id, custom.name);
+							return (
+								<button
+									type="button"
+									class={`shelf-item ${!props.hasSelectedHole ? "dimmed" : ""}`}
+									title={custom.name ? `${custom.name} (${custom.id})\n右键展开或删除` : `${custom.id}\n右键展开或删除`}
+									onClick={() => {
+										if (props.hasSelectedHole) props.onFillGad(custom.id);
+									}}
+									onContextMenu={(event) => {
+										event.preventDefault();
+										setContextMenu({ x: event.clientX, y: event.clientY, gadget: custom });
+									}}
+								>
+									<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
+										{meta.symbol}
+									</span>
+									<span>{meta.name.slice(0, 3)}</span>
+								</button>
+							);
+						}}
+					</For>
+				</div>
+				<div class="shelf-divider" />
+			</Show>
+
 			<div class="shelf-group">
 				<For each={props.atoms}>
 					{(atomName) => (
@@ -134,6 +184,52 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 					)}
 				</For>
 			</div>
+
+			<Show when={contextMenu()}>
+				{(menu) => (
+					<Portal>
+						<div
+							role="presentation"
+							class="gadget-context-backdrop"
+							onClick={() => setContextMenu(null)}
+							onKeyDown={(event) => event.key === "Escape" && setContextMenu(null)}
+							onContextMenu={(event) => {
+								event.preventDefault();
+								setContextMenu(null);
+							}}
+						/>
+						<div
+							class="gadget-context-menu"
+							style={{
+								left: `${Math.min(menu().x, window.innerWidth - 140)}px`,
+								top: `${Math.min(menu().y, window.innerHeight - 80)}px`,
+							}}
+						>
+							<button
+								type="button"
+								class="gadget-context-item"
+								disabled={!props.hasSelectedHole}
+								onClick={() => {
+									props.onExpandGadget?.(menu().gadget);
+									setContextMenu(null);
+								}}
+							>
+								展开到当前槽
+							</button>
+							<button
+								type="button"
+								class="gadget-context-item danger"
+								onClick={() => {
+									props.onDeleteGadget?.(menu().gadget.id);
+									setContextMenu(null);
+								}}
+							>
+								删除部件
+							</button>
+						</div>
+					</Portal>
+				)}
+			</Show>
 		</aside>
 	);
 }

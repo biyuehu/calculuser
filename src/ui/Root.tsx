@@ -16,6 +16,7 @@ import { type Registry, createRegistry, parseLambda, registerGadget } from "../e
 import {
 	type SettingsState,
 	clearSave,
+	loadCustomGadgets,
 	loadSeenDialogues,
 	loadSession,
 	loadSettings,
@@ -36,12 +37,20 @@ function registerAllCombinators(registry: Registry): void {
 	for (const def of COMBINATORS) {
 		if (!registry.has(def.id)) registerGadget(registry, def.id, parseLambda(def.defText), "level");
 	}
+	for (const custom of Object.values(loadCustomGadgets())) {
+		registerGadget(registry, custom.id, custom.term, "custom");
+	}
 }
 
 function syncRegistryWithUnlocked(registry: Registry, stars: ReadonlyMap<string, number>, isJudge: boolean): void {
 	for (const key of Array.from(registry.keys())) {
 		const item = registry.get(key);
-		if (item !== void 0 && item.origin === "level" && !isToolUnlocked(key, stars, isJudge)) registry.delete(key);
+		if (
+			item !== void 0 &&
+			(item.origin === "level" || item.origin === "custom") &&
+			!isToolUnlocked(key, stars, isJudge)
+		)
+			registry.delete(key);
 	}
 	for (const order of LEVELS)
 		if (

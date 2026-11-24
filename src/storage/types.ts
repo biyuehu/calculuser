@@ -1,4 +1,10 @@
-import type { DraftTerm } from "../engine";
+import type { DraftTerm, Term } from "../engine";
+
+export interface CustomGadgetRecord {
+	readonly id: string;
+	readonly name?: string;
+	readonly term: Term;
+}
 
 export interface SettingsState {
 	readonly volume: number;
@@ -24,6 +30,7 @@ export interface SaveData {
 	readonly uiPrefs: UiPreferences;
 	readonly session: SessionState;
 	readonly drafts: Record<string, DraftTerm>;
+	readonly customGadgets: Record<string, CustomGadgetRecord>;
 	readonly seenDialogues: readonly string[];
 }
 

@@ -53,23 +53,39 @@ export function getToolDefinition(id: string): ToolDefinition | null {
 	return COMBINATORS.find((item) => item.id === id) ?? null;
 }
 
-export function getGadgetMeta(id: GadgetId): GadgetMeta {
+export function deriveGadgetVisuals(id: string): {
+	readonly symbol: string;
+	readonly shape: "circle" | "square" | "diamond" | "hex";
+	readonly accent: string;
+} {
+	let hash = 0;
+	for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+	const absHash = Math.abs(hash);
+	return {
+		symbol: id.length > 0 ? id[0].toUpperCase() : "?",
+		shape: (["circle", "square", "diamond", "hex"] as const)[absHash % 4],
+		accent: `hsl(${(absHash * 137) % 360}, 68%, 52%)`,
+	};
+}
+
+export function getGadgetMeta(id: GadgetId, customName?: string): GadgetMeta {
 	const tool = getToolDefinition(id);
-	return tool !== null
-		? {
-				id: tool.id,
-				symbol: tool.symbol,
-				name: tool.name,
-				shape: tool.shape,
-				accent: tool.accent,
-				note: tool.note,
-			}
-		: {
-				id,
-				symbol: id.length <= 2 ? id : "★",
-				name: id,
-				shape: "circle",
-				accent: "#64748b",
-				note: "工坊自制组合子部件",
-			};
+	if (tool !== null)
+		return {
+			id: tool.id,
+			symbol: tool.symbol,
+			name: tool.name,
+			shape: tool.shape,
+			accent: tool.accent,
+			note: tool.note,
+		};
+	const visual = deriveGadgetVisuals(id);
+	return {
+		id,
+		symbol: visual.symbol,
+		name: customName ?? id,
+		shape: visual.shape,
+		accent: visual.accent,
+		note: "工坊自制组合子部件",
+	};
 }

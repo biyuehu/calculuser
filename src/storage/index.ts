@@ -1,5 +1,6 @@
-import type { DraftTerm } from "../engine";
+import type { DraftTerm, Term } from "../engine";
 import {
+	type CustomGadgetRecord,
 	DEFAULT_SESSION,
 	DEFAULT_SETTINGS,
 	DEFAULT_UI_PREFS,
@@ -18,8 +19,48 @@ const DEFAULT_SAVE_DATA: SaveData = {
 	uiPrefs: DEFAULT_UI_PREFS,
 	session: DEFAULT_SESSION,
 	drafts: {},
+	customGadgets: {},
 	seenDialogues: [],
 };
+
+function isValidTerm(val: unknown): val is Term {
+	if (!val || typeof val !== "object") return false;
+	const r = val as {
+		readonly kind?: unknown;
+		readonly name?: unknown;
+		readonly id?: unknown;
+		readonly param?: unknown;
+		readonly body?: unknown;
+		readonly fn?: unknown;
+		readonly arg?: unknown;
+	};
+	switch (r.kind) {
+		case "var":
+			return typeof (val as { readonly index?: unknown }).index === "number" && typeof r.name === "string";
+		case "atom":
+			return typeof r.name === "string";
+		case "gad":
+			return typeof r.id === "string";
+		case "lam":
+			return typeof r.param === "string" && isValidTerm(r.body);
+		case "app":
+			return isValidTerm(r.fn) && isValidTerm(r.arg);
+		default:
+			return false;
+	}
+}
+
+function sanitizeCustomGadgets(val: unknown): Record<string, CustomGadgetRecord> {
+	return !val || typeof val !== "object"
+		? {}
+		: (Object.fromEntries(
+				Object.entries(val).filter(([, v]) => {
+					if (!v || typeof v !== "object") return false;
+					const r = v as { readonly id?: unknown; readonly name?: unknown; readonly term?: unknown };
+					return typeof r.id === "string" && (r.name === void 0 || typeof r.name === "string") && isValidTerm(r.term);
+				}),
+			) as Record<string, CustomGadgetRecord>);
+}
 
 function isValidDraft(val: unknown): val is DraftTerm {
 	if (!val || typeof val !== "object") return false;
@@ -111,6 +152,7 @@ function loadSaveData(): SaveData {
 					uiPrefs: sanitizeUiPrefs(parsed.uiPrefs),
 					session: sanitizeSession(parsed.session),
 					drafts: sanitizeDrafts(parsed.drafts),
+					customGadgets: sanitizeCustomGadgets(parsed.customGadgets),
 					seenDialogues: Array.isArray(parsed.seenDialogues)
 						? parsed.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
 						: [],
@@ -156,6 +198,18 @@ export const clearLevelDraft = (orderId: string): void =>
 	});
 
 export const clearLevelDrafts = (): void => mutateSaveData((prev) => ({ ...prev, drafts: {} }));
+
+export const loadCustomGadgets = (): Record<string, CustomGadgetRecord> => loadSaveData().customGadgets;
+
+export const saveCustomGadget = (record: CustomGadgetRecord): void =>
+	mutateSaveData((prev) => ({ ...prev, customGadgets: { ...prev.customGadgets, [record.id]: record } }));
+
+export const deleteCustomGadget = (id: string): void =>
+	mutateSaveData((prev) => {
+		const next = { ...prev.customGadgets };
+		delete next[id];
+		return { ...prev, customGadgets: next };
+	});
 
 export const loadSession = (): SessionState => loadSaveData().session;
 

@@ -139,3 +139,20 @@ export function draftToInferTerm(draft: DraftTerm, env: readonly string[]): Term
 			};
 	}
 }
+
+export function termToDraft(term: Term): DraftTerm {
+	switch (term.kind) {
+		case "atom":
+			return { kind: "atom", name: term.name };
+		case "gad":
+			return { kind: "gad", id: term.id };
+		case "var":
+			return { kind: "var", name: term.name };
+		case "lam":
+			return { kind: "lam", param: term.param, ty: term.ty, body: termToDraft(term.body) };
+		case "app":
+			return { kind: "app", fn: termToDraft(term.fn), arg: termToDraft(term.arg) };
+		case "ann":
+			return termToDraft(term.term);
+	}
+}

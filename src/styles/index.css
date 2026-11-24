@@ -285,6 +285,66 @@ body {
 	cursor: not-allowed;
 }
 
+.shelf-item.dimmed {
+	opacity: 0.45;
+}
+
+.gadget-context-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1200;
+	background: transparent;
+}
+
+.gadget-context-menu {
+	position: fixed;
+	z-index: 1201;
+	min-width: 130px;
+	background: var(--surface-1);
+	border: 1px solid var(--border-subtle);
+	border-radius: 8px;
+	box-shadow: 0 4px 18px rgba(40, 36, 30, 0.12), 0 1px 3px rgba(40, 36, 30, 0.06);
+	padding: 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	animation: backdropFadeIn 0.08s ease;
+}
+
+.gadget-context-item {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 6px 10px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--text-primary);
+	background: transparent;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	text-align: left;
+	transition: background 0.12s ease, color 0.12s ease;
+}
+
+.gadget-context-item:hover:not(:disabled) {
+	background: var(--surface-2);
+}
+
+.gadget-context-item:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.gadget-context-item.danger {
+	color: var(--accent-danger);
+}
+
+.gadget-context-item.danger:hover:not(:disabled) {
+	background: var(--accent-danger-subtle);
+	color: var(--accent-danger-strong);
+}
+
 .shelf-item.locked {
 	border-style: dashed;
 	background: transparent;

@@ -61,9 +61,6 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 							<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>标准 {buildOrder().parSize} 件</span>
 						)}
 					</Show>
-					<Show when={props.order.mode === "sandbox"}>
-						<span style={{ color: "var(--text-muted)", "font-weight": "500" }}>自由测试</span>
-					</Show>
 					<button
 						type="button"
 						class="icon-btn"

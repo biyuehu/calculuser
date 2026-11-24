@@ -1,5 +1,5 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
-import { playFailSound } from "../../audio/synth";
+import { playFailSound, playSnapSound } from "../../audio/synth";
 import type { OrderLevel } from "../../content";
 import {
 	PRINT_NAMES,
@@ -7,12 +7,18 @@ import {
 	type Registry,
 	type Ty,
 	collectBaseTypes,
+	draftToTerm,
 	formatTy,
 	inferDraftType,
+	inlineCustomGadgets,
+	registerGadget,
+	termToDraft,
 } from "../../engine";
 import { useUiPreferences } from "../../hooks/useUiPreferences";
 import { useWorkbenchSession } from "../../hooks/useWorkbenchSession";
+import { type CustomGadgetRecord, deleteCustomGadget, loadCustomGadgets, saveCustomGadget } from "../../storage";
 import { useKeyScope } from "../keybus";
+import { SaveGadgetModal } from "../overlays/SaveGadgetModal";
 import { DeliveryCounter } from "../workbench/panels/DeliveryCounter";
 import { OrderSlip } from "../workbench/panels/OrderSlip";
 import { PressureGauge } from "../workbench/panels/PressureGauge";
@@ -58,6 +64,35 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 	const [editingLamType, setEditingLamType] = createSignal<{ readonly path: Path; readonly currentTy: Ty } | null>(
 		null,
 	);
+	const [customGadgets, setCustomGadgets] = createSignal<Record<string, CustomGadgetRecord>>(loadCustomGadgets());
+	const [showSaveGadgetModal, setShowSaveGadgetModal] = createSignal<boolean>(false);
+
+	const handleOpenSaveGadget = (): void => {
+		if (session.hasHoles()) return;
+		setShowSaveGadgetModal(true);
+	};
+
+	const handleSaveGadget = (id: string, name?: string): void => {
+		const rawTerm = draftToTerm(session.draft(), []);
+		const term = inlineCustomGadgets(rawTerm, props.registry);
+		const record: CustomGadgetRecord = name !== void 0 ? { id, name, term } : { id, term };
+		saveCustomGadget(record);
+		registerGadget(props.registry, id, term, "custom");
+		setCustomGadgets(loadCustomGadgets());
+		setShowSaveGadgetModal(false);
+		playSnapSound(2);
+	};
+
+	const handleExpandGadget = (gadget: CustomGadgetRecord): void => {
+		session.applyReplacement(termToDraft(gadget.term));
+	};
+
+	const handleDeleteGadget = (id: string): void => {
+		deleteCustomGadget(id);
+		props.registry.delete(id);
+		setCustomGadgets(loadCustomGadgets());
+		playSnapSound(1);
+	};
 	let isPanning = false;
 	let panStartX = 0;
 	let panStartY = 0;
@@ -258,6 +293,18 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							</button>
 						</Show>
 					</Show>
+					<Show when={props.order.mode === "sandbox"}>
+						<button
+							type="button"
+							class="icon-btn"
+							onClick={handleOpenSaveGadget}
+							disabled={session.hasHoles()}
+							title={session.hasHoles() ? "存在未填充开槽，无法保存为部件" : "定义并保存为部件"}
+						>
+							<span>💾</span>
+							<span>存为部件</span>
+						</button>
+					</Show>
 					<button
 						type="button"
 						class={`icon-btn ${session.isXRay() ? "active" : ""}`}
@@ -363,6 +410,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						unlockedIds={
 							props.order.mode === "build" || props.order.mode === "sandbox" ? session.shelfUnlockedIds() : []
 						}
+						customGadgets={props.order.mode === "sandbox" ? Object.values(customGadgets()) : []}
 						lockedCount={props.order.mode === "build" ? session.shelfLockedCount() : 0}
 						scopeVariables={session.currentScope()}
 						atoms={props.order.mode === "build" || props.order.mode === "sandbox" ? props.order.atoms : []}
@@ -376,6 +424,8 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 						onFillAtom={(name) => session.applyReplacement({ kind: "atom", name })}
 						onFillLam={session.fillLam}
 						onFillApp={() => session.applyReplacement({ kind: "app", fn: { kind: "hole" }, arg: { kind: "hole" } })}
+						onExpandGadget={handleExpandGadget}
+						onDeleteGadget={handleDeleteGadget}
 					/>
 				</Show>
 
@@ -503,6 +553,16 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							onClose={() => setEditingLamType(null)}
 						/>
 					)}
+				</Show>
+
+				<Show when={showSaveGadgetModal() && !session.hasHoles()}>
+					<SaveGadgetModal
+						currentTerm={inlineCustomGadgets(draftToTerm(session.draft(), []), props.registry)}
+						registry={props.registry}
+						existingGadgetIds={Object.keys(customGadgets())}
+						onClose={() => setShowSaveGadgetModal(false)}
+						onSave={handleSaveGadget}
+					/>
 				</Show>
 			</main>
 		</div>

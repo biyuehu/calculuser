@@ -5,10 +5,13 @@ import {
 	clearLevelDraft,
 	clearLevelDrafts,
 	clearSave,
+	deleteCustomGadget,
+	loadCustomGadgets,
 	loadLevelDrafts,
 	loadSession,
 	loadUiPreferences,
 	loadWorkshop,
+	saveCustomGadget,
 	saveLevelDraft,
 	saveSession,
 	saveUiPreferences,
@@ -85,6 +88,29 @@ describe("Storage Persistence Layer", () => {
 
 		clearLevelDrafts();
 		expect(Object.keys(loadLevelDrafts()).length).toBe(0);
+	});
+
+	it("persists, validates and deletes custom gadgets", () => {
+		expect(Object.keys(loadCustomGadgets()).length).toBe(0);
+
+		saveCustomGadget({
+			id: "PAIR",
+			name: "二元组",
+			term: {
+				kind: "lam",
+				param: "x",
+				body: { kind: "lam", param: "y", body: { kind: "var", index: 1, name: "x" } },
+			},
+		});
+
+		const loaded = loadCustomGadgets();
+		expect(loaded.PAIR).toBeDefined();
+		expect(loaded.PAIR.id).toBe("PAIR");
+		expect(loaded.PAIR.name).toBe("二元组");
+		expect(loaded.PAIR.term.kind).toBe("lam");
+
+		deleteCustomGadget("PAIR");
+		expect(loadCustomGadgets().PAIR).toBeUndefined();
 	});
 
 	it("stores all persistent state under exactly one storage key", () => {

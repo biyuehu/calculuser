@@ -1,9 +1,10 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
+import { viteSingleFile } from "vite-plugin-singlefile";
 import solidPlugin from "vite-plugin-solid";
 
 export default defineConfig({
-	plugins: [solidPlugin()],
+	plugins: [solidPlugin(), viteSingleFile()],
 	test: {
 		environment: "node",
 	},

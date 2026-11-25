@@ -137,6 +137,16 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 			return;
 		}
 		if (order.mode === "typebuild") {
+			if (order.uninhabited === true && draft.kind === "hole") {
+				playPassSound();
+				setTypeError(null);
+				setDeliveredStars(3);
+				options.onRecordStars(order.id, 3);
+				unlockAchievement("first_order");
+				unlockAchievement("three_star_craft");
+				unlockAchievement("uninhabited_proof");
+				return;
+			}
 			try {
 				const candidate = draftToTerm(draft, []);
 				checkTypeBuild(candidate, order.targetTy, options.registry);
@@ -164,6 +174,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 
 	const evaluateDraftPassed = (draft: DraftTerm): boolean => {
 		const order = options.order();
+		if (order.mode === "typebuild" && order.uninhabited === true && draft.kind === "hole") return true;
 		if (findFirstHole(draft, "") !== null) return false;
 		if (order.mode === "build") {
 			return judgeOrder(draftToTerm(draft, []), order.tests, options.registry, JUDGE_MAX_STEPS).every(

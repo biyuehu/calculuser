@@ -108,6 +108,66 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("下一单正好是铭牌检定台的首次试运行，挂上牌子走一趟吧。", "church", "default"),
 		],
 	},
+	"tb-uninhabited": {
+		id: "ch2_uninhabited_proof",
+		title: "假命题与不可居留",
+		lines: [
+			textLine("……等一下，这台机器根本没有办法装出成品。", "me", "default"),
+			textLine("恭喜你没有掉进陷阱！你刚才识破了一桩类型世界里最经典的迷思。", "church", "wow"),
+			textLine(
+				"手头有 A → B 和 B → C，看起来只差临门一脚就能产出 C；但正因为没有任何地方提供最初的原料 A，无论怎么接线都无法凭空变出一个 C。",
+				"church",
+				"default",
+			),
+			textLine(
+				"在逻辑学与计算机科学中，这叫「柯里–霍华德同构（Curry-Howard Isomorphism）」：每一个类型就是一条数学命题，而能通过校验的程序就是这条命题的证明。",
+				"church",
+				"happy",
+			),
+			textLine(
+				"写不出任何闭合程序的空类型（Uninhabited Type），本质上就是一条无法被证明的「假命题」。",
+				"church",
+				"default",
+			),
+			textLine(
+				"「工匠的第一课是学会如何把机器接通；第二课，则是看清哪些图纸打从命题上就不成立，果断交回白卷。」",
+				"master",
+				"default",
+			),
+		],
+	},
+	"tb-uninhabited": {
+		id: "ch2_uninhabited_proof",
+		title: "假命题与不可居留",
+		lines: [
+			textLine("……等一下，这台机器根本没有办法装出成品。", "me", "default"),
+			textLine(
+				"恭喜你没有掉进陷阱！你刚才识破了一桩类型世界里最经典的迷思。",
+				"church",
+				"wow",
+			),
+			textLine(
+				"手头有 A → B 和 B → C，看起来只差临门一脚就能产出 C；但正因为没有任何地方提供最初的原料 A，无论怎么接线都无法凭空变出一个 C。",
+				"church",
+				"default",
+			),
+			textLine(
+				"在逻辑学与计算机科学中，这叫「柯里–霍华德同构（Curry-Howard Isomorphism）」：每一个类型就是一条数学命题，而能通过校验的程序就是这条命题的证明。",
+				"church",
+				"happy",
+			),
+			textLine(
+				"写不出任何闭合程序的空类型（Uninhabited Type），本质上就是一条无法被证明的「假命题」。",
+				"church",
+				"default",
+			),
+			textLine(
+				"「工匠的第一课是学会如何把机器接通；第二课，则是看清哪些图纸打从命题上就不成立，果断交回白卷。」",
+				"master",
+				"default",
+			),
+		],
+	},
 	"dup-w": {
 		id: "ch2_before_build_s",
 		title: "最后一枚公理图纸",
@@ -117,7 +177,13 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				"church",
 				"happy",
 			),
-			textLine("把这两项本领合在一起，你已经足够亲手从零造出那枚绿色的分叉器 S 了。来试试看吧。", "church", "default"),
+			textLine("也就是说，把“嵌套传递”和“信号复制”这两张图纸合起来，就能拼出绿色分叉器 S 了？", "me", "default"),
+			textLine(
+				"没错。老师傅常说：哪怕不背口诀，只要分清哪份信号要分身、哪份信号要套壳，所有组合子都能从头推出来。",
+				"church",
+				"default",
+			),
+			textLine("现在工作台上禁用了现成的绿色 S 零件，亲手从零敲出一台一样的分叉器吧。", "church", "happy"),
 		],
 	},
 	"run-omega-preview": {
@@ -161,11 +227,13 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		title: "结构封装完毕",
 		lines: [
 			textLine("真没想到，没有盒子也没有指针，光靠几层开槽就能把两件货物严严实实封存起来。", "guest", "happy"),
+			textLine("其实连“同时拿到两件东西”也只是把开关参数反过来喂给接收方罢了。", "me", "default"),
 			textLine(
 				"Pair 解决的是「同时装下 A 与 B」的积类型。接下来第四间屋子要面对另一种常见需求——「要么装 A，要么装 B，甚至可能是空的」。",
 				"church",
 				"default",
 			),
+			textLine("等会见到 Maybe 和 Either，你会发现它们跟布尔开关竟然共享同一套血缘。", "church", "happy"),
 		],
 	},
 
@@ -229,13 +297,17 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				"church",
 				"happy",
 			),
+			textLine("换句话说，不管是“并且”还是“或者”，在 λ-演算里最终都化成了函数的分支选择。", "me", "default"),
+			textLine("正是如此，所以工坊才不需要额外发明 struct 或 enum 关键字。", "church", "happy"),
 		],
 	},
-	"tb-either-left": {
+	"tb-either-right": {
 		id: "ch4_boss_cleared",
 		title: "安全通道落成",
 		lines: [
 			textLine("有了缺省箱和双路分发，工坊再也不用担心空包裹或异常件把机器卡死了。", "church", "happy"),
+			textLine("而且从铭牌检定也能看出来，Left 与 Right 在消解签名上完全对称，只看谁被选中。", "me", "default"),
+			textLine("「学会处理空箱与岔路，才算真正拥有构建大型系统的底气。」", "master", "default"),
 			textLine("接下来第五间绘图室要迎接账房先生的硬核委托——从零搭建自然数与整套算术体系。", "church", "default"),
 		],
 	},
@@ -262,8 +334,9 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		id: "ch5_boss_cleared",
 		title: "算术基石落成",
 		lines: [
-			textLine("减法、大小比较、判等与绝对差全都在工作台上运转起来了。", "church", "happy"),
-			textLine("接下来第六间绘图室会把单个数字扩展成成串的清单与分叉的二叉树结构。", "church", "default"),
+			textLine("加减乘方、大小比较、判等与绝对差全都在工作台上运转起来了，账房终于能喘口气了。", "guest", "happy"),
+			textLine("把数字看成“把动作重复执行 n 次”之后，连 pred 和减法都能靠序对滑移硬生生磨出来。", "me", "default"),
+			textLine("是的！接下来第六间绘图室会把单个数字扩展成成串的清单与分叉的二叉树结构。", "church", "happy"),
 		],
 	},
 
@@ -347,15 +420,16 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				"happy",
 			),
 			textLine(
-				"现在我终于明白老师傅为什么放心把工坊交给你——规则越简单纯粹，能生长出的结构反而越无穷无尽。",
-				"church",
+				"「当你不再需要记住每一块零件的内部齿轮，只凭类型、开槽与不动点就能搭出任意机器时，这座工坊就已经真正属于你了。」",
+				"master",
 				"default",
 			),
 			textLine(
-				"所有的正式委托都已圆满收官，但自由沙盒实验台的大门永远敞开着。去组合、封装属于你自己的全新零件吧！",
+				"前面还有最后一道「终局试炼：斐波那契」——把算术、序对与不动点引擎全部派上用场，去给这趟旅程画上最漂亮的句号吧。",
 				"church",
 				"happy",
 			),
+			textLine("好，去把最后这台斐波那契数列机也交出去。", "me", "default"),
 		],
 	},
 };

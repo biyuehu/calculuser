@@ -10,6 +10,7 @@ import {
 	formatTy,
 	inferDraftType,
 	judgeNormalize,
+	judgeOrder,
 	parseLambda,
 	parseTy,
 } from "../src/engine";
@@ -18,12 +19,12 @@ describe("TypeBuild Mode & Level Verification", () => {
 	const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 	const typeBuildOrders = LEVELS.filter((lvl) => lvl.mode === "typebuild");
 
-	it("contains exactly 12 typebuild levels distributed across chapters 2-7", () => {
-		expect(typeBuildOrders.length).toBe(12);
+	it("contains exactly 15 typebuild levels distributed across chapters 2-7", () => {
+		expect(typeBuildOrders.length).toBe(15);
 		expect(typeBuildOrders.filter((l) => l.chapter === 1).length).toBe(0);
-		expect(typeBuildOrders.filter((l) => l.chapter === 2).length).toBe(2);
+		expect(typeBuildOrders.filter((l) => l.chapter === 2).length).toBe(3);
 		expect(typeBuildOrders.filter((l) => l.chapter === 3).length).toBe(3);
-		expect(typeBuildOrders.filter((l) => l.chapter === 4).length).toBe(2);
+		expect(typeBuildOrders.filter((l) => l.chapter === 4).length).toBe(4);
 		expect(typeBuildOrders.filter((l) => l.chapter === 5).length).toBe(2);
 		expect(typeBuildOrders.filter((l) => l.chapter === 6).length).toBe(2);
 		expect(typeBuildOrders.filter((l) => l.chapter === 7).length).toBe(1);
@@ -63,6 +64,26 @@ describe("TypeBuild Mode & Level Verification", () => {
 			};
 			expect(countDraftSize(draft)).toBeLessThanOrEqual(tbConst.parSize);
 		}
+
+		const tbUninhabited = typeBuildOrders.find((l) => l.id === "tb-uninhabited");
+		expect(tbUninhabited).toBeDefined();
+		if (tbUninhabited) {
+			expect(tbUninhabited.uninhabited).toBe(true);
+			expect(() =>
+				checkTypeBuild(parseLambda("λ(f: A -> B). λ(g: B -> C). g"), tbUninhabited.targetTy, registry),
+			).toThrow();
+		}
+
+		const fibLevel = LEVELS.find((l) => l.id === "rec-fib");
+		expect(fibLevel?.mode).toBe("build");
+		if (fibLevel && fibLevel.mode === "build") {
+			const fullRegistry = createRegistry(COMBINATORS);
+			const pairFib = parseLambda(
+				"λn. @fst (n (λp. @pair (@snd p) (@add (@fst p) (@snd p))) (@pair (λf.λx. x) (λf.λx. f x)))",
+			);
+			const results = judgeOrder(pairFib, fibLevel.tests, fullRegistry, 300);
+			expect(results.every((r) => r.passed)).toBe(true);
+		}
 	});
 
 	it("accepts canonical solutions for Chapter 3 typebuild orders", () => {
@@ -94,7 +115,9 @@ describe("TypeBuild Mode & Level Verification", () => {
 	it("accepts canonical solutions for Chapter 4-7 typebuild orders", () => {
 		const cases: readonly [string, string][] = [
 			["tb-maybe-nothing", "λ(d: B). λ(j: A -> B). d"],
+			["tb-maybe-just", "λ(x: A). λ(n: B). λ(j: A -> B). j x"],
 			["tb-either-left", "λ(a: A). λ(l: A -> C). λ(r: B -> C). l a"],
+			["tb-either-right", "λ(b: B). λ(l: A -> C). λ(r: B -> C). r b"],
 			["tb-zero", "λ(f: A -> A). λ(x: A). x"],
 			["tb-two", "λ(f: A -> A). λ(x: A). f (f x)"],
 			["tb-list", "λ(c: A -> B -> B). λ(n: B). n"],

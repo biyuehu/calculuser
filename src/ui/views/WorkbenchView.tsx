@@ -231,7 +231,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				handle: () => {
 					if (session.deliveredStars() !== null) {
 						if (!props.isLastOrder) props.onNextOrder();
-					} else if ((props.order.mode === "build" || props.order.mode === "typebuild") && !session.hasHoles()) {
+					} else if ((props.order.mode === "build" || props.order.mode === "typebuild") && session.canDeliver()) {
 						session.deliverOrder();
 					}
 				},
@@ -455,10 +455,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 				<DeliveryCounter
 					mode={props.order.mode}
-					canDeliver={
-						(props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox") &&
-						!session.hasHoles()
-					}
+					canDeliver={session.canDeliver()}
 					delivered={props.order.mode !== "sandbox" && session.deliveredStars() !== null}
 					stars={session.deliveredStars() ?? 0}
 					countValue={props.order.mode === "run" ? session.runSteps() : session.partCount()}

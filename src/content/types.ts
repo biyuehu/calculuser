@@ -72,6 +72,7 @@ export interface TypeBuildOrder {
 	readonly targetTy: Ty;
 	readonly parSize: number;
 	readonly note: string;
+	readonly uninhabited?: boolean;
 }
 
 export interface SandboxOrder {

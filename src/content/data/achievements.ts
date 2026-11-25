@@ -15,4 +15,5 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
 	{ id: "copy_explosion", title: "分身之术", description: "在单步归约中产生至少 4 份信号拷贝" },
 	{ id: "static_typist", title: "静态契约", description: "不使用动态类型 ? 完成任意渐进类型构造订单" },
 	{ id: "custom_smith", title: "自研匠人", description: "在自由沙盒中封装并保存第一个自定义组合子零件" },
+	{ id: "uninhabited_proof", title: "不可居留", description: "识破无法构造的假命题类型，以空槽交付完成证明" },
 ];

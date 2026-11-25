@@ -48,6 +48,7 @@ interface WorkbenchSession {
 	readonly draftNotice: Accessor<string | null>;
 	readonly typeError: Accessor<string | null>;
 	readonly hasHoles: Accessor<boolean>;
+	readonly canDeliver: Accessor<boolean>;
 	readonly applyReplacement: (replacement: DraftTerm) => void;
 	readonly dismantleAtPath: (path: Path) => void;
 	readonly dismantleSelected: () => void;
@@ -127,8 +128,14 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		draftBench.clearBenchDraft();
 	};
 
+	const canDeliver = (): boolean => {
+		const ord = options.order();
+		if (ord.mode === "typebuild" && ord.uninhabited === true && draftBench.draft().kind === "hole") return true;
+		return (ord.mode === "build" || ord.mode === "typebuild" || ord.mode === "sandbox") && !draftBench.hasHoles();
+	};
+
 	const deliverOrder = (): void => {
-		if (draftBench.hasHoles()) return;
+		if (!canDeliver()) return;
 		delivery.deliverBuildOrder(draftBench.draft(), draftBench.partCount());
 		draftBench.flushDraft();
 	};
@@ -186,6 +193,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		draftNotice: draftBench.draftNotice,
 		canUndo: () => (tapePlay.playTerm() !== null ? tapePlay.canUndoTape() : draftBench.canUndoDraft()),
 		hasHoles: draftBench.hasHoles,
+		canDeliver,
 		applyReplacement: draftBench.applyReplacement,
 		dismantleAtPath: draftBench.dismantleAtPath,
 		dismantleSelected: draftBench.dismantleSelected,

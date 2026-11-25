@@ -40,7 +40,6 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 						return (
 							<span
 								class="signal-orb"
-								title="右键拆回空槽"
 								onContextMenu={handleDismantle}
 								style={{
 									background: getVariableColor(node.name),
@@ -50,14 +49,14 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 						);
 					case "atom":
 						return (
-							<span class="atom-token" title="右键拆回空槽" onContextMenu={handleDismantle}>
+							<span class="atom-token" onContextMenu={handleDismantle}>
 								{node.name}
 							</span>
 						);
 					case "gad": {
 						const meta = getGadgetMeta(node.id);
 						return (
-							<span class="gadget-token" title="右键拆回空槽" onContextMenu={handleDismantle}>
+							<span class="gadget-token" onContextMenu={handleDismantle}>
 								<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
 									{meta.symbol}
 								</span>
@@ -69,7 +68,6 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 						return (
 							<span
 								class="machine-lam"
-								title="右键拆回空槽"
 								onContextMenu={handleDismantle}
 								style={{ "--socket-color": getVariableColor(node.param) }}
 							>
@@ -89,7 +87,6 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 												event.stopPropagation();
 												props.onEditType?.(props.path, node.ty ?? any);
 											}}
-											title="点击编辑信号铭牌"
 										>
 											{formatTy(node.ty ?? any)}
 										</button>
@@ -110,7 +107,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 						);
 					case "app":
 						return (
-							<span class="machine-app" title="右键拆回空槽" onContextMenu={handleDismantle}>
+							<span class="machine-app" onContextMenu={handleDismantle}>
 								<DraftNode
 									draft={node.fn}
 									path={`${props.path}f`}

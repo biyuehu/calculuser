@@ -62,7 +62,7 @@ export function SaveGadgetModal(props: SaveGadgetModalProps): JSX.Element {
 				>
 					<header style={{ display: "flex", "justify-content": "space-between", "align-items": "center" }}>
 						<h3 style={{ margin: "0", "font-size": "15px", "font-weight": "700" }}>存为自定义部件</h3>
-						<button type="button" class="icon-btn" onClick={props.onClose} title="关闭 (Esc)">
+						<button type="button" class="icon-btn" onClick={props.onClose}>
 							✕
 						</button>
 					</header>

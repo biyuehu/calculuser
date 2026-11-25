@@ -68,7 +68,6 @@ export function TermVisual(props: TermVisualProps): JSX.Element {
 										props.onStepRedex(props.path);
 									}
 								}}
-								title={isRedex ? "点击运转此反应" : ""}
 							>
 								<TermVisual
 									term={node.fn}

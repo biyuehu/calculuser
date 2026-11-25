@@ -114,7 +114,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 
 					<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
 						<span class="folio-status-badge">★ {totalStars()}</span>
-						<button type="button" class="icon-btn" onClick={handleClose} title="关闭 (Esc)">
+						<button type="button" class="icon-btn" onClick={handleClose}>
 							✕
 						</button>
 					</div>

@@ -33,7 +33,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 			style={{ width: `${ui.orderSlipWidth()}px`, height: ui.orderSlipCollapsed() ? "42px" : "auto" }}
 			onWheel={(event) => event.stopPropagation()}
 		>
-			<div class="order-resize-handle" onPointerDown={handleResize} title="拖动调整订单栏宽度" />
+			<div class="order-resize-handle" onPointerDown={handleResize} />
 			<div class="order-slip-header">
 				<span>
 					{props.order.mode === "run"

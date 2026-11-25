@@ -488,15 +488,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 								: "16px",
 					}}
 				>
-					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))} title="放大 (+)">
+					<button type="button" class="icon-btn" onClick={() => setZoom(Math.min(2, zoom() + 0.15))}>
 						＋
 					</button>
-					<button
-						type="button"
-						class="icon-btn"
-						onClick={() => setZoom(Math.max(0.45, zoom() - 0.15))}
-						title="缩小 (-)"
-					>
+					<button type="button" class="icon-btn" onClick={() => setZoom(Math.max(0.45, zoom() - 0.15))}>
 						－
 					</button>
 					<button
@@ -507,16 +502,10 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 							setPanX(0);
 							setPanY(0);
 						}}
-						title="回到全景 (F)"
 					>
 						⌖
 					</button>
-					<button
-						type="button"
-						class="icon-btn"
-						onClick={session.clearBench}
-						title={props.order.mode === "run" ? "重置残局 (R)" : "清空桌面 (R)"}
-					>
+					<button type="button" class="icon-btn" onClick={session.clearBench}>
 						{props.order.mode === "run" ? "重置残局" : "清空桌面"}
 					</button>
 				</div>

@@ -48,14 +48,14 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 
 	return (
 		<aside class="shelf-rail" style={{ width: `${props.width}px` }} onWheel={(event) => event.stopPropagation()}>
-			<div class="shelf-resize-handle" onPointerDown={handleResize} title="拖动调整工具栏宽度" />
+			<div class="shelf-resize-handle" onPointerDown={handleResize} />
 
 			<div class="shelf-group">
 				<Show when={props.allowBlueprint}>
 					<button
 						type="button"
 						class="shelf-item"
-						title={props.canAddLam ? "开槽 (Q)" : "已达最大嵌套深度限制"}
+						title="开槽 (Q)"
 						disabled={!props.hasSelectedHole}
 						onClick={props.onFillLam}
 					>
@@ -138,7 +138,7 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 								<button
 									type="button"
 									class={`shelf-item ${!props.hasSelectedHole ? "dimmed" : ""}`}
-									title={custom.name ? `${custom.name} (${custom.id})\n右键展开或删除` : `${custom.id}\n右键展开或删除`}
+									title={custom.name ? `${custom.name} (${custom.id})` : `${custom.id}`}
 									onClick={() => {
 										if (props.hasSelectedHole) props.onFillGad(custom.id);
 									}}
@@ -178,7 +178,7 @@ export function ShelfRail(props: ShelfRailProps): JSX.Element {
 
 				<For each={Array.from({ length: Math.min(2, props.lockedCount) })}>
 					{() => (
-						<div class="shelf-item locked" title="未解锁零件">
+						<div class="shelf-item locked">
 							<span style={{ "font-size": "14px" }}>🔒</span>
 						</div>
 					)}

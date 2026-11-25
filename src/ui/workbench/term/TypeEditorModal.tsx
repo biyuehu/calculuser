@@ -109,7 +109,7 @@ export function TypeEditorModal(props: TypeEditorModalProps): JSX.Element {
 				>
 					<header class="type-editor-header">
 						<h3>构筑信号铭牌</h3>
-						<button type="button" class="icon-btn" onClick={props.onClose} title="关闭 (Esc)">
+						<button type="button" class="icon-btn" onClick={props.onClose}>
 							✕
 						</button>
 					</header>

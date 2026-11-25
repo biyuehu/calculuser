@@ -13,22 +13,10 @@ export function TapeTimeline(props: TapeTimelineProps): JSX.Element {
 	return (
 		<div class="tape-timeline-container">
 			<div class="tape-controls">
-				<button
-					type="button"
-					class="tape-btn"
-					onClick={props.onRewind}
-					disabled={props.currentIndex <= 0}
-					title="倒带到初始状态"
-				>
+				<button type="button" class="tape-btn" onClick={props.onRewind} disabled={props.currentIndex <= 0}>
 					|◀
 				</button>
-				<button
-					type="button"
-					class="tape-btn"
-					onClick={props.onStepBack}
-					disabled={props.currentIndex <= 0}
-					title="后退一步"
-				>
+				<button type="button" class="tape-btn" onClick={props.onStepBack} disabled={props.currentIndex <= 0}>
 					◀
 				</button>
 				<div class="tape-counter">
@@ -41,7 +29,6 @@ export function TapeTimeline(props: TapeTimelineProps): JSX.Element {
 					class="tape-btn"
 					onClick={props.onStepForward}
 					disabled={props.currentIndex >= props.totalSteps}
-					title="单步推进"
 				>
 					▶
 				</button>
@@ -57,7 +44,6 @@ export function TapeTimeline(props: TapeTimelineProps): JSX.Element {
 									stepIndex <= props.currentIndex ? "past" : ""
 								}`}
 								onClick={() => props.onJumpToStep(stepIndex)}
-								title={`跳转到第 ${stepIndex} 步`}
 							>
 								<span class="tick-line" />
 								<span class="tick-num">{stepIndex}</span>

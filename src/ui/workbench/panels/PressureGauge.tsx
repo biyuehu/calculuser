@@ -17,7 +17,6 @@ export function PressureGauge(props: PressureGaugeProps): JSX.Element {
 				class={`gauge-dial ${ratio() >= 0.75 && ratio() < 1 ? "warning" : ""} ${
 					ratio() >= 1 || props.hasExploded ? "danger shaking" : ""
 				}`}
-				title={`步数消耗: ${props.currentSteps} / ${props.maxBudget}`}
 			>
 				<svg viewBox="0 0 100 65" class="gauge-svg">
 					<title>步数压力表</title>

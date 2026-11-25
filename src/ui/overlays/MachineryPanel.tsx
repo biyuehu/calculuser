@@ -107,7 +107,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 							<span>关于</span>
 						</button>
 					</div>
-					<button type="button" class="icon-btn" onClick={handleClose} title="关闭 (Esc / O)">
+					<button type="button" class="icon-btn" onClick={handleClose}>
 						✕
 					</button>
 				</header>

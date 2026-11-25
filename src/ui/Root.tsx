@@ -17,16 +17,19 @@ import {
 	type SettingsState,
 	clearSave,
 	loadCustomGadgets,
+	loadIntroSeen,
 	loadSeenDialogues,
 	loadSession,
 	loadSettings,
 	loadWorkshop,
 	markDialogueSeen,
+	markIntroSeen,
 	saveSession,
 	saveSettings,
 	saveWorkshop,
 } from "../storage";
 import { transitionView } from "../utils/transition";
+import { IntroSequence } from "./overlays/IntroSequence";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { CounterView } from "./views/CounterView";
@@ -83,6 +86,7 @@ export function Root(): JSX.Element {
 	const [screen, setScreen] = createSignal<"title" | "workbench">(
 		initialSession.lastOrderId !== void 0 ? initialSession.screen : "title",
 	);
+	const [showIntro, setShowIntro] = createSignal<boolean>(screen() === "title" && !loadIntroSeen());
 	const [showFolio, setShowFolio] = createSignal<boolean>(false);
 	const [folioTab, setFolioTab] = createSignal<"orders" | "parts">("orders");
 	const [showMachinery, setShowMachinery] = createSignal<boolean>(false);
@@ -245,6 +249,16 @@ export function Root(): JSX.Element {
 					onOpenWorkshop={() => toggleFolio("orders")}
 					onOpenSettings={() => openMachinery("settings")}
 					onOpenAbout={() => openMachinery("about")}
+				/>
+			</Show>
+
+			<Show when={showIntro()}>
+				<IntroSequence
+					reducedMotion={settings().reducedMotion}
+					onComplete={() => {
+						markIntroSeen();
+						setShowIntro(false);
+					}}
 				/>
 			</Show>
 

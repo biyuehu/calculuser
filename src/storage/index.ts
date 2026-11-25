@@ -21,6 +21,7 @@ const DEFAULT_SAVE_DATA: SaveData = {
 	drafts: {},
 	customGadgets: {},
 	seenDialogues: [],
+	introSeen: false,
 };
 
 function isValidTerm(val: unknown): val is Term {
@@ -156,6 +157,7 @@ function loadSaveData(): SaveData {
 					seenDialogues: Array.isArray(parsed.seenDialogues)
 						? parsed.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
 						: [],
+					introSeen: typeof parsed.introSeen === "boolean" ? parsed.introSeen : true,
 				};
 	} catch {
 		return DEFAULT_SAVE_DATA;
@@ -222,3 +224,7 @@ export const markDialogueSeen = (dialogueId: string): void =>
 		...prev,
 		seenDialogues: prev.seenDialogues.includes(dialogueId) ? prev.seenDialogues : [...prev.seenDialogues, dialogueId],
 	}));
+
+export const loadIntroSeen = (): boolean => loadSaveData().introSeen ?? false;
+
+export const markIntroSeen = (): void => mutateSaveData((prev) => ({ ...prev, introSeen: true }));

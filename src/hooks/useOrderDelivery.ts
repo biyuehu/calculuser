@@ -3,9 +3,9 @@ import { playFailSound, playPassSound, playPopExplosionSound } from "../audio/sy
 import {
 	BUILTIN_COUNT,
 	COMBINATORS,
+	LEVELS,
 	type OrderLevel,
-	getToolDefinition,
-	isToolUnlocked,
+	isToolAvailableForOrder,
 	unlockAchievement,
 } from "../content";
 import {
@@ -93,27 +93,21 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		if (order.mode === "sandbox") return COMBINATORS.map((tool) => tool.id);
 		if (order.mode !== "build") return [];
 		const forbiddenSet = new Set(order.forbidden);
-		return Array.from(options.registry.keys()).filter(
-			(id) =>
-				!forbiddenSet.has(id) &&
-				id !== order.unlocksToolId &&
-				getToolDefinition(id) !== null &&
-				isToolUnlocked(id, stars, isJudge),
-		);
+		return COMBINATORS.filter(
+			(tool) => !forbiddenSet.has(tool.id) && isToolAvailableForOrder(tool.id, order.id, stars, isJudge),
+		).map((tool) => tool.id);
 	});
 
 	const shelfLockedCount = createMemo((): number => {
 		const stars = options.clearedStars();
 		const isJudge = options.judgeMode();
 		const order = options.order();
-		return order.mode === "build"
-			? COMBINATORS.slice(BUILTIN_COUNT).filter(
-					(tool) =>
-						!options.registry.has(tool.id) &&
-						tool.id !== order.unlocksToolId &&
-						!isToolUnlocked(tool.id, stars, isJudge),
-				).length
-			: 0;
+		if (order.mode !== "build") return 0;
+		const currentIdx = LEVELS.findIndex((item) => item.id === order.id);
+		return COMBINATORS.slice(BUILTIN_COUNT).filter((tool) => {
+			const sourceIdx = LEVELS.findIndex((item) => item.mode === "build" && item.unlocksToolId === tool.id);
+			return sourceIdx >= 0 && sourceIdx < currentIdx && !isToolAvailableForOrder(tool.id, order.id, stars, isJudge);
+		}).length;
 	});
 
 	const deliverBuildOrder = (draft: DraftTerm, partCount: number): void => {

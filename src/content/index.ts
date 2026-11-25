@@ -35,10 +35,22 @@ export function isOrderUnlocked(
 }
 
 export function isToolUnlocked(toolId: string, clearedStars: ReadonlyMap<string, number>, judgeMode: boolean): boolean {
-	if (judgeMode) return true;
 	for (let i = 0; i < BUILTIN_COUNT; i += 1) if (COMBINATORS[i].id === toolId) return true;
 	const sourceOrderId = getToolSource(toolId);
-	return sourceOrderId !== null && clearedStars.has(sourceOrderId);
+	return sourceOrderId !== null && (judgeMode || clearedStars.has(sourceOrderId));
+}
+
+export function isToolAvailableForOrder(
+	toolId: string,
+	orderId: string,
+	clearedStars: ReadonlyMap<string, number>,
+	judgeMode: boolean,
+): boolean {
+	for (let i = 0; i < BUILTIN_COUNT; i += 1) if (COMBINATORS[i].id === toolId) return true;
+	const sourceIdx = LEVELS.findIndex((item) => item.mode === "build" && item.unlocksToolId === toolId);
+	const currentIdx = LEVELS.findIndex((item) => item.id === orderId);
+	if (sourceIdx < 0 || currentIdx < 0 || sourceIdx >= currentIdx) return false;
+	return judgeMode || clearedStars.has(LEVELS[sourceIdx].id);
 }
 
 export function getContinueOrderIndex(clearedStars: ReadonlyMap<string, number>): number {

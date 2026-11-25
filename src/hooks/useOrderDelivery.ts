@@ -1,7 +1,13 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
-import { unlockAchievement } from "../achievements";
 import { playFailSound, playPassSound, playPopExplosionSound } from "../audio/synth";
-import { BUILTIN_COUNT, COMBINATORS, type OrderLevel, getToolDefinition, isToolUnlocked } from "../content";
+import {
+	BUILTIN_COUNT,
+	COMBINATORS,
+	type OrderLevel,
+	getToolDefinition,
+	isToolUnlocked,
+	unlockAchievement,
+} from "../content";
 import {
 	type DraftTerm,
 	type GadgetId,

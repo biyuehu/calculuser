@@ -1,10 +1,12 @@
 import type { GadgetId } from "../engine";
+import { loadAchievements, loadSettings, saveAchievement } from "../storage";
+import { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
 import type { GadgetMeta, SandboxOrder, ToolDefinition } from "./types";
 
 export * from "./types";
-export { ACHIEVEMENTS, type AchievementDefinition, getAchievementDefinition } from "./data/achievements";
+export { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 export { LEVEL_DIALOGUES } from "./data/dialogue";
@@ -89,4 +91,31 @@ export function getGadgetMeta(id: GadgetId, customName?: string): GadgetMeta {
 		accent: visual.accent,
 		note: "工坊自制组合子部件",
 	};
+}
+
+type AchievementListener = (achievement: AchievementDefinition) => void;
+
+const listeners = new Set<AchievementListener>();
+
+export function subscribeAchievements(listener: AchievementListener): () => void {
+	listeners.add(listener);
+	return () => {
+		listeners.delete(listener);
+	};
+}
+
+export function unlockAchievement(id: string): void {
+	if (loadSettings().judgeMode) return;
+	const definition = getAchievementDefinition(id);
+	if (definition === null) return;
+	if (!saveAchievement(id)) return;
+	for (const listener of listeners) listener(definition);
+}
+
+export function getUnlockedAchievements(): Record<string, number> {
+	return loadAchievements();
+}
+
+export function getAchievementDefinition(id: string): AchievementDefinition | null {
+	return ACHIEVEMENTS.find((item) => item.id === id) ?? null;
 }

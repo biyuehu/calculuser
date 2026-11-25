@@ -1,7 +1,6 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
-import { unlockAchievement } from "../../achievements";
 import { playFailSound, playSnapSound } from "../../audio/synth";
-import type { OrderLevel } from "../../content";
+import { type OrderLevel, unlockAchievement } from "../../content";
 import {
 	PRINT_NAMES,
 	type Path,

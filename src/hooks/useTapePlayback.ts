@@ -1,7 +1,6 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
-import { unlockAchievement } from "../achievements";
 import { playBetaReductionMelody, playDropSound, playMoveSound, playSnapSound, playSplitSound } from "../audio/synth";
-import type { OrderLevel } from "../content";
+import { type OrderLevel, unlockAchievement } from "../content";
 import {
 	type Path,
 	type Registry,

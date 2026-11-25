@@ -16,7 +16,3 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
 	{ id: "static_typist", title: "静态契约", description: "不使用动态类型 ? 完成任意渐进类型构造订单" },
 	{ id: "custom_smith", title: "自研匠人", description: "在自由沙盒中封装并保存第一个自定义组合子零件" },
 ];
-
-export function getAchievementDefinition(id: string): AchievementDefinition | null {
-	return ACHIEVEMENTS.find((item) => item.id === id) ?? null;
-}

@@ -11,8 +11,8 @@ import {
 	isOrderUnlocked,
 	isToolUnlocked,
 } from "../../content";
-import { transitionView } from "../../utils/transition";
 import { useKeyScope } from "../../utils/keybus";
+import { transitionView } from "../../utils/transition";
 
 type FolioTab = "orders" | "parts" | "achievements";
 

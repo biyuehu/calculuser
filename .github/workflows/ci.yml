@@ -50,13 +50,13 @@ jobs:
       - name: Build Web distribution
         run: bun run build
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: webapge
-          cname: calculuser.vercel.app
+      # - name: Deploy to GitHub Pages
+      #   uses: peaceiris/actions-gh-pages@v4
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./dist
+      #     publish_branch: webapge
+      #     cname: calculuser.vercel.app
 
       - name: Upload Web artifacts
         uses: actions/upload-artifact@v4

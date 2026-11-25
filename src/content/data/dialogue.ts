@@ -136,38 +136,6 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			),
 		],
 	},
-	"tb-uninhabited": {
-		id: "ch2_uninhabited_proof",
-		title: "假命题与不可居留",
-		lines: [
-			textLine("……等一下，这台机器根本没有办法装出成品。", "me", "default"),
-			textLine(
-				"恭喜你没有掉进陷阱！你刚才识破了一桩类型世界里最经典的迷思。",
-				"church",
-				"wow",
-			),
-			textLine(
-				"手头有 A → B 和 B → C，看起来只差临门一脚就能产出 C；但正因为没有任何地方提供最初的原料 A，无论怎么接线都无法凭空变出一个 C。",
-				"church",
-				"default",
-			),
-			textLine(
-				"在逻辑学与计算机科学中，这叫「柯里–霍华德同构（Curry-Howard Isomorphism）」：每一个类型就是一条数学命题，而能通过校验的程序就是这条命题的证明。",
-				"church",
-				"happy",
-			),
-			textLine(
-				"写不出任何闭合程序的空类型（Uninhabited Type），本质上就是一条无法被证明的「假命题」。",
-				"church",
-				"default",
-			),
-			textLine(
-				"「工匠的第一课是学会如何把机器接通；第二课，则是看清哪些图纸打从命题上就不成立，果断交回白卷。」",
-				"master",
-				"default",
-			),
-		],
-	},
 	"dup-w": {
 		id: "ch2_before_build_s",
 		title: "最后一枚公理图纸",

@@ -190,18 +190,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					) {
 						const digit = Number.parseInt(event.key, 10);
 						const scope = session.currentScope();
-						if (scope.length === 0) {
-							playFailSound();
-							return;
-						}
-						const targetVar =
-							digit === 0
-								? scope[scope.length - 1]
-								: scope.length - 1 - digit >= 0
-									? scope[scope.length - 1 - digit]
-									: digit <= scope.length
-										? scope[digit - 1]
-										: void 0;
+						const targetVar = scope[scope.length - 1 - digit];
 						if (targetVar !== void 0) session.applyReplacement({ kind: "var", name: targetVar });
 						else playFailSound();
 					}

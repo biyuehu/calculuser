@@ -219,6 +219,13 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 								<div class="dialogue-speaker-pill">
 									<span class="dialogue-speaker-dot" />
 									<span>{SPEAKER_NAMES[currentSpeaker()]}</span>
+									<Show when={props.beat !== void 0 ? props.beat.title : void 0}>
+										{(title) => (
+											<span style={{ "font-size": "12px", "font-weight": 600, color: "var(--text-muted)" }}>
+												· {title()}
+											</span>
+										)}
+									</Show>
 								</div>
 								<div class="dialogue-header-actions">
 									<button

@@ -20,23 +20,23 @@ interface CounterViewProps {
 
 const SPEAKER_NAMES: Record<DialogueSpeaker, string> = {
 	me: "我",
-	hen: "小恒 · 助手机械臂",
+	church: "小丘 · 助手机械臂",
 	guest: "工坊来客",
 	master: "老师傅的旧信件",
 };
 
 const CHARACTER_STANDEES: Partial<Record<DialogueSpeaker, Partial<Record<DialogueFace, string>>>> = {
-	hen: {
-		default: "/characters/hen_default.png",
-		happy: "/characters/hen_happy.png",
-		wow: "/characters/hen_wow.png",
+	church: {
+		default: "/characters/church_default.png",
+		happy: "/characters/church_happy.png",
+		wow: "/characters/church_wow.png",
 	},
 };
 
 const PRELOAD_STANDEES = [
-	"/characters/hen_default.png",
-	"/characters/hen_happy.png",
-	"/characters/hen_wow.png",
+	"/characters/church_default.png",
+	"/characters/church_happy.png",
+	"/characters/church_wow.png",
 ] as const;
 
 if (typeof window !== "undefined")

@@ -86,7 +86,7 @@ export interface SandboxOrder {
 
 export type OrderLevel = BuildOrder | RunOrder | TypeBuildOrder | SandboxOrder;
 
-export type DialogueSpeaker = "me" | "hen" | "guest" | "master";
+export type DialogueSpeaker = "me" | "church" | "guest" | "master";
 
 export type DialogueFace = "default" | "happy" | "wow";
 

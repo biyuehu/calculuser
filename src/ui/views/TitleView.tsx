@@ -1,6 +1,6 @@
 import { type JSX, createSignal } from "solid-js";
 import { playSnapSound } from "../../audio/synth";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 
 interface TitleViewProps {
 	readonly continueOrderCode: string;

@@ -8,7 +8,7 @@ import {
 	type TextLine,
 	isChoicesLine,
 } from "../../content";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 
 interface CounterViewProps {
 	readonly beat?: DialogueBeat;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isDesktop, setupDesktopGuard } from "../src/ui/desktopGuard";
+import { isDesktop, setupDesktopGuard } from "../src/utils/desktopGuard";
 
 describe("Desktop Guard Layer", () => {
 	it("detects desktop environment based on tauri presence", () => {

@@ -1,7 +1,7 @@
 import { For, type JSX, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
 import { type Ty, any, arrow, formatTy } from "../../../engine";
-import { useKeyScope } from "../../keybus";
+import { useKeyScope } from "../../../utils/keybus";
 
 interface TypeEditorModalProps {
 	readonly currentTy: Ty;

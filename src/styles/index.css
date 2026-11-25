@@ -1286,13 +1286,21 @@ body {
 }
 
 @keyframes counter-spin-cw {
-	from { transform: rotate(0deg); }
-	to { transform: rotate(360deg); }
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 @keyframes counter-spin-ccw {
-	from { transform: rotate(360deg); }
-	to { transform: rotate(0deg); }
+	from {
+		transform: rotate(360deg);
+	}
+	to {
+		transform: rotate(0deg);
+	}
 }
 
 .counter-float-symbols {
@@ -1310,11 +1318,36 @@ body {
 	animation: counter-drift 9s ease-in-out infinite;
 }
 
-.counter-symbol.s1 { top: 20%; left: 14%; font-size: 46px; animation-delay: 0s; }
-.counter-symbol.s2 { top: 44%; left: 22%; font-size: 28px; animation-delay: -2.4s; }
-.counter-symbol.s3 { top: 24%; right: 16%; font-size: 38px; animation-delay: -4.1s; }
-.counter-symbol.s4 { top: 48%; right: 20%; font-size: 32px; animation-delay: -6.2s; }
-.counter-symbol.s5 { top: 15%; right: 29%; font-size: 24px; animation-delay: -1.5s; }
+.counter-symbol.s1 {
+	top: 20%;
+	left: 14%;
+	font-size: 46px;
+	animation-delay: 0s;
+}
+.counter-symbol.s2 {
+	top: 44%;
+	left: 22%;
+	font-size: 28px;
+	animation-delay: -2.4s;
+}
+.counter-symbol.s3 {
+	top: 24%;
+	right: 16%;
+	font-size: 38px;
+	animation-delay: -4.1s;
+}
+.counter-symbol.s4 {
+	top: 48%;
+	right: 20%;
+	font-size: 32px;
+	animation-delay: -6.2s;
+}
+.counter-symbol.s5 {
+	top: 15%;
+	right: 29%;
+	font-size: 24px;
+	animation-delay: -1.5s;
+}
 
 .counter-mote {
 	position: absolute;
@@ -1325,14 +1358,41 @@ body {
 	animation: counter-drift 7s ease-in-out infinite;
 }
 
-.counter-mote.m1 { top: 30%; left: 26%; animation-delay: -0.8s; }
-.counter-mote.m2 { top: 56%; left: 16%; width: 8px; height: 8px; animation-delay: -3.2s; }
-.counter-mote.m3 { top: 34%; right: 26%; width: 7px; height: 7px; animation-delay: -5.1s; }
-.counter-mote.m4 { top: 58%; right: 14%; animation-delay: -2.1s; }
+.counter-mote.m1 {
+	top: 30%;
+	left: 26%;
+	animation-delay: -0.8s;
+}
+.counter-mote.m2 {
+	top: 56%;
+	left: 16%;
+	width: 8px;
+	height: 8px;
+	animation-delay: -3.2s;
+}
+.counter-mote.m3 {
+	top: 34%;
+	right: 26%;
+	width: 7px;
+	height: 7px;
+	animation-delay: -5.1s;
+}
+.counter-mote.m4 {
+	top: 58%;
+	right: 14%;
+	animation-delay: -2.1s;
+}
 
 @keyframes counter-drift {
-	0%, 100% { transform: translateY(0px); opacity: 0.72; }
-	50% { transform: translateY(-12px); opacity: 1; }
+	0%,
+	100% {
+		transform: translateY(0px);
+		opacity: 0.72;
+	}
+	50% {
+		transform: translateY(-12px);
+		opacity: 1;
+	}
 }
 
 .counter-desk {

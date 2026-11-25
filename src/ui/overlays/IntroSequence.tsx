@@ -1,6 +1,6 @@
 import { For, type JSX, Show, createSignal, onCleanup, onMount } from "solid-js";
 import { playBetaReductionMelody, playPassSound, playPopExplosionSound, playSnapSound } from "../../audio/synth";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 
 interface Particle {
 	x: number;

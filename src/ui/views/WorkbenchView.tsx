@@ -17,7 +17,7 @@ import {
 import { useUiPreferences } from "../../hooks/useUiPreferences";
 import { useWorkbenchSession } from "../../hooks/useWorkbenchSession";
 import { type CustomGadgetRecord, deleteCustomGadget, loadCustomGadgets, saveCustomGadget } from "../../storage";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 import { SaveGadgetModal } from "../overlays/SaveGadgetModal";
 import { DeliveryCounter } from "../workbench/panels/DeliveryCounter";
 import { OrderSlip } from "../workbench/panels/OrderSlip";

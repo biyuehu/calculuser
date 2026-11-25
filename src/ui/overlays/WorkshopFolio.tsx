@@ -12,7 +12,7 @@ import {
 	isToolUnlocked,
 } from "../../content";
 import { transitionView } from "../../utils/transition";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 
 type FolioTab = "orders" | "parts" | "achievements";
 

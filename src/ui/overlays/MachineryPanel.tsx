@@ -1,7 +1,7 @@
 import { type JSX, Show, createSignal } from "solid-js";
 import { setMasterVolume } from "../../audio/synth";
 import type { SettingsState } from "../../storage";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 
 interface MachineryPanelProps {
 	readonly initialTab?: "settings" | "controls" | "about";
@@ -260,7 +260,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						<div class="shortcut-group">
 							<div class="shortcut-group-title">运转、试机与关卡</div>
 							<div class="shortcut-row">
-								<span>单步开动 / 单步规约</span>
+								<span>单步开动 / 单步归约</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">Space</span>
 								</div>
@@ -308,6 +308,12 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 									<span class="key-cap">+</span>
 									<span class="key-cap">-</span>
 									<span>或滚轮</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
+								<span>平移视口</span>
+								<div class="shortcut-key-badge">
+									<span>左键拖拽空白画布</span>
 								</div>
 							</div>
 							<div class="shortcut-row">
@@ -388,7 +394,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 					<section class="machinery-section archive-section">
 						<div class="archive-intro">
 							<p>
-								<strong>Calculuser</strong>（Calculus + User）是一款立足于
+								<strong>Calculuser</strong>（Calculus + User）是一款基于
 								<strong>渐进式类型 λ 演算（Gradual Typing Lambda Calculus）</strong>与
 								<strong>组合子逻辑（Combinatory Logic, SKI）</strong>的逻辑构造与推演游戏。
 							</p>
@@ -406,7 +412,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 									<strong>运行与构建订单</strong> · 逐步观测 β/δ-归约纸带，在步数与拷贝预算内封装目标组合子
 								</li>
 								<li>
-									<strong>渐进类型构造</strong> · 借助基础类型、箭头类型与动态类型 <code>?</code> 完成精确的类型契约装配
+									<strong>渐进类型构造</strong> · 借助基础类型与箭头类型完成精确的类型契约装配
 								</li>
 								<li>
 									<strong>自由沙盒实验台</strong> · 无约束装配任意 λ 项，自定义并封装属于自己的组合子零件
@@ -428,9 +434,6 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								</li>
 								<li>
 									Benjamin C. Pierce · <em>Types and Programming Languages</em> (TAPL)
-								</li>
-								<li>
-									Inspirations · <em>Recursed</em>, <em>TIS-100</em>, <em>Shenzhen I/O</em>
 								</li>
 							</ul>
 						</div>

@@ -2,7 +2,7 @@ import { type JSX, Show, createMemo, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
 import { COMBINATORS, deriveGadgetVisuals } from "../../content";
 import { type Registry, type Term, printXRayTerm } from "../../engine";
-import { useKeyScope } from "../keybus";
+import { useKeyScope } from "../../utils/keybus";
 
 interface SaveGadgetModalProps {
 	readonly currentTerm: Term;

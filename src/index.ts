@@ -3,7 +3,7 @@ import "./styles/index.css";
 import { ACHIEVEMENTS, LEVELS } from "./content";
 import { markIntroSeen, saveAchievement, saveWorkshop } from "./storage";
 import { Root } from "./ui/Root";
-import { isDesktop, setupDesktopGuard } from "./ui/desktopGuard";
+import { isDesktop, setupDesktopGuard } from "./utils/desktopGuard";
 
 setupDesktopGuard();
 

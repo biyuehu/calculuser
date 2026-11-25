@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { dispatchKeyEvent, registerKeyScope } from "../src/ui/keybus";
+import { dispatchKeyEvent, registerKeyScope } from "../src/utils/keybus";
 
 describe("keybus", () => {
 	it("prioritizes modal scope over view scope and suppresses view on modal active", () => {

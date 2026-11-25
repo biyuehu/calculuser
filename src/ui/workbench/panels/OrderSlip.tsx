@@ -39,7 +39,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 					{props.order.mode === "run"
 						? "运转试炼"
 						: props.order.mode === "typebuild"
-							? "类型构筑"
+							? "铭牌构筑"
 							: props.order.mode === "sandbox"
 								? "自由实验"
 								: "客人的订单"}
@@ -148,7 +148,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 						style={{ padding: "8px 12px", "font-size": "12px", color: "var(--text-muted)" }}
 					>
 						<p style={{ margin: "0 0 6px 0" }}>
-							⚡ <strong>测试运行方式：</strong>
+							<strong>测试运行方式：</strong>
 						</p>
 						<p style={{ margin: "0 0 4px 0" }}>
 							• 按 <code>Space</code> 或点击下方运行栏开始逐步规约

@@ -124,9 +124,6 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 								}}
 							>
 								<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-									<span class="card-code" style={{ "font-size": "16px" }}>
-										⚡
-									</span>
 									<span style={{ "font-weight": "700" }}>自由沙盒实验台</span>
 								</div>
 								<span style={{ "font-size": "12px", color: "var(--text-muted)" }}>无约束组合子装配与推演</span>

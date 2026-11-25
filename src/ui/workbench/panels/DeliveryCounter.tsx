@@ -1,6 +1,6 @@
 import { For, type JSX, Show } from "solid-js";
 import { getGadgetMeta } from "../../../content";
-// TODO： 类型改为铭牌等游戏用语优化，css优化，
+
 interface DeliveryCounterProps {
 	readonly mode: "build" | "run" | "typebuild" | "sandbox";
 	readonly canDeliver: boolean;

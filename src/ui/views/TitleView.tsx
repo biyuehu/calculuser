@@ -110,7 +110,6 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 						disabled={isStarting()}
 						title="自由沙盒实验台"
 					>
-						<span>⚡</span>
 						<span>自由沙盒实验台</span>
 					</button>
 

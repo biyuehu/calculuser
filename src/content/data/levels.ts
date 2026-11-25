@@ -33,7 +33,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-identity",
+		id: "run_identity",
 		chapter: 1,
 		code: "1.2",
 		title: "初见运转",
@@ -46,7 +46,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "drop-first-ki",
+		id: "drop_first_ki",
 		chapter: 1,
 		code: "1.3",
 		title: "丢前留后",
@@ -65,7 +65,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-k-drop",
+		id: "run_k_drop",
 		chapter: 1,
 		code: "1.4",
 		title: "截留演示",
@@ -78,7 +78,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "blueprint-identity",
+		id: "blueprint_identity",
 		chapter: 1,
 		code: "1.5",
 		title: "自己开槽",
@@ -96,7 +96,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "const-k",
+		id: "const_k",
 		chapter: 1,
 		code: "1.6",
 		title: "自制截留闸",
@@ -114,7 +114,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-s-fork",
+		id: "run_s_fork",
 		chapter: 1,
 		code: "1.7",
 		title: "分叉奇观",
@@ -127,7 +127,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "skk-identity",
+		id: "skk_identity",
 		chapter: 1,
 		code: "1.8",
 		title: "公理重构",
@@ -147,7 +147,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	// ==================== 第二章 · 铭牌与高阶组合 ====================
 	{
 		mode: "build",
-		id: "reverse-apply",
+		id: "reverse_apply",
 		chapter: 2,
 		code: "2.1",
 		title: "反喂器",
@@ -166,7 +166,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-identity",
+		id: "tb_identity",
 		chapter: 2,
 		code: "2.2",
 		title: "型流初检",
@@ -178,7 +178,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "compose-b",
+		id: "compose_b",
 		chapter: 2,
 		code: "2.3",
 		title: "串联桥",
@@ -194,7 +194,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-const",
+		id: "tb_const",
 		chapter: 2,
 		code: "2.4",
 		title: "双槽契约",
@@ -206,7 +206,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-uninhabited",
+		id: "tb_uninhabited",
 		chapter: 2,
 		code: "2.5",
 		title: "断流契约",
@@ -219,7 +219,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-omega-drop",
+		id: "run_omega_drop",
 		chapter: 2,
 		code: "2.6",
 		title: "精准截断",
@@ -232,7 +232,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "flip-c",
+		id: "flip_c",
 		chapter: 2,
 		code: "2.7",
 		title: "换序器",
@@ -248,7 +248,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "dup-w",
+		id: "dup_w",
 		chapter: 2,
 		code: "2.8",
 		title: "二次机",
@@ -264,7 +264,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "build-s",
+		id: "build_s",
 		chapter: 2,
 		code: "2.9",
 		title: "自制分叉器",
@@ -279,7 +279,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-omega-preview",
+		id: "run_omega_preview",
 		chapter: 2,
 		code: "2.10",
 		title: "自吞前兆",
@@ -313,7 +313,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-thrush",
+		id: "tb_thrush",
 		chapter: 3,
 		code: "3.2",
 		title: "型流反喂",
@@ -388,7 +388,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "if-else",
+		id: "if_else",
 		chapter: 3,
 		code: "3.6",
 		title: "条件分流器",
@@ -407,7 +407,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-bool-sel",
+		id: "tb_bool_sel",
 		chapter: 3,
 		code: "3.7",
 		title: "选择契约",
@@ -439,7 +439,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-pair-fst",
+		id: "run_pair_fst",
 		chapter: 3,
 		code: "3.9",
 		title: "拆包演示",
@@ -486,7 +486,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-compose",
+		id: "tb_compose",
 		chapter: 3,
 		code: "3.12",
 		title: "复合契约",
@@ -519,7 +519,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-maybe-nothing",
+		id: "tb_maybe_nothing",
 		chapter: 4,
 		code: "4.2",
 		title: "空箱契约",
@@ -531,7 +531,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "is-just",
+		id: "is_just",
 		chapter: 4,
 		code: "4.3",
 		title: "判有值",
@@ -550,7 +550,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-maybe-just",
+		id: "tb_maybe_just",
 		chapter: 4,
 		code: "4.4",
 		title: "装值契约",
@@ -563,7 +563,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "from-maybe",
+		id: "from_maybe",
 		chapter: 4,
 		code: "4.5",
 		title: "缺省拆包",
@@ -582,7 +582,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "maybe-elim",
+		id: "maybe_elim",
 		chapter: 4,
 		code: "4.6",
 		title: "可选消解器",
@@ -601,7 +601,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "map-maybe",
+		id: "map_maybe",
 		chapter: 4,
 		code: "4.7",
 		title: "可选映射",
@@ -621,7 +621,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "left-build",
+		id: "left_build",
 		chapter: 4,
 		code: "4.8",
 		title: "分支封装箱",
@@ -638,7 +638,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "either-elim",
+		id: "either_elim",
 		chapter: 4,
 		code: "4.9",
 		title: "双路分发器",
@@ -657,7 +657,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "is-right",
+		id: "is_right",
 		chapter: 4,
 		code: "4.10",
 		title: "判右枝",
@@ -676,7 +676,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-either-dispatch",
+		id: "run_either_dispatch",
 		chapter: 4,
 		code: "4.11",
 		title: "分支派发演示",
@@ -689,7 +689,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-either-left",
+		id: "tb_either_left",
 		chapter: 4,
 		code: "4.12",
 		title: "左枝和类型契约",
@@ -701,7 +701,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-either-right",
+		id: "tb_either_right",
 		chapter: 4,
 		code: "4.13",
 		title: "右枝和类型契约",
@@ -715,7 +715,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	// ==================== 第五章 · 自然数与算术 ====================
 	{
 		mode: "typebuild",
-		id: "tb-zero",
+		id: "tb_zero",
 		chapter: 5,
 		code: "5.1",
 		title: "邱奇数初识",
@@ -796,7 +796,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-two",
+		id: "tb_two",
 		chapter: 5,
 		code: "5.5",
 		title: "二次迭代契约",
@@ -829,7 +829,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "is-zero",
+		id: "is_zero",
 		chapter: 5,
 		code: "5.7",
 		title: "判零守卫",
@@ -849,7 +849,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-pred-shift",
+		id: "run_pred_shift",
 		chapter: 5,
 		code: "5.8",
 		title: "滑移配对演示",
@@ -971,7 +971,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "abs-diff",
+		id: "abs_diff",
 		chapter: 5,
 		code: "5.14",
 		title: "绝对差",
@@ -1019,7 +1019,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-list",
+		id: "tb_list",
 		chapter: 6,
 		code: "6.2",
 		title: "空列表契约",
@@ -1031,7 +1031,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "is-nil",
+		id: "is_nil",
 		chapter: 6,
 		code: "6.3",
 		title: "判空清单",
@@ -1050,7 +1050,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "list-length",
+		id: "list_length",
 		chapter: 6,
 		code: "6.4",
 		title: "列表计数",
@@ -1069,7 +1069,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-list-fold",
+		id: "run_list_fold",
 		chapter: 6,
 		code: "6.5",
 		title: "折叠展开演示",
@@ -1082,7 +1082,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "list-map",
+		id: "list_map",
 		chapter: 6,
 		code: "6.6",
 		title: "列表映射",
@@ -1104,7 +1104,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "list-append",
+		id: "list_append",
 		chapter: 6,
 		code: "6.7",
 		title: "列表拼接",
@@ -1129,7 +1129,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "list-filter",
+		id: "list_filter",
 		chapter: 6,
 		code: "6.8",
 		title: "列表过滤",
@@ -1150,7 +1150,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "list-sum",
+		id: "list_sum",
 		chapter: 6,
 		code: "6.9",
 		title: "列表求和",
@@ -1171,7 +1171,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "list-reverse",
+		id: "list_reverse",
 		chapter: 6,
 		code: "6.10",
 		title: "列表反转",
@@ -1192,7 +1192,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-tree",
+		id: "tb_tree",
 		chapter: 6,
 		code: "6.11",
 		title: "二叉树契约",
@@ -1204,7 +1204,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "tree-node",
+		id: "tree_node",
 		chapter: 6,
 		code: "6.12",
 		title: "二叉树节点",
@@ -1229,7 +1229,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "tree-size",
+		id: "tree_size",
 		chapter: 6,
 		code: "6.13",
 		title: "树节点统计",
@@ -1251,7 +1251,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "tree-map",
+		id: "tree_map",
 		chapter: 6,
 		code: "6.14",
 		title: "树节点映射",
@@ -1272,7 +1272,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "tree-sum",
+		id: "tree_sum",
 		chapter: 6,
 		code: "6.15",
 		title: "树枝求和",
@@ -1295,7 +1295,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	// ==================== 第七章 · 奇异点与递归 ====================
 	{
 		mode: "build",
-		id: "self-apply",
+		id: "self_apply",
 		chapter: 7,
 		code: "7.1",
 		title: "自吞环",
@@ -1314,7 +1314,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-y-unfold",
+		id: "run_y_unfold",
 		chapter: 7,
 		code: "7.2",
 		title: "不动点展开",
@@ -1327,7 +1327,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "typebuild",
-		id: "tb-rec-step",
+		id: "tb_rec_step",
 		chapter: 7,
 		code: "7.3",
 		title: "步进泛函契约",
@@ -1339,7 +1339,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "fix-y",
+		id: "fix_y",
 		chapter: 7,
 		code: "7.4",
 		title: "柯里不动点",
@@ -1364,7 +1364,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "run",
-		id: "run-theta-unfold",
+		id: "run_theta_unfold",
 		chapter: 7,
 		code: "7.5",
 		title: "图灵不动点",
@@ -1377,7 +1377,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "fix-z",
+		id: "fix_z",
 		chapter: 7,
 		code: "7.6",
 		title: "严格不动点",
@@ -1398,7 +1398,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "rec-sum",
+		id: "rec_sum",
 		chapter: 7,
 		code: "7.7",
 		title: "递归累加",
@@ -1416,7 +1416,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "rec-length",
+		id: "rec_length",
 		chapter: 7,
 		code: "7.8",
 		title: "递归计表",
@@ -1435,7 +1435,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "fix-rec-final",
+		id: "fix_rec_final",
 		chapter: 7,
 		code: "7.9",
 		title: "终局递归：阶乘",
@@ -1453,7 +1453,7 @@ export const LEVELS: readonly OrderLevel[] = [
 	},
 	{
 		mode: "build",
-		id: "rec-fib",
+		id: "rec_fib",
 		chapter: 7,
 		code: "7.10",
 		title: "终局试炼：斐波那契",

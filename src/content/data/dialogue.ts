@@ -36,7 +36,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			]),
 		],
 	},
-	"run-k-drop": {
+	run_k_drop: {
 		id: "ch1_run_k_cleared",
 		title: "从黑盒到图纸",
 		lines: [
@@ -49,7 +49,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			),
 		],
 	},
-	"const-k": {
+	const_k: {
 		id: "ch1_before_s_fork",
 		title: "绿色公理零件",
 		lines: [
@@ -66,7 +66,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			),
 		],
 	},
-	"skk-identity": {
+	skk_identity: {
 		id: "ch1_boss_cleared",
 		title: "初阶考核通过",
 		lines: [
@@ -81,7 +81,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	},
 
 	// ==================== 第二章：引入类型铭牌与造 S ====================
-	"reverse-apply": {
+	reverse_apply: {
 		id: "ch2_type_intro_beat",
 		title: "标准与类型铭牌",
 		lines: [
@@ -108,7 +108,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("下一单正好是铭牌检定台的首次试运行，挂上牌子走一趟吧。", "church", "default"),
 		],
 	},
-	"tb-uninhabited": {
+	tb_uninhabited: {
 		id: "ch2_uninhabited_proof",
 		title: "假命题与不可居留",
 		lines: [
@@ -136,7 +136,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			),
 		],
 	},
-	"dup-w": {
+	dup_w: {
 		id: "ch2_before_build_s",
 		title: "最后一枚公理图纸",
 		lines: [
@@ -154,7 +154,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("现在工作台上禁用了现成的绿色 S 零件，亲手从零敲出一台一样的分叉器吧。", "church", "happy"),
 		],
 	},
-	"run-omega-preview": {
+	run_omega_preview: {
 		id: "ch2_boss_cleared",
 		title: "自应用的回响",
 		lines: [
@@ -169,7 +169,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	},
 
 	// ==================== 第三章：布尔分支科普与序对 ====================
-	"if-else": {
+	if_else: {
 		id: "ch3_bool_branch_science",
 		title: "开关即分支",
 		lines: [
@@ -190,7 +190,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			),
 		],
 	},
-	"tb-compose": {
+	tb_compose: {
 		id: "ch3_boss_cleared",
 		title: "结构封装完毕",
 		lines: [
@@ -207,7 +207,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 
 	// ==================== 第四章：Maybe & Either ====================
 
-	"map-maybe": {
+	map_maybe: {
 		id: "ch4_functor_intro",
 		title: "不拆箱的艺术：函子",
 		lines: [
@@ -251,7 +251,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			]),
 		],
 	},
-	"either-elim": {
+	either_elim: {
 		id: "ch4_sum_type_note",
 		title: "积与和的对称",
 		lines: [
@@ -269,7 +269,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("正是如此，所以工坊才不需要额外发明 struct 或 enum 关键字。", "church", "happy"),
 		],
 	},
-	"tb-either-right": {
+	tb_either_right: {
 		id: "ch4_boss_cleared",
 		title: "安全通道落成",
 		lines: [
@@ -281,7 +281,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	},
 
 	// ==================== 第五章：Nat 算术 ====================
-	"is-zero": {
+	is_zero: {
 		id: "ch5_pred_hint",
 		title: "倒退的难题",
 		lines: [
@@ -298,7 +298,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("我先摆了一小段演示机在下一关，推演几步你就能一眼看穿它的巧妙。", "church", "happy"),
 		],
 	},
-	"abs-diff": {
+	abs_diff: {
 		id: "ch5_boss_cleared",
 		title: "算术基石落成",
 		lines: [
@@ -309,7 +309,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	},
 
 	// ==================== 第六章：List & Tree ====================
-	"list-append": {
+	list_append: {
 		id: "ch6_monad_intro",
 		title: "压扁套娃箱：单子",
 		lines: [
@@ -346,7 +346,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			]),
 		],
 	},
-	"tree-sum": {
+	tree_sum: {
 		id: "ch6_boss_cleared",
 		title: "抽屉深处的草图",
 		lines: [
@@ -361,7 +361,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	},
 
 	// ==================== 第七章：奇异点与全作终局 ====================
-	"self-apply": {
+	self_apply: {
 		id: "ch7_y_warning",
 		title: "驯服无限",
 		lines: [
@@ -378,7 +378,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("下一单先观察一次 Y 引擎的可控展开，亲眼见证递归是怎么诞生在纯粹的函数世界里的。", "church", "happy"),
 		],
 	},
-	"fix-rec-final": {
+	fix_rec_final: {
 		id: "ch7_finale",
 		title: "工坊的终点与起点",
 		lines: [

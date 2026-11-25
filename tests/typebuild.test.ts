@@ -40,7 +40,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 	});
 
 	it("accepts canonical solutions for Chapter 2 typebuild orders", () => {
-		const tbId = typeBuildOrders.find((l) => l.id === "tb-identity");
+		const tbId = typeBuildOrders.find((l) => l.id === "tb_identity");
 		expect(tbId).toBeDefined();
 		if (tbId) {
 			const sol = parseLambda("λ(x: A). x");
@@ -50,7 +50,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 			expect(countDraftSize(draft)).toBeLessThanOrEqual(tbId.parSize);
 		}
 
-		const tbConst = typeBuildOrders.find((l) => l.id === "tb-const");
+		const tbConst = typeBuildOrders.find((l) => l.id === "tb_const");
 		expect(tbConst).toBeDefined();
 		if (tbConst) {
 			const sol = parseLambda("λ(x: A). λ(y: B). x");
@@ -65,7 +65,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 			expect(countDraftSize(draft)).toBeLessThanOrEqual(tbConst.parSize);
 		}
 
-		const tbUninhabited = typeBuildOrders.find((l) => l.id === "tb-uninhabited");
+		const tbUninhabited = typeBuildOrders.find((l) => l.id === "tb_uninhabited");
 		expect(tbUninhabited).toBeDefined();
 		if (tbUninhabited) {
 			expect(tbUninhabited.uninhabited).toBe(true);
@@ -74,7 +74,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 			).toThrow();
 		}
 
-		const fibLevel = LEVELS.find((l) => l.id === "rec-fib");
+		const fibLevel = LEVELS.find((l) => l.id === "rec_fib");
 		expect(fibLevel?.mode).toBe("build");
 		if (fibLevel && fibLevel.mode === "build") {
 			const fullRegistry = createRegistry(COMBINATORS);
@@ -87,7 +87,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 	});
 
 	it("accepts canonical solutions for Chapter 3 typebuild orders", () => {
-		const tbThrush = typeBuildOrders.find((l) => l.id === "tb-thrush");
+		const tbThrush = typeBuildOrders.find((l) => l.id === "tb_thrush");
 		expect(tbThrush).toBeDefined();
 		if (tbThrush) {
 			const sol = parseLambda("λ(x: A). λ(f: A -> B). f x");
@@ -95,7 +95,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
 		}
 
-		const tbBoolSel = typeBuildOrders.find((l) => l.id === "tb-bool-sel");
+		const tbBoolSel = typeBuildOrders.find((l) => l.id === "tb_bool_sel");
 		expect(tbBoolSel).toBeDefined();
 		if (tbBoolSel) {
 			const sol = parseLambda("λ(x: A). λ(y: A). x");
@@ -103,7 +103,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
 		}
 
-		const tbCompose = typeBuildOrders.find((l) => l.id === "tb-compose");
+		const tbCompose = typeBuildOrders.find((l) => l.id === "tb_compose");
 		expect(tbCompose).toBeDefined();
 		if (tbCompose) {
 			const sol = parseLambda("λ(f: B -> C). λ(g: A -> B). λ(x: A). f (g x)");
@@ -114,15 +114,15 @@ describe("TypeBuild Mode & Level Verification", () => {
 
 	it("accepts canonical solutions for Chapter 4-7 typebuild orders", () => {
 		const cases: readonly [string, string][] = [
-			["tb-maybe-nothing", "λ(d: B). λ(j: A -> B). d"],
-			["tb-maybe-just", "λ(x: A). λ(n: B). λ(j: A -> B). j x"],
-			["tb-either-left", "λ(a: A). λ(l: A -> C). λ(r: B -> C). l a"],
-			["tb-either-right", "λ(b: B). λ(l: A -> C). λ(r: B -> C). r b"],
-			["tb-zero", "λ(f: A -> A). λ(x: A). x"],
-			["tb-two", "λ(f: A -> A). λ(x: A). f (f x)"],
-			["tb-list", "λ(c: A -> B -> B). λ(n: B). n"],
-			["tb-tree", "λ(f: A -> B -> B -> B). λ(z: B). z"],
-			["tb-rec-step", "λ(r: A -> B). λ(x: A). r x"],
+			["tb_maybe_nothing", "λ(d: B). λ(j: A -> B). d"],
+			["tb_maybe_just", "λ(x: A). λ(n: B). λ(j: A -> B). j x"],
+			["tb_either_left", "λ(a: A). λ(l: A -> C). λ(r: B -> C). l a"],
+			["tb_either_right", "λ(b: B). λ(l: A -> C). λ(r: B -> C). r b"],
+			["tb_zero", "λ(f: A -> A). λ(x: A). x"],
+			["tb_two", "λ(f: A -> A). λ(x: A). f (f x)"],
+			["tb_list", "λ(c: A -> B -> B). λ(n: B). n"],
+			["tb_tree", "λ(f: A -> B -> B -> B). λ(z: B). z"],
+			["tb_rec_step", "λ(r: A -> B). λ(x: A). r x"],
 		];
 		for (const [id, code] of cases) {
 			const lvl = typeBuildOrders.find((l) => l.id === id);
@@ -136,7 +136,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 	});
 
 	it("strictly rejects any parameter containing any or unannotated in checkTypeBuild", () => {
-		const tbId = typeBuildOrders.find((l) => l.id === "tb-identity");
+		const tbId = typeBuildOrders.find((l) => l.id === "tb_identity");
 		expect(tbId).toBeDefined();
 		if (tbId) {
 			expect(() => checkTypeBuild(parseLambda("λx. x"), tbId.targetTy, registry)).toThrow("未指定类型");

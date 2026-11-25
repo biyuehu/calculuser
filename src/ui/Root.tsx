@@ -36,6 +36,7 @@ import { transitionView } from "../utils/transition";
 import { AchievementToast } from "./overlays/AchievementToast";
 import { IntroSequence } from "./overlays/IntroSequence";
 import { MachineryPanel } from "./overlays/MachineryPanel";
+import { TooltipLayer } from "./overlays/TooltipLayer";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { CounterView } from "./views/CounterView";
 import { TitleView } from "./views/TitleView";
@@ -366,6 +367,7 @@ export function Root(): JSX.Element {
 			</Show>
 
 			<AchievementToast achievement={activeToast()} exiting={toastExiting()} />
+			<TooltipLayer />
 		</div>
 	);
 }

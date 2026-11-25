@@ -3086,3 +3086,82 @@ html.reduced-motion::view-transition-new(*),
 	background: var(--surface-2);
 	color: var(--text-muted);
 }
+
+/* Custom Workshop Tooltip */
+.workshop-tooltip {
+	position: fixed;
+	z-index: 100;
+	padding: 6px 11px;
+	max-width: 280px;
+	border-radius: 8px;
+	background: rgba(34, 28, 22, 0.94);
+	border: 1px solid rgba(219, 188, 144, 0.35);
+	box-shadow: 0 8px 22px rgba(20, 16, 12, 0.24);
+	color: #faf6ef;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.45;
+	white-space: pre-line;
+	pointer-events: none;
+	backdrop-filter: blur(8px);
+	animation: tooltipFadeIn 0.14s var(--ease-smooth) forwards;
+}
+
+.workshop-tooltip.placement-top {
+	transform: translate(-50%, -100%);
+}
+
+.workshop-tooltip.placement-bottom {
+	transform: translate(-50%, 0);
+}
+
+@keyframes tooltipFadeIn {
+	from {
+		opacity: 0;
+		margin-top: 3px;
+	}
+	to {
+		opacity: 1;
+		margin-top: 0;
+	}
+}
+
+
+/* Custom Workshop Tooltip */
+.workshop-tooltip {
+	position: fixed;
+	z-index: 100;
+	padding: 6px 11px;
+	max-width: 280px;
+	border-radius: 8px;
+	background: rgba(34, 28, 22, 0.94);
+	border: 1px solid rgba(219, 188, 144, 0.35);
+	box-shadow: 0 8px 22px rgba(20, 16, 12, 0.24);
+	color: #faf6ef;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.45;
+	white-space: pre-line;
+	pointer-events: none;
+	backdrop-filter: blur(8px);
+	animation: tooltipFadeIn 0.14s var(--ease-smooth) forwards;
+}
+
+.workshop-tooltip.placement-top {
+	transform: translate(-50%, -100%);
+}
+
+.workshop-tooltip.placement-bottom {
+	transform: translate(-50%, 0);
+}
+
+@keyframes tooltipFadeIn {
+	from {
+		opacity: 0;
+		margin-top: 3px;
+	}
+	to {
+		opacity: 1;
+		margin-top: 0;
+	}
+}

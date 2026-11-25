@@ -89,7 +89,7 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 												event.stopPropagation();
 												props.onEditType?.(props.path, node.ty ?? any);
 											}}
-											title="点击编辑参数类型"
+											title="点击编辑信号铭牌"
 										>
 											{formatTy(node.ty ?? any)}
 										</button>

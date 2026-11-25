@@ -108,7 +108,7 @@ export function TypeEditorModal(props: TypeEditorModalProps): JSX.Element {
 					onKeyDown={(event) => event.stopPropagation()}
 				>
 					<header class="type-editor-header">
-						<h3>构筑参数类型</h3>
+						<h3>构筑信号铭牌</h3>
 						<button type="button" class="icon-btn" onClick={props.onClose} title="关闭 (Esc)">
 							✕
 						</button>
@@ -163,7 +163,7 @@ export function TypeEditorModal(props: TypeEditorModalProps): JSX.Element {
 							取消
 						</button>
 						<button type="button" class="icon-btn active" onClick={() => props.onConfirm(rootTy())}>
-							应用类型
+							应用铭牌
 						</button>
 					</footer>
 				</div>

@@ -126,7 +126,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 								class="order-sample-row"
 								style={{ "flex-direction": "column", "align-items": "flex-start", gap: "4px" }}
 							>
-								<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>目标类型签名：</span>
+								<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>目标铭牌：</span>
 								<div
 									style={{
 										"font-family": "monospace",
@@ -163,7 +163,7 @@ export function OrderSlip(props: OrderSlipProps): JSX.Element {
 				<Show when={props.typeError}>
 					{(err) => (
 						<div class="order-reject-box">
-							<span style={{ "font-weight": "700" }}>类型检验未通过：</span>
+							<span style={{ "font-weight": "700" }}>铭牌检验未通过：</span>
 							<span class="order-reject-hint">{err()}</span>
 						</div>
 					)}

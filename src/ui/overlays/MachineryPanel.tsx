@@ -175,7 +175,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						<div class="control-row">
 							<div>
 								<div class="control-title">评委模式（全关卡解锁）</div>
-								<div class="control-desc">直接开放所有 27 个订单，便于评测</div>
+								<div class="control-desc">直接开放所有关卡与内容，便于评测</div>
 							</div>
 							<button
 								type="button"
@@ -388,15 +388,30 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 					<section class="machinery-section archive-section">
 						<div class="archive-intro">
 							<p>
-								<strong>Calculuser</strong>（Calculus + User）是一款立足于
-								<strong>纯无类型 λ-演算（Untyped Lambda Calculus）</strong>与
-								<strong>组合子逻辑（Combinatory Logic, SKI）</strong>的解谜与构造游戏。
+								<strong>Calculuser · 装置工坊</strong>（Calculus + User）是一款立足于
+								<strong>渐进式类型 λ 演算（Gradual Typing Lambda Calculus）</strong>与
+								<strong>组合子逻辑（Combinatory Logic, SKI）</strong>的逻辑构造与推演游戏。
 							</p>
 							<p style={{ "margin-top": "8px" }}>
-								游戏中所有的零件并非黑盒脚本，而是严格遵循 β-归约与项代换规则的数学对象。从基础的 I、K、S
-								组合子，到布尔逻辑、邱奇数（Church Numerals）、算术运算，再到递归的不动点组合子（Y / Turing
-								Fixpoint），所有高级构件均由基础零件逐一封装而成。
+								游戏中的所有装置均严格遵循 α-等价、β-归约与类型一致性规则，并非黑盒脚本。从基础的 I、K、S
+								组合子起步，经由布尔逻辑、邱奇数（Church Numerals）、不动点递归（Y / Turing
+								Fixpoint）到带类型标注的零件装配与自由沙盒推演，所有高级构件均由基础零件逐层封装而成。
 							</p>
+						</div>
+
+						<div class="archive-references">
+							<div class="archive-ref-title">工坊核心模块</div>
+							<ul class="archive-ref-list">
+								<li>
+									<strong>运行与构建订单</strong> · 逐步观测 β/δ-归约纸带，在步数与拷贝预算内封装目标组合子
+								</li>
+								<li>
+									<strong>渐进类型构造</strong> · 借助基础类型、箭头类型与动态类型 <code>?</code> 完成精确的类型契约装配
+								</li>
+								<li>
+									<strong>自由沙盒实验台</strong> · 无约束装配任意 λ 项，自定义并封装属于自己的组合子零件
+								</li>
+							</ul>
 						</div>
 
 						<div class="archive-references">
@@ -407,6 +422,9 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								</li>
 								<li>
 									Moses Schönfinkel & Haskell Curry · <em>Combinatory Logic</em>
+								</li>
+								<li>
+									Jeremy G. Siek & Walid Taha (2006) · <em>Gradual Typing for Functional Languages</em>
 								</li>
 								<li>
 									Benjamin C. Pierce · <em>Types and Programming Languages</em> (TAPL)

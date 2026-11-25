@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" fill="none">
+  <defs>
+    <linearGradient id="paperGrad" x1="65" y1="115" x2="295" y2="505" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDF7EE" />
+      <stop offset="55%" stop-color="#F5E8D5" />
+      <stop offset="100%" stop-color="#E7D3B8" />
+    </linearGradient>
+    <linearGradient id="foldGrad" x1="80" y1="295" x2="280" y2="315" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#D7BE9E" stop-opacity="0.15" />
+      <stop offset="50%" stop-color="#C7A986" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#D7BE9E" stop-opacity="0.15" />
+    </linearGradient>
+    <linearGradient id="sealGrad" x1="218" y1="408" x2="274" y2="466" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#CF6F57" />
+      <stop offset="60%" stop-color="#A84935" />
+      <stop offset="100%" stop-color="#7D3021" />
+    </linearGradient>
+    <linearGradient id="brassGrad" x1="92" y1="455" x2="236" y2="545" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E8C78D" />
+      <stop offset="55%" stop-color="#C69653" />
+      <stop offset="100%" stop-color="#8F6532" />
+    </linearGradient>
+    <radialGradient id="auraGrad" cx="50%" cy="48%" r="48%">
+      <stop offset="0%" stop-color="#F6DFB8" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#F6DFB8" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Soft warm workshop aura -->
+  <ellipse cx="180" cy="315" rx="158" ry="220" fill="url(#auraGrad)" />
+
+  <!-- Back envelope / secondary blueprint sheet -->
+  <g transform="rotate(-5 180 310)">
+    <rect x="74" y="138" width="218" height="332" rx="8" fill="#E3CEB4" stroke="#4A3442" stroke-width="3.2" />
+    <path d="M78 190 L288 190" stroke="#A68B6B" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.55" />
+  </g>
+
+  <!-- Main unfolded aged letter parchment -->
+  <g transform="rotate(2 180 305)">
+    <path d="M68 122 C135 118 225 124 292 120 L294 252 C288 260 288 272 294 280 L290 478 C220 482 140 476 66 480 L70 308 C76 300 76 288 70 280 Z"
+      fill="url(#paperGrad)" stroke="#4A3442" stroke-width="3.5" stroke-linejoin="round" />
+
+    <!-- Subtle paper creases -->
+    <rect x="70" y="294" width="222" height="14" fill="url(#foldGrad)" />
+    <path d="M70 301 L292 301" stroke="#B79A77" stroke-width="1.4" opacity="0.65" />
+
+    <!-- Top header ornament & lambda workshop emblem -->
+    <circle cx="180" cy="176" r="24" fill="#EFE0CC" stroke="#9B7B5B" stroke-width="2" />
+    <path d="M172 190 L181 163 M177 176 L189 190" stroke="#6D4B3B" stroke-width="3.4" stroke-linecap="round" />
+    <path d="M108 176 L146 176 M214 176 L252 176" stroke="#B59676" stroke-width="1.8" stroke-linecap="round" />
+
+    <!-- Handwritten-style ink lines (abstract, non-textual) -->
+    <g stroke="#6B515E" stroke-width="2.6" stroke-linecap="round" opacity="0.72">
+      <path d="M102 224 Q138 220 172 224 T244 223" />
+      <path d="M102 246 Q152 249 198 244 T256 247" />
+      <path d="M102 268 Q128 265 162 269 T218 267" />
+      <path d="M102 328 Q144 331 186 327 T254 329" />
+      <path d="M102 350 Q135 347 178 351 T234 349" />
+      <path d="M102 372 Q130 375 166 371" />
+    </g>
+
+    <!-- Small combinator schematic doodle in margin -->
+    <g transform="translate(106, 396)" stroke="#8F6E5D" stroke-width="2" fill="none" opacity="0.75">
+      <circle cx="16" cy="18" r="10" fill="#F9EFE2" />
+      <circle cx="52" cy="18" r="10" fill="#F9EFE2" />
+      <path d="M26 18 L42 18 M16 28 C16 40 52 40 52 28" />
+    </g>
+
+    <!-- Crimson-brass wax seal with lambda imprint -->
+    <g transform="translate(245, 434)">
+      <path d="M-28 -8 C-32 -22 -14 -34 2 -31 C18 -35 33 -20 30 -4 C34 14 20 31 3 29 C-14 34 -31 19 -28 4 Z"
+        fill="url(#sealGrad)" stroke="#4A3442" stroke-width="3" />
+      <circle cx="0" cy="0" r="19" fill="none" stroke="#E49680" stroke-width="1.6" opacity="0.7" />
+      <path d="M-6 10 L1 -10 M-2 -1 L8 10" stroke="#F8E2C8" stroke-width="3" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Brass gear & vintage fountain pen resting below -->
+  <g transform="translate(110, 496)">
+    <circle cx="0" cy="0" r="24" fill="url(#brassGrad)" stroke="#4A3442" stroke-width="3" />
+    <circle cx="0" cy="0" r="9" fill="#F5E8D5" stroke="#4A3442" stroke-width="2.5" />
+    <g fill="url(#brassGrad)" stroke="#4A3442" stroke-width="2.4">
+      <rect x="-5" y="-31" width="10" height="9" rx="2" />
+      <rect x="-5" y="22" width="10" height="9" rx="2" />
+      <rect x="-31" y="-5" width="9" height="10" rx="2" />
+      <rect x="22" y="-5" width="9" height="10" rx="2" />
+    </g>
+  </g>
+
+  <g transform="rotate(-14 205 512)">
+    <path d="M132 510 L258 504 C266 504 270 518 258 519 L132 517 Z" fill="#5D4454" stroke="#4A3442" stroke-width="3" />
+    <path d="M132 510 L108 513.5 L132 517 Z" fill="url(#brassGrad)" stroke="#4A3442" stroke-width="2.6" stroke-linejoin="round" />
+    <rect x="218" y="502" width="10" height="19" rx="2" fill="url(#brassGrad)" stroke="#4A3442" stroke-width="2.4" />
+  </g>
+</svg>

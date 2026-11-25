@@ -20,7 +20,7 @@ interface CounterViewProps {
 
 const SPEAKER_NAMES: Record<DialogueSpeaker, string> = {
 	me: "我",
-	church: "小丘 · 助手机械臂",
+	church: "小丘",
 	guest: "工坊来客",
 	master: "老师傅的旧信件",
 };
@@ -31,12 +31,20 @@ const CHARACTER_STANDEES: Partial<Record<DialogueSpeaker, Partial<Record<Dialogu
 		happy: "/characters/church_happy.png",
 		wow: "/characters/church_wow.png",
 	},
+	guest: {
+		default: "/characters/guest_default.svg",
+	},
+	master: {
+		default: "/characters/master_default.svg",
+	},
 };
 
 const PRELOAD_STANDEES = [
 	"/characters/church_default.png",
 	"/characters/church_happy.png",
 	"/characters/church_wow.png",
+	"/characters/guest_default.svg",
+	"/characters/master_default.svg",
 ] as const;
 
 if (typeof window !== "undefined")
@@ -172,10 +180,40 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 	return (
 		<div
 			class="counter-scene"
+			data-speaker={currentSpeaker()}
 			onClick={handleAdvance}
 			onKeyDown={(event) => (event.key === "Enter" || event.key === " ") && handleAdvance()}
 		>
-			<div class="counter-backdrop-glow" />
+			<div class="counter-grid-overlay" aria-hidden="true" />
+			<div class="counter-window-arch" aria-hidden="true">
+				<div class="counter-window-mullion-v" />
+				<div class="counter-window-mullion-h" />
+			</div>
+			<div class="counter-sunbeam counter-sunbeam-a" aria-hidden="true" />
+			<div class="counter-sunbeam counter-sunbeam-b" aria-hidden="true" />
+			<div class="counter-backdrop-glow" aria-hidden="true" />
+			<svg class="counter-astrolabe" viewBox="0 0 400 400" fill="none" aria-hidden="true">
+				<g class="counter-ring-outer">
+					<circle cx="200" cy="200" r="184" stroke="currentColor" stroke-width="1.2" stroke-dasharray="6 10" />
+					<circle cx="200" cy="200" r="168" stroke="currentColor" stroke-width="1" opacity="0.55" />
+					<path d="M200 10 V24 M200 376 V390 M10 200 H24 M376 200 H390" stroke="currentColor" stroke-width="2" />
+				</g>
+				<g class="counter-ring-inner">
+					<circle cx="200" cy="200" r="136" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 8" />
+					<circle cx="200" cy="200" r="112" stroke="currentColor" stroke-width="0.9" opacity="0.45" />
+				</g>
+			</svg>
+			<div class="counter-float-symbols" aria-hidden="true">
+				<span class="counter-symbol s1">λ</span>
+				<span class="counter-symbol s2">→</span>
+				<span class="counter-symbol s3">S</span>
+				<span class="counter-symbol s4">K</span>
+				<span class="counter-symbol s5">Y</span>
+				<span class="counter-mote m1" />
+				<span class="counter-mote m2" />
+				<span class="counter-mote m3" />
+				<span class="counter-mote m4" />
+			</div>
 
 			<div class="counter-desk">
 				<div class="counter-desk-wood">
@@ -189,6 +227,9 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 			<Show when={props.beat}>
 				{(_) => (
 					<>
+						<Show when={props.beat !== void 0 ? props.beat.title : void 0}>
+							{(title) => <div class="dialogue-scene-title">{title()}</div>}
+						</Show>
 						<Show when={currentStandee()}>
 							{(standee) => (
 								<div class={`avatar-standee avatar-${standee().face}`}>
@@ -219,13 +260,6 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 								<div class="dialogue-speaker-pill">
 									<span class="dialogue-speaker-dot" />
 									<span>{SPEAKER_NAMES[currentSpeaker()]}</span>
-									<Show when={props.beat !== void 0 ? props.beat.title : void 0}>
-										{(title) => (
-											<span style={{ "font-size": "12px", "font-weight": 600, color: "var(--text-muted)" }}>
-												· {title()}
-											</span>
-										)}
-									</Show>
 								</div>
 								<div class="dialogue-header-actions">
 									<button

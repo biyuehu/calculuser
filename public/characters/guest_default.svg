@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" fill="none">
+  <defs>
+    <linearGradient id="cloakGrad" x1="180" y1="90" x2="180" y2="495" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B7284" />
+      <stop offset="55%" stop-color="#6F576A" />
+      <stop offset="100%" stop-color="#574253" />
+    </linearGradient>
+    <linearGradient id="capeGrad" x1="180" y1="230" x2="180" y2="395" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F4EAE0" />
+      <stop offset="100%" stop-color="#E2D1C2" />
+    </linearGradient>
+    <linearGradient id="goggleBrass" x1="110" y1="128" x2="250" y2="178" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E6C38A" />
+      <stop offset="100%" stop-color="#B68544" />
+    </linearGradient>
+    <linearGradient id="parcelGrad" x1="196" y1="312" x2="296" y2="410" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E8CFAF" />
+      <stop offset="100%" stop-color="#CBA880" />
+    </linearGradient>
+  </defs>
+
+  <!-- Boots -->
+  <g stroke="#4A3442" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M128 492 L125 568 C110 572 104 584 114 592 L162 592 C168 584 166 572 162 566 L160 492 Z" fill="#634853" />
+    <path d="M198 492 L196 566 C192 572 190 584 196 592 L244 592 C254 584 248 572 233 568 L230 492 Z" fill="#634853" />
+    <rect x="122" y="534" width="42" height="10" rx="4" fill="#4A3442" />
+    <rect x="194" y="534" width="42" height="10" rx="4" fill="#4A3442" />
+  </g>
+
+  <!-- Lower tunic / travel cloak skirt -->
+  <path d="M114 344 L94 494 C138 506 222 506 266 494 L246 344 Z"
+    fill="url(#cloakGrad)" stroke="#4A3442" stroke-width="3.5" stroke-linejoin="round" />
+  <path d="M102 478 C144 488 216 488 258 478" stroke="#D9C3B4" stroke-width="2.5" stroke-dasharray="8 6" opacity="0.65" />
+
+  <!-- Leather satchel strap & pouch -->
+  <path d="M132 280 L226 420" stroke="#7B5443" stroke-width="10" stroke-linecap="round" />
+  <path d="M132 280 L226 420" stroke="#4A3442" stroke-width="3" stroke-linecap="round" opacity="0.45" />
+  <rect x="90" y="388" width="52" height="58" rx="10" fill="#8C624C" stroke="#4A3442" stroke-width="3.2" />
+  <path d="M90 408 L142 408" stroke="#4A3442" stroke-width="3" />
+  <rect x="111" y="403" width="10" height="12" rx="3" fill="url(#goggleBrass)" stroke="#4A3442" stroke-width="2" />
+
+  <!-- Left arm -->
+  <path d="M112 282 C88 312 78 346 84 374 C92 384 108 380 114 366 L126 322"
+    fill="#F2E6DA" stroke="#4A3442" stroke-width="3.4" stroke-linejoin="round" />
+
+  <!-- Cream shoulder capelet -->
+  <path d="M118 258 C88 280 74 324 78 344 C118 358 242 358 282 344 C286 324 272 280 242 258 Z"
+    fill="url(#capeGrad)" stroke="#4A3442" stroke-width="3.5" stroke-linejoin="round" />
+  <path d="M92 332 C136 344 224 344 268 332" stroke="#C7AE9F" stroke-width="2.4" stroke-dasharray="7 5" />
+
+  <!-- Cloak clasp & ribbon -->
+  <path d="M180 278 L160 308 L174 316 L180 288 L186 316 L200 308 Z" fill="#8C596B" stroke="#4A3442" stroke-width="2.8" stroke-linejoin="round" />
+  <circle cx="180" cy="276" r="10" fill="url(#goggleBrass)" stroke="#4A3442" stroke-width="2.8" />
+
+  <!-- Right arm holding kraft parcel -->
+  <path d="M248 282 C272 308 284 340 274 368 C264 376 250 370 244 358 L234 322"
+    fill="#F2E6DA" stroke="#4A3442" stroke-width="3.4" stroke-linejoin="round" />
+  <g transform="rotate(-7 248 362)">
+    <rect x="206" y="324" width="84" height="72" rx="8" fill="url(#parcelGrad)" stroke="#4A3442" stroke-width="3.2" />
+    <path d="M248 324 L248 396 M206 360 L290 360" stroke="#9B664C" stroke-width="3.5" />
+    <circle cx="248" cy="360" r="7" fill="#B85D43" stroke="#4A3442" stroke-width="2.2" />
+    <rect x="216" y="334" width="24" height="16" rx="2" fill="#FDF7EE" stroke="#7A5D4D" stroke-width="1.8" />
+  </g>
+
+  <!-- Hood & shadowed anonymous face -->
+  <path d="M180 68 C108 68 78 134 86 212 C92 252 128 274 180 274 C232 274 268 252 274 212 C282 134 252 68 180 68 Z"
+    fill="url(#cloakGrad)" stroke="#4A3442" stroke-width="3.8" stroke-linejoin="round" />
+  <!-- Hood inner shadow -->
+  <ellipse cx="180" cy="194" rx="64" ry="62" fill="#3B2936" stroke="#4A3442" stroke-width="3" />
+  <!-- Gentle glowing eyes in silhouette -->
+  <ellipse cx="155" cy="196" rx="7.5" ry="10.5" fill="#FBE8C6" />
+  <ellipse cx="205" cy="196" rx="7.5" ry="10.5" fill="#FBE8C6" />
+  <circle cx="157" cy="193" r="2.6" fill="#FFFFFF" />
+  <circle cx="207" cy="193" r="2.6" fill="#FFFFFF" />
+
+  <!-- Workshop goggles resting on hood forehead -->
+  <g transform="translate(0, -6)">
+    <path d="M98 142 L262 142" stroke="#4A3442" stroke-width="8" stroke-linecap="round" />
+    <circle cx="144" cy="142" r="26" fill="url(#goggleBrass)" stroke="#4A3442" stroke-width="3.4" />
+    <circle cx="216" cy="142" r="26" fill="url(#goggleBrass)" stroke="#4A3442" stroke-width="3.4" />
+    <circle cx="144" cy="142" r="17" fill="#C9D8DC" stroke="#4A3442" stroke-width="2.4" />
+    <circle cx="216" cy="142" r="17" fill="#C9D8DC" stroke="#4A3442" stroke-width="2.4" />
+    <path d="M134 134 L144 128 M206 134 L216 128" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.85" />
+    <rect x="168" y="136" width="24" height="12" rx="4" fill="url(#goggleBrass)" stroke="#4A3442" stroke-width="2.6" />
+  </g>
+</svg>

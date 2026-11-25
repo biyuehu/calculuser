@@ -1,6 +1,8 @@
-import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
-import { setMasterVolume } from "../audio/synth";
+import { type JSX, Show, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
+import { getUnlockedAchievements, subscribeAchievements, unlockAchievement } from "../achievements";
+import { playPassSound, setMasterVolume } from "../audio/synth";
 import {
+	type AchievementDefinition,
 	BUILTIN_COUNT,
 	COMBINATORS,
 	type DialogueBeat,
@@ -29,6 +31,7 @@ import {
 	saveWorkshop,
 } from "../storage";
 import { transitionView } from "../utils/transition";
+import { AchievementToast } from "./overlays/AchievementToast";
 import { IntroSequence } from "./overlays/IntroSequence";
 import { MachineryPanel } from "./overlays/MachineryPanel";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
@@ -88,7 +91,13 @@ export function Root(): JSX.Element {
 	);
 	const [showIntro, setShowIntro] = createSignal<boolean>(screen() === "title" && !loadIntroSeen());
 	const [showFolio, setShowFolio] = createSignal<boolean>(false);
-	const [folioTab, setFolioTab] = createSignal<"orders" | "parts">("orders");
+	const [folioTab, setFolioTab] = createSignal<"orders" | "parts" | "achievements">("orders");
+	const [unlockedAchievements, setUnlockedAchievements] = createSignal<Readonly<Record<string, number>>>(
+		getUnlockedAchievements(),
+	);
+	const [toastQueue, setToastQueue] = createSignal<readonly AchievementDefinition[]>([]);
+	const [activeToast, setActiveToast] = createSignal<AchievementDefinition | null>(null);
+	const [toastExiting, setToastExiting] = createSignal<boolean>(false);
 	const [showMachinery, setShowMachinery] = createSignal<boolean>(false);
 	const [machineryTab, setMachineryTab] = createSignal<"settings" | "controls" | "about">("settings");
 	const [settings, setSettings] = createSignal<SettingsState>(initialSettings);
@@ -139,6 +148,7 @@ export function Root(): JSX.Element {
 	const resetWorkshopData = (): void => {
 		clearSave();
 		setClearedStars(new Map());
+		setUnlockedAchievements({});
 		setSettings(loadSettings());
 		setMasterVolume(loadSettings().volume);
 		syncRegistryWithUnlocked(registry, new Map(), loadSettings().judgeMode);
@@ -148,13 +158,45 @@ export function Root(): JSX.Element {
 		setTimeout(() => window.location.reload(), 100);
 	};
 
-	const toggleFolio = (tab: "orders" | "parts"): void => {
+	const toggleFolio = (tab: "orders" | "parts" | "achievements"): void => {
 		if (showFolio()) setShowFolio(false);
 		else {
 			setFolioTab(tab);
 			setShowFolio(true);
 		}
 	};
+
+	let toastExitTimer: number | undefined;
+	let toastClearTimer: number | undefined;
+
+	const showNextToast = (): void => {
+		if (activeToast() !== null || toastQueue().length === 0) return;
+		const [next, ...rest] = toastQueue();
+		setToastQueue(rest);
+		setToastExiting(false);
+		setActiveToast(next);
+		playPassSound();
+		const exitDelay = settings().reducedMotion ? 1600 : 3000;
+		const clearDelay = settings().reducedMotion ? 1700 : 3320;
+		toastExitTimer = window.setTimeout(() => setToastExiting(true), exitDelay);
+		toastClearTimer = window.setTimeout(() => {
+			setActiveToast(null);
+			showNextToast();
+		}, clearDelay);
+	};
+
+	createEffect(() => {
+		const unsubscribe = subscribeAchievements((def) => {
+			setUnlockedAchievements(getUnlockedAchievements());
+			setToastQueue((prev) => [...prev, def]);
+			showNextToast();
+		});
+		onCleanup(() => {
+			unsubscribe();
+			if (toastExitTimer !== void 0) window.clearTimeout(toastExitTimer);
+			if (toastClearTimer !== void 0) window.clearTimeout(toastClearTimer);
+		});
+	});
 
 	const handleNextOrderAdvance = (): void => {
 		const beat = LEVEL_DIALOGUES[currentOrder().id];
@@ -260,6 +302,7 @@ export function Root(): JSX.Element {
 					onComplete={() => {
 						markIntroSeen();
 						setShowIntro(false);
+						unlockAchievement("first_reduction");
 					}}
 				/>
 			</Show>
@@ -270,6 +313,7 @@ export function Root(): JSX.Element {
 					currentOrderIndex={orderIndex()}
 					isSandboxActive={isSandbox()}
 					clearedStars={clearedStars()}
+					unlockedAchievements={unlockedAchievements()}
 					judgeMode={settings().judgeMode}
 					reducedMotion={settings().reducedMotion}
 					onSelectOrder={(index) => {
@@ -303,6 +347,8 @@ export function Root(): JSX.Element {
 					onClose={() => setShowMachinery(false)}
 				/>
 			</Show>
+
+			<AchievementToast achievement={activeToast()} exiting={toastExiting()} />
 		</div>
 	);
 }

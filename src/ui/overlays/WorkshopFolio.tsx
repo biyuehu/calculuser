@@ -1,5 +1,6 @@
 import { For, type JSX, Show, createSignal } from "solid-js";
 import {
+	ACHIEVEMENTS,
 	BUILTIN_COUNT,
 	CHAPTERS,
 	COMBINATORS,
@@ -11,11 +12,14 @@ import {
 import { transitionView } from "../../utils/transition";
 import { useKeyScope } from "../keybus";
 
+type FolioTab = "orders" | "parts" | "achievements";
+
 interface WorkshopFolioProps {
-	readonly initialTab?: "orders" | "parts";
+	readonly initialTab?: FolioTab;
 	readonly currentOrderIndex: number;
 	readonly isSandboxActive?: boolean;
 	readonly clearedStars: ReadonlyMap<string, number>;
+	readonly unlockedAchievements: Readonly<Record<string, number>>;
 	readonly judgeMode: boolean;
 	readonly reducedMotion: boolean;
 	readonly onSelectOrder: (index: number) => void;
@@ -36,8 +40,10 @@ const CHAPTER_GROUPS = [
 	},
 ].filter((group) => group.levels.length > 0);
 
+const TAB_ORDER: readonly FolioTab[] = ["orders", "parts", "achievements"];
+
 export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
-	const [activeTab, setActiveTab] = createSignal<"orders" | "parts">(props.initialTab ?? "orders");
+	const [activeTab, setActiveTab] = createSignal<FolioTab>(props.initialTab ?? "orders");
 	const [isClosing, setIsClosing] = createSignal<boolean>(false);
 
 	const handleClose = (): void => {
@@ -50,12 +56,16 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 		setTimeout(props.onClose, 180);
 	};
 
+	const cycleTab = (): void => {
+		setActiveTab(TAB_ORDER[(TAB_ORDER.indexOf(activeTab()) + 1) % TAB_ORDER.length]);
+	};
+
 	useKeyScope({
 		id: "workshop-folio",
 		level: "modal",
 		bindings: [
 			{ key: ["Escape", "m"], handle: handleClose },
-			{ key: "Tab", handle: () => void setActiveTab(activeTab() === "orders" ? "parts" : "orders") },
+			{ key: "Tab", handle: cycleTab },
 		],
 	});
 
@@ -91,6 +101,14 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 						>
 							<span>⚙</span>
 							<span>零件</span>
+						</button>
+						<button
+							type="button"
+							class={`folio-tab-btn ${activeTab() === "achievements" ? "active" : ""}`}
+							onClick={() => setActiveTab("achievements")}
+						>
+							<span>◈</span>
+							<span>成就</span>
 						</button>
 					</div>
 
@@ -286,6 +304,45 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 															{tool.defText}
 														</div>
 													</Show>
+												</div>
+											);
+										}}
+									</For>
+								</div>
+							</div>
+						</div>
+					</Show>
+
+					<Show when={activeTab() === "achievements"}>
+						<div class="overview-chapters-list">
+							<div class="chapter-block">
+								<div style={{ display: "flex", "align-items": "center", "justify-content": "space-between" }}>
+									<h3 class="chapter-title">工坊成就</h3>
+									<span class="folio-status-badge">
+										{Object.keys(props.unlockedAchievements).length} / {ACHIEVEMENTS.length}
+									</span>
+								</div>
+								<div
+									class="compendium-grid"
+									style={{ "grid-template-columns": "repeat(auto-fill, minmax(250px, 1fr))" }}
+								>
+									<For each={ACHIEVEMENTS}>
+										{(item) => {
+											const unlocked = (): boolean => props.unlockedAchievements[item.id] !== void 0;
+											return (
+												<div
+													class={`compendium-cell ${!unlocked() ? "locked-cell" : ""}`}
+													style={!unlocked() ? { opacity: 0.45, filter: "grayscale(1)" } : {}}
+												>
+													<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
+														<span class={`achievement-badge ${unlocked() ? "unlocked" : ""}`}>
+															{unlocked() ? "★" : "☆"}
+														</span>
+														<span style={{ "font-weight": 700, "font-size": "13px" }}>{item.title}</span>
+													</div>
+													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
+														{item.description}
+													</div>
 												</div>
 											);
 										}}

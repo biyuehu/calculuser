@@ -80,7 +80,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		],
 	},
 
-	// ==================== 第二章：引入类型铭牌与伏笔 ====================
+	// ==================== 第二章：引入类型铭牌与造 S ====================
 	"reverse-apply": {
 		id: "ch2_type_intro_beat",
 		title: "标准与类型铭牌",
@@ -102,10 +102,22 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				],
 				[
 					"放心，我直接上手试试",
-					textLine("记得随时按 T 键开启透视视角，检查铭牌与信号流的匹配情况。", "church", "happy"),
+					textLine("记得随时按 X 键开启透视视角，检查铭牌与信号流的匹配情况。", "church", "happy"),
 				],
 			]),
 			textLine("下一单正好是铭牌检定台的首次试运行，挂上牌子走一趟吧。", "church", "default"),
+		],
+	},
+	"dup-w": {
+		id: "ch2_before_build_s",
+		title: "最后一枚公理图纸",
+		lines: [
+			textLine(
+				"刚才的「串联桥 B」教会了三层槽嵌套，而「二次机 W」教会了同一份信号怎样被复制使用两次。",
+				"church",
+				"happy",
+			),
+			textLine("把这两项本领合在一起，你已经足够亲手从零造出那枚绿色的分叉器 S 了。来试试看吧。", "church", "default"),
 		],
 	},
 	"run-omega-preview": {
@@ -122,18 +134,23 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		],
 	},
 
-	// ==================== 第三章：稀疏引导 ====================
-	"tb-bool-sel": {
-		id: "ch3_pair_bridge",
-		title: "从开关到容器",
+	// ==================== 第三章：布尔分支科普与序对 ====================
+	"if-else": {
+		id: "ch3_bool_branch_science",
+		title: "开关即分支",
 		lines: [
 			textLine(
-				"布尔开关真假、与非门都已经就位。其实你有没有发现，这些开关全都是靠「选左边还是选右边」来表达信息的？",
+				"做完这个条件分流器，你大概已经发现其中的门道了——其实我们根本不需要专门造一个 if 关键字。",
+				"church",
+				"happy",
+			),
+			textLine(
+				"在邱奇布尔编码里，条件开关本身就是函数：True = K 永远选中前一项，False = K' 永远选中后一项。",
 				"church",
 				"default",
 			),
 			textLine(
-				"如果把两个包裹先存进一个函数里，等外头送进来一个二选一开关再拆封——这就是大名鼎鼎的「序对打包盒」。下一单试试看。",
+				"所以 cond t f 直接就是分支！开关一旦拿到手，喂给它两条候选出路，它自己就会完成分流。",
 				"church",
 				"happy",
 			),
@@ -144,17 +161,92 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		title: "结构封装完毕",
 		lines: [
 			textLine("真没想到，没有盒子也没有指针，光靠几层开槽就能把两件货物严严实实封存起来。", "guest", "happy"),
-			textLine("数据与逻辑原本就是一体两面。接下来第四间屋子要迎接数字与算术的委托了。", "church", "default"),
+			textLine(
+				"Pair 解决的是「同时装下 A 与 B」的积类型。接下来第四间屋子要面对另一种常见需求——「要么装 A，要么装 B，甚至可能是空的」。",
+				"church",
+				"default",
+			),
 		],
 	},
 
-	// ==================== 第四章：Nat 与滑移技巧 ====================
+	// ==================== 第四章：Maybe & Either ====================
+
+	"map-maybe": {
+		id: "ch4_functor_intro",
+		title: "不拆箱的艺术：函子",
+		lines: [
+			textLine(
+				"干得漂亮！你看，刚才这台「可选映射 MJ」最巧妙的地方，在于它从头到尾没有破坏包裹的外壳。",
+				"church",
+				"happy",
+			),
+			textLine(
+				"如果箱子里装着货物，它就把货物送进加工机 F 再原样封回箱子；如果是空箱，它就保持空箱不变。",
+				"church",
+				"default",
+			),
+			choicesLine([
+				[
+					"这种“保留外壳只改里面”有专有名词吗？",
+					[
+						textLine(
+							"有！在函数式编程和范畴论里，凡是支持这种「保形映射」的结构，都叫做「函子（Functor）」。",
+							"church",
+							"happy",
+						),
+						textLine("等以后咱们造出清单（List）和二叉树（Tree）时，你还会见到一模一样的模式。", "church", "default"),
+					],
+				],
+				[
+					"如果加工机自己又吐出一个新箱子呢？",
+					[
+						textLine(
+							"好问题！如果 F 本身也可能失败、返回一个 Maybe，那套用一次 map 就会叠成「箱子里套箱子」。",
+							"church",
+							"wow",
+						),
+						textLine(
+							"怎样把双层套娃箱压扁成单层流水线？这正是后面会遇到的另一项核心抽象——「单子（Monad）」的拿手好戏。",
+							"church",
+							"default",
+						),
+					],
+				],
+			]),
+		],
+	},
+	"either-elim": {
+		id: "ch4_sum_type_note",
+		title: "积与和的对称",
+		lines: [
+			textLine(
+				"看出来了吗？Pair 是把两件东西一起塞进箱子，而 Maybe 和 Either 则是在箱子里二选一存放。",
+				"church",
+				"default",
+			),
+			textLine(
+				"在类型论里，Pair 叫「积类型（Product Type）」，而 Either 与 Maybe 叫做「和类型（Sum Type）」。这两者合起来，就能构造出任何复杂的数据结构。",
+				"church",
+				"happy",
+			),
+		],
+	},
+	"tb-either-left": {
+		id: "ch4_boss_cleared",
+		title: "安全通道落成",
+		lines: [
+			textLine("有了缺省箱和双路分发，工坊再也不用担心空包裹或异常件把机器卡死了。", "church", "happy"),
+			textLine("接下来第五间绘图室要迎接账房先生的硬核委托——从零搭建自然数与整套算术体系。", "church", "default"),
+		],
+	},
+
+	// ==================== 第五章：Nat 算术 ====================
 	"is-zero": {
-		id: "ch4_pred_hint",
+		id: "ch5_pred_hint",
 		title: "倒退的难题",
 		lines: [
 			textLine(
-				"加一、加法、判零全都顺利拿下。可客人刚送来一张棘手订单：想要一台能把计数器「倒退减一」的机器。",
+				"加一、加法、乘法、乘方、判零全都顺利拿下。可客人刚送来一张棘手订单：想要一台能把计数器「倒退减一」的机器。",
 				"church",
 				"default",
 			),
@@ -166,22 +258,59 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine("我先摆了一小段演示机在下一关，推演几步你就能一眼看穿它的巧妙。", "church", "happy"),
 		],
 	},
-	sub: {
-		id: "ch4_boss_cleared",
+	"abs-diff": {
+		id: "ch5_boss_cleared",
 		title: "算术基石落成",
 		lines: [
-			textLine("从零到一，再到前驱与减法——整套自然数算术体系已经在工作台上运转起来了。", "church", "happy"),
-			textLine("接下来，第五间绘图室会把单个数字扩展成成串的清单与分叉树形结构。", "church", "default"),
+			textLine("减法、大小比较、判等与绝对差全都在工作台上运转起来了。", "church", "happy"),
+			textLine("接下来第六间绘图室会把单个数字扩展成成串的清单与分叉的二叉树结构。", "church", "default"),
 		],
 	},
 
-	// ==================== 第五章：深层结构收尾 ====================
-	"tree-size": {
-		id: "ch5_boss_cleared",
+	// ==================== 第六章：List & Tree ====================
+	"list-append": {
+		id: "ch6_monad_intro",
+		title: "压扁套娃箱：单子",
+		lines: [
+			textLine(
+				"刚才你先做出了列表映射（map），紧接着又造出了列表拼接（append）。把这两件零件摆在一起，其实藏着函数式编程里最出名的概念。",
+				"church",
+				"happy",
+			),
+			textLine(
+				"设想一下：假如每一步加工会把一件货物裂变成一条小清单（a -> List b），直接用 map 就会叠出「清单套清单」的双层嵌套。",
+				"church",
+				"default",
+			),
+			choicesLine([
+				[
+					"用 append 把内层清单全接起来拍平？",
+					[
+						textLine(
+							"没错！先做 map，再用 append（或者对 Maybe 做一次解包压平）把两层外壳合并成一层，这组「映射 + 拍平（flatMap / bind）」的能力就是「单子（Monad）」。",
+							"church",
+							"happy",
+						),
+						textLine(
+							"有了单子，不管是可能空箱的 Maybe 还是会产生分支的 List，都能像普通流水线一样一路串联到底。",
+							"church",
+							"default",
+						),
+					],
+				],
+				[
+					"先记住这个思路，继续做后面的树结构",
+					textLine("没问题，后面在二叉树上还会再一次验证函子的通用性。", "church", "happy"),
+				],
+			]),
+		],
+	},
+	"tree-sum": {
+		id: "ch6_boss_cleared",
 		title: "抽屉深处的草图",
 		lines: [
-			textLine("列表映射、二叉树折叠、节点统计全都在铭牌与推演下严丝合缝地跑通了。", "church", "happy"),
-			textLine("对了……我在清点第五间绘图室的抽屉时，摸到了老师傅封存的那张危险草图。", "church", "wow"),
+			textLine("列表反转、过滤求和、二叉树折叠统计全都在铭牌与推演下严丝合缝地跑通了。", "church", "happy"),
+			textLine("对了……我在清点第六间绘图室的抽屉时，摸到了老师傅封存的那张危险草图。", "church", "wow"),
 			textLine(
 				"上面没有画任何类型铭牌，只有一个首尾相连的自吞环。准备好进入最后的奇异点绘图室了吗？",
 				"church",
@@ -190,9 +319,9 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		],
 	},
 
-	// ==================== 第六章：奇异点与全作终局 ====================
+	// ==================== 第七章：奇异点与全作终局 ====================
 	"self-apply": {
-		id: "ch6_y_warning",
+		id: "ch7_y_warning",
 		title: "驯服无限",
 		lines: [
 			textLine(
@@ -209,7 +338,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 		],
 	},
 	"fix-rec-final": {
-		id: "ch6_finale",
+		id: "ch7_finale",
 		title: "工坊的终点与起点",
 		lines: [
 			textLine(

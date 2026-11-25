@@ -18,14 +18,15 @@ describe("TypeBuild Mode & Level Verification", () => {
 	const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 	const typeBuildOrders = LEVELS.filter((lvl) => lvl.mode === "typebuild");
 
-	it("contains exactly 11 typebuild levels distributed across chapters 2-6", () => {
-		expect(typeBuildOrders.length).toBe(11);
+	it("contains exactly 12 typebuild levels distributed across chapters 2-7", () => {
+		expect(typeBuildOrders.length).toBe(12);
 		expect(typeBuildOrders.filter((l) => l.chapter === 1).length).toBe(0);
 		expect(typeBuildOrders.filter((l) => l.chapter === 2).length).toBe(2);
 		expect(typeBuildOrders.filter((l) => l.chapter === 3).length).toBe(3);
 		expect(typeBuildOrders.filter((l) => l.chapter === 4).length).toBe(2);
 		expect(typeBuildOrders.filter((l) => l.chapter === 5).length).toBe(2);
 		expect(typeBuildOrders.filter((l) => l.chapter === 6).length).toBe(2);
+		expect(typeBuildOrders.filter((l) => l.chapter === 7).length).toBe(1);
 	});
 
 	it("formats and parses all targetTy specifications consistently", () => {
@@ -90,14 +91,15 @@ describe("TypeBuild Mode & Level Verification", () => {
 		}
 	});
 
-	it("accepts canonical solutions for Chapter 4-6 typebuild orders", () => {
+	it("accepts canonical solutions for Chapter 4-7 typebuild orders", () => {
 		const cases: readonly [string, string][] = [
+			["tb-maybe-nothing", "λ(d: B). λ(j: A -> B). d"],
+			["tb-either-left", "λ(a: A). λ(l: A -> C). λ(r: B -> C). l a"],
 			["tb-zero", "λ(f: A -> A). λ(x: A). x"],
 			["tb-two", "λ(f: A -> A). λ(x: A). f (f x)"],
 			["tb-list", "λ(c: A -> B -> B). λ(n: B). n"],
 			["tb-tree", "λ(f: A -> B -> B -> B). λ(z: B). z"],
 			["tb-rec-step", "λ(r: A -> B). λ(x: A). r x"],
-			["tb-pair", "λ(x: A). λ(y: B). λ(f: A -> B -> C). f x y"],
 		];
 		for (const [id, code] of cases) {
 			const lvl = typeBuildOrders.find((l) => l.id === id);

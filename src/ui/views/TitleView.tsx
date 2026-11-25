@@ -1,6 +1,5 @@
-import { type JSX, Show, createSignal } from "solid-js";
-import { playPassSound, playSnapSound } from "../../audio/synth";
-import { getGadgetMeta } from "../../content";
+import { type JSX, createSignal } from "solid-js";
+import { playSnapSound } from "../../audio/synth";
 import { useKeyScope } from "../keybus";
 
 interface TitleViewProps {
@@ -13,18 +12,7 @@ interface TitleViewProps {
 }
 
 export function TitleView(props: TitleViewProps): JSX.Element {
-	const [toyState, setToyState] = createSignal<number>(0);
 	const [isStarting, setIsStarting] = createSignal<boolean>(false);
-
-	const clickToy = (): void => {
-		if (toyState() === 0) {
-			playPassSound();
-			setToyState(1);
-			return;
-		}
-		playSnapSound(0);
-		setToyState(0);
-	};
 
 	const handleStart = (): void => {
 		if (isStarting()) return;
@@ -46,44 +34,17 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 	return (
 		<div class={`title-screen-container ${isStarting() ? "title-exit" : ""}`}>
 			<div class={`title-card ${isStarting() ? "title-exit" : ""}`}>
-				<header style={{ "text-align": "center" }}>
+				<header class="title-header">
 					<img src="/logo.png" alt="Calculuser Logo" class="title-logo" />
-					<h1 style={{ "font-size": "26px", "font-weight": 700, "letter-spacing": "-0.5px" }}>Calculuser · 装置工坊</h1>
-					<p style={{ "font-size": "13px", color: "var(--text-muted)", "margin-top": "4px" }}>
-						λ-演算与组合逻辑的机器实验台
-					</p>
-				</header>
-
-				<div class="title-toy-box" onClick={clickToy} onKeyDown={(event) => event.key === "Enter" && clickToy()}>
-					<div class="toy-term-row">
-						<Show
-							when={toyState() === 0}
-							fallback={
-								<>
-									<span class="atom-token pop-appear">A</span>
-									<span style={{ "font-size": "12px", color: "var(--accent-success)", "font-weight": "600" }}>
-										归约完成！(K A B → A)
-									</span>
-								</>
-							}
-						>
-							{(() => {
-								const kMeta = getGadgetMeta("K");
-								return (
-									<span class="gadget-token">
-										<span class={`gadget-glyph ${kMeta.shape}`} style={{ background: kMeta.accent }}>
-											{kMeta.symbol}
-										</span>
-										<span>{kMeta.name}</span>
-									</span>
-								);
-							})()}
-							<span class="atom-token">A</span>
-							<span class="atom-token">B</span>
-						</Show>
+					<h1 class="title-wordmark" data-text="Calculuser">
+						Calculuser
+					</h1>
+					<div class="title-ornament" aria-hidden="true">
+						<span class="title-ornament-line" />
+						<span class="title-ornament-glyph">λ</span>
+						<span class="title-ornament-line" />
 					</div>
-					<span class="toy-caption">{toyState() === 0 ? "点一下试试" : "再点一下重置"}</span>
-				</div>
+				</header>
 
 				<div class="title-actions">
 					<button
@@ -91,7 +52,6 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 						class="title-primary-btn"
 						onClick={handleStart}
 						disabled={isStarting()}
-						title="开始游戏 (Space)"
 					>
 						<span>▶</span>
 						<span>{props.continueOrderCode === "1.1" ? "开始体验" : `继续关卡 · ${props.continueOrderCode}`}</span>
@@ -108,7 +68,6 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 						}}
 						onClick={props.onOpenSandbox}
 						disabled={isStarting()}
-						title="自由沙盒实验台"
 					>
 						<span>自由沙盒实验台</span>
 					</button>

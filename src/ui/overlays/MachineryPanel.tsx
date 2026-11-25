@@ -388,7 +388,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 					<section class="machinery-section archive-section">
 						<div class="archive-intro">
 							<p>
-								<strong>Calculuser · 装置工坊</strong>（Calculus + User）是一款立足于
+								<strong>Calculuser</strong>（Calculus + User）是一款立足于
 								<strong>渐进式类型 λ 演算（Gradual Typing Lambda Calculus）</strong>与
 								<strong>组合子逻辑（Combinatory Logic, SKI）</strong>的逻辑构造与推演游戏。
 							</p>

@@ -4,6 +4,7 @@ import { LEVELS } from "./data/levels";
 import type { GadgetMeta, SandboxOrder, ToolDefinition } from "./types";
 
 export * from "./types";
+export { ACHIEVEMENTS, type AchievementDefinition, getAchievementDefinition } from "./data/achievements";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 export { LEVEL_DIALOGUES } from "./data/dialogue";

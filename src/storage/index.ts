@@ -22,6 +22,7 @@ const DEFAULT_SAVE_DATA: SaveData = {
 	customGadgets: {},
 	seenDialogues: [],
 	introSeen: false,
+	achievements: {},
 };
 
 function isValidTerm(val: unknown): val is Term {
@@ -97,6 +98,15 @@ function sanitizeDrafts(val: unknown): Record<string, DraftTerm> {
 		: (Object.fromEntries(Object.entries(val).filter(([, v]) => isValidDraft(v))) as Record<string, DraftTerm>);
 }
 
+function sanitizeAchievements(val: unknown): Record<string, number> {
+	return !val || typeof val !== "object"
+		? {}
+		: (Object.fromEntries(Object.entries(val).filter(([, v]) => typeof v === "number" && Number.isFinite(v))) as Record<
+				string,
+				number
+			>);
+}
+
 function sanitizeSettings(val: unknown): SettingsState {
 	if (!val || typeof val !== "object") return DEFAULT_SETTINGS;
 	const r = val as Partial<SettingsState>;
@@ -158,6 +168,7 @@ function loadSaveData(): SaveData {
 						? parsed.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
 						: [],
 					introSeen: typeof parsed.introSeen === "boolean" ? parsed.introSeen : true,
+					achievements: sanitizeAchievements(parsed.achievements),
 				};
 	} catch {
 		return DEFAULT_SAVE_DATA;
@@ -228,3 +239,12 @@ export const markDialogueSeen = (dialogueId: string): void =>
 export const loadIntroSeen = (): boolean => loadSaveData().introSeen ?? false;
 
 export const markIntroSeen = (): void => mutateSaveData((prev) => ({ ...prev, introSeen: true }));
+
+export const loadAchievements = (): Record<string, number> => loadSaveData().achievements ?? {};
+
+export const saveAchievement = (id: string): boolean => {
+	const current = loadAchievements();
+	if (current[id] !== void 0) return false;
+	mutateSaveData((prev) => ({ ...prev, achievements: { ...current, [id]: Date.now() } }));
+	return true;
+};

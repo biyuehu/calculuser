@@ -1,10 +1,13 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
+import { unlockAchievement } from "../achievements";
 import { playFailSound, playPassSound, playPopExplosionSound } from "../audio/synth";
 import { BUILTIN_COUNT, COMBINATORS, type OrderLevel, getToolDefinition, isToolUnlocked } from "../content";
 import {
 	type DraftTerm,
 	type GadgetId,
 	type Registry,
+	type Term,
+	type Ty,
 	checkTypeBuild,
 	draftToTerm,
 	findFirstHole,
@@ -14,6 +17,41 @@ import {
 import type { RejectedInfo } from "../ui/workbench/panels/OrderSlip";
 
 const JUDGE_MAX_STEPS = 300;
+
+function collectUsedGadgets(term: Term): readonly GadgetId[] {
+	switch (term.kind) {
+		case "var":
+		case "atom":
+			return [];
+		case "gad":
+			return [term.id];
+		case "lam":
+		case "ann":
+			return collectUsedGadgets(term.kind === "lam" ? term.body : term.term);
+		case "app":
+			return [...collectUsedGadgets(term.fn), ...collectUsedGadgets(term.arg)];
+	}
+}
+
+function tyContainsAny(ty: Ty): boolean {
+	if (ty.k === "any") return true;
+	return ty.k === "arrow" ? tyContainsAny(ty.from) || tyContainsAny(ty.to) : false;
+}
+
+function termUsesAnyType(term: Term): boolean {
+	switch (term.kind) {
+		case "var":
+		case "atom":
+		case "gad":
+			return false;
+		case "lam":
+			return (term.ty !== void 0 && tyContainsAny(term.ty)) || termUsesAnyType(term.body);
+		case "ann":
+			return tyContainsAny(term.ty) || termUsesAnyType(term.term);
+		case "app":
+			return termUsesAnyType(term.fn) || termUsesAnyType(term.arg);
+	}
+}
 
 interface UseOrderDeliveryOptions {
 	readonly order: Accessor<OrderLevel>;
@@ -80,6 +118,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 			const firstFailIndex = results.findIndex((item) => !item.passed);
 			if (firstFailIndex >= 0) {
 				playFailSound();
+				if (results.some((item) => !item.terminated)) unlockAchievement("omega_paradox");
 				setRejected({ testCase: order.tests[firstFailIndex], result: results[firstFailIndex] });
 				return;
 			}
@@ -88,6 +127,12 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 			const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
 			setDeliveredStars(stars);
 			options.onRecordStars(order.id, stars);
+			unlockAchievement("first_order");
+			if (stars === 3) unlockAchievement("three_star_craft");
+			const usedGadgets = collectUsedGadgets(candidate);
+			if (usedGadgets.length === 0) unlockAchievement("pure_lambda");
+			else if ((order.chapter ?? 1) >= 2 && usedGadgets.every((id) => id === "I" || id === "K" || id === "S"))
+				unlockAchievement("ski_purist");
 			return;
 		}
 		if (order.mode === "typebuild") {
@@ -97,6 +142,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 				const norm = judgeNormalize(candidate, options.registry, JUDGE_MAX_STEPS);
 				if (!norm.terminated) {
 					playFailSound();
+					unlockAchievement("omega_paradox");
 					setTypeError("求值超时或产生发散循环");
 					return;
 				}
@@ -105,6 +151,9 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 				const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
 				setDeliveredStars(stars);
 				options.onRecordStars(order.id, stars);
+				unlockAchievement("first_order");
+				if (stars === 3) unlockAchievement("three_star_craft");
+				if (!termUsesAnyType(candidate)) unlockAchievement("static_typist");
 			} catch (err) {
 				playFailSound();
 				setTypeError(err instanceof Error ? err.message : String(err));
@@ -141,6 +190,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		playPassSound();
 		setDeliveredStars(3);
 		options.onRecordStars(options.order().id, 3);
+		unlockAchievement("first_order");
 	};
 
 	const deliverRunExceeded = (): void => {

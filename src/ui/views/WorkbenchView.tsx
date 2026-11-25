@@ -1,4 +1,5 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
+import { unlockAchievement } from "../../achievements";
 import { playFailSound, playSnapSound } from "../../audio/synth";
 import type { OrderLevel } from "../../content";
 import {
@@ -81,6 +82,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setCustomGadgets(loadCustomGadgets());
 		setShowSaveGadgetModal(false);
 		playSnapSound(2);
+		unlockAchievement("custom_smith");
 	};
 
 	const handleExpandGadget = (gadget: CustomGadgetRecord): void => {

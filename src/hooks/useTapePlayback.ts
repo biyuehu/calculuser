@@ -1,4 +1,5 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
+import { unlockAchievement } from "../achievements";
 import { playBetaReductionMelody, playDropSound, playMoveSound, playSnapSound, playSplitSound } from "../audio/synth";
 import type { OrderLevel } from "../content";
 import {
@@ -14,6 +15,8 @@ import {
 
 function playStepEventSound(event: StepEvent, stepCount: number): void {
 	const count = event.kind === "beta" ? event.copies : event.copies.length > 0 ? event.copies[0] : 1;
+	if (event.kind === "beta" ? event.copies >= 4 : event.copies.some((c) => c >= 4)) unlockAchievement("copy_explosion");
+	if (event.kind === "beta" ? event.copies >= 4 : event.copies.some((c) => c >= 4)) unlockAchievement("copy_explosion");
 	if (count === 0) playDropSound();
 	else if (count >= 2) playSplitSound();
 	else {
@@ -133,6 +136,8 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 			if (stepped === null) break;
 			current = stepped.next;
 			recorded.push(current);
+			if (step === 79 && stepLeftmost(current, options.registry, "", reductionMode()) !== null)
+				unlockAchievement("omega_paradox");
 		}
 		playSnapSound(4);
 		setTape(recorded);

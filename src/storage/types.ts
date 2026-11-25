@@ -33,6 +33,7 @@ export interface SaveData {
 	readonly customGadgets: Record<string, CustomGadgetRecord>;
 	readonly seenDialogues: readonly string[];
 	readonly introSeen?: boolean;
+	readonly achievements?: Record<string, number>;
 }
 
 export const STORAGE_KEY = "calculuser_save";

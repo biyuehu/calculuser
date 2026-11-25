@@ -10,6 +10,7 @@ export interface ToolDefinition {
 	readonly accent: string;
 	readonly arity: number;
 	readonly schematic: string;
+	readonly typingText: string;
 	readonly note: string;
 	readonly defText: string;
 }

@@ -95,7 +95,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				[
 					"听起来像防呆质检，怎么用？",
 					textLine(
-						"在每个槽口上标清允许进入的信号规格（比如 A 或 A -> B），只要结构契合契约，连黑盒测试都不用跑就能签发合格章。",
+						"在每个槽口上标清允许进入的信号规格（比如 A 或 A → B），只要结构契合契约，连黑盒测试都不用跑就能签发合格章。",
 						"church",
 						"default",
 					),
@@ -278,7 +278,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				"happy",
 			),
 			textLine(
-				"设想一下：假如每一步加工会把一件货物裂变成一条小清单（a -> List b），直接用 map 就会叠出「清单套清单」的双层嵌套。",
+				"设想一下：假如每一步加工会把一件货物裂变成一条小清单（a → List b），直接用 map 就会叠出「清单套清单」的双层嵌套。",
 				"church",
 				"default",
 			),

@@ -69,7 +69,7 @@ export function formatTy(t: Ty): string {
 			return `α${t.id}`;
 		case "arrow": {
 			const fromStr = t.from.k === "arrow" ? `(${formatTy(t.from)})` : formatTy(t.from);
-			return `${fromStr} -> ${formatTy(t.to)}`;
+			return `${fromStr} → ${formatTy(t.to)}`;
 		}
 	}
 }

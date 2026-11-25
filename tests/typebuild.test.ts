@@ -144,7 +144,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 			ty: base("A"),
 			body: { kind: "var", name: "x" },
 		};
-		expect(formatTy(inferDraftType(annotatedDraft, registry).ty ?? parseTy("?"))).toBe("A -> A");
+		expect(formatTy(inferDraftType(annotatedDraft, registry).ty ?? parseTy("?"))).toBe("A → A");
 
 		const partialDraft: DraftTerm = {
 			kind: "lam",
@@ -152,6 +152,6 @@ describe("TypeBuild Mode & Level Verification", () => {
 			ty: base("A"),
 			body: { kind: "hole" },
 		};
-		expect(formatTy(inferDraftType(partialDraft, registry).ty ?? parseTy("?"))).toBe("A -> ?");
+		expect(formatTy(inferDraftType(partialDraft, registry).ty ?? parseTy("?"))).toBe("A → ?");
 	});
 });

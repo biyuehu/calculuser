@@ -232,6 +232,9 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 														<div style={{ "font-weight": 700, "font-size": "13px" }}>{tool.name}</div>
 													</div>
 												</div>
+												<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
+													{tool.note}
+												</div>
 												<div
 													style={{
 														"font-family": "var(--font-mono)",
@@ -241,8 +244,15 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 												>
 													{tool.schematic}
 												</div>
-												<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
-													{tool.note}
+												<div
+													style={{
+														"font-family": "var(--font-mono)",
+														"font-size": "11px",
+														color: "var(--accent-clay-strong)",
+														"font-weight": 600,
+													}}
+												>
+													{tool.typingText}
 												</div>
 											</div>
 										)}
@@ -274,6 +284,9 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 															</div>
 														</div>
 													</div>
+													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
+														{tool.note}
+													</div>
 													<div
 														style={{
 															"font-family": "var(--font-mono)",
@@ -283,8 +296,15 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 													>
 														{tool.schematic}
 													</div>
-													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
-														{tool.note}
+													<div
+														style={{
+															"font-family": "var(--font-mono)",
+															"font-size": "11px",
+															color: "var(--accent-clay-strong)",
+															"font-weight": 600,
+														}}
+													>
+														{tool.typingText}
 													</div>
 													<Show when={isUnlockedPart}>
 														<div

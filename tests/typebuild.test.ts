@@ -18,17 +18,14 @@ describe("TypeBuild Mode & Level Verification", () => {
 	const registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 	const typeBuildOrders = LEVELS.filter((lvl) => lvl.mode === "typebuild");
 
-	it("contains exactly 11 typebuild levels distributed across chapters", () => {
+	it("contains exactly 11 typebuild levels distributed across chapters 2-6", () => {
 		expect(typeBuildOrders.length).toBe(11);
-		const ch1 = typeBuildOrders.filter((l) => l.chapter === 1);
-		const ch2 = typeBuildOrders.filter((l) => l.chapter === 2);
-		const ch3 = typeBuildOrders.filter((l) => l.chapter === 3);
-		const ch4 = typeBuildOrders.filter((l) => l.chapter === 4);
-
-		expect(ch1.length).toBe(2);
-		expect(ch2.length).toBe(3);
-		expect(ch3.length).toBe(3);
-		expect(ch4.length).toBe(3);
+		expect(typeBuildOrders.filter((l) => l.chapter === 1).length).toBe(0);
+		expect(typeBuildOrders.filter((l) => l.chapter === 2).length).toBe(2);
+		expect(typeBuildOrders.filter((l) => l.chapter === 3).length).toBe(3);
+		expect(typeBuildOrders.filter((l) => l.chapter === 4).length).toBe(2);
+		expect(typeBuildOrders.filter((l) => l.chapter === 5).length).toBe(2);
+		expect(typeBuildOrders.filter((l) => l.chapter === 6).length).toBe(2);
 	});
 
 	it("formats and parses all targetTy specifications consistently", () => {
@@ -40,7 +37,7 @@ describe("TypeBuild Mode & Level Verification", () => {
 		}
 	});
 
-	it("accepts canonical solutions for Chapter 1 typebuild orders", () => {
+	it("accepts canonical solutions for Chapter 2 typebuild orders", () => {
 		const tbId = typeBuildOrders.find((l) => l.id === "tb-identity");
 		expect(tbId).toBeDefined();
 		if (tbId) {
@@ -67,12 +64,20 @@ describe("TypeBuild Mode & Level Verification", () => {
 		}
 	});
 
-	it("accepts canonical solutions for Chapter 2 typebuild orders", () => {
+	it("accepts canonical solutions for Chapter 3 typebuild orders", () => {
 		const tbThrush = typeBuildOrders.find((l) => l.id === "tb-thrush");
 		expect(tbThrush).toBeDefined();
 		if (tbThrush) {
 			const sol = parseLambda("λ(x: A). λ(f: A -> B). f x");
 			expect(() => checkTypeBuild(sol, tbThrush.targetTy, registry)).not.toThrow();
+			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
+		}
+
+		const tbBoolSel = typeBuildOrders.find((l) => l.id === "tb-bool-sel");
+		expect(tbBoolSel).toBeDefined();
+		if (tbBoolSel) {
+			const sol = parseLambda("λ(x: A). λ(y: A). x");
+			expect(() => checkTypeBuild(sol, tbBoolSel.targetTy, registry)).not.toThrow();
 			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
 		}
 
@@ -83,65 +88,25 @@ describe("TypeBuild Mode & Level Verification", () => {
 			expect(() => checkTypeBuild(sol, tbCompose.targetTy, registry)).not.toThrow();
 			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
 		}
-
-		const tbFlip = typeBuildOrders.find((l) => l.id === "tb-flip");
-		expect(tbFlip).toBeDefined();
-		if (tbFlip) {
-			const sol = parseLambda("λ(f: A -> B -> C). λ(y: B). λ(x: A). f x y");
-			expect(() => checkTypeBuild(sol, tbFlip.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
-		}
 	});
 
-	it("accepts canonical solutions for Chapter 3 typebuild orders", () => {
-		const tbBoolSel = typeBuildOrders.find((l) => l.id === "tb-bool-sel");
-		expect(tbBoolSel).toBeDefined();
-		if (tbBoolSel) {
-			const sol = parseLambda("λ(x: A). λ(y: A). x");
-			expect(() => checkTypeBuild(sol, tbBoolSel.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
-		}
-
-		const tbPair = typeBuildOrders.find((l) => l.id === "tb-pair");
-		expect(tbPair).toBeDefined();
-		if (tbPair) {
-			const sol = parseLambda("λ(x: A). λ(y: B). λ(f: A -> B -> C). f x y");
-			expect(() => checkTypeBuild(sol, tbPair.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
-		}
-
-		const tbFst = typeBuildOrders.find((l) => l.id === "tb-fst");
-		expect(tbFst).toBeDefined();
-		if (tbFst) {
-			const sol = parseLambda("λ(p: (A -> B -> A) -> A). p (λ(x: A). λ(y: B). x)");
-			expect(() => checkTypeBuild(sol, tbFst.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
-		}
-	});
-
-	it("accepts canonical solutions for Chapter 4 typebuild orders", () => {
-		const tbZero = typeBuildOrders.find((l) => l.id === "tb-zero");
-		expect(tbZero).toBeDefined();
-		if (tbZero) {
-			const sol = parseLambda("λ(f: A -> A). λ(x: A). x");
-			expect(() => checkTypeBuild(sol, tbZero.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
-		}
-
-		const tbOne = typeBuildOrders.find((l) => l.id === "tb-one");
-		expect(tbOne).toBeDefined();
-		if (tbOne) {
-			const sol = parseLambda("λ(f: A -> A). λ(x: A). f x");
-			expect(() => checkTypeBuild(sol, tbOne.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
-		}
-
-		const tbTwo = typeBuildOrders.find((l) => l.id === "tb-two");
-		expect(tbTwo).toBeDefined();
-		if (tbTwo) {
-			const sol = parseLambda("λ(f: A -> A). λ(x: A). f (f x)");
-			expect(() => checkTypeBuild(sol, tbTwo.targetTy, registry)).not.toThrow();
-			expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
+	it("accepts canonical solutions for Chapter 4-6 typebuild orders", () => {
+		const cases: readonly [string, string][] = [
+			["tb-zero", "λ(f: A -> A). λ(x: A). x"],
+			["tb-two", "λ(f: A -> A). λ(x: A). f (f x)"],
+			["tb-list", "λ(c: A -> B -> B). λ(n: B). n"],
+			["tb-tree", "λ(f: A -> B -> B -> B). λ(z: B). z"],
+			["tb-rec-step", "λ(r: A -> B). λ(x: A). r x"],
+			["tb-pair", "λ(x: A). λ(y: B). λ(f: A -> B -> C). f x y"],
+		];
+		for (const [id, code] of cases) {
+			const lvl = typeBuildOrders.find((l) => l.id === id);
+			expect(lvl).toBeDefined();
+			if (lvl) {
+				const sol = parseLambda(code);
+				expect(() => checkTypeBuild(sol, lvl.targetTy, registry)).not.toThrow();
+				expect(judgeNormalize(sol, registry, 50).terminated).toBe(true);
+			}
 		}
 	});
 

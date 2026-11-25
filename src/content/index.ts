@@ -56,18 +56,44 @@ export function getToolDefinition(id: string): ToolDefinition | null {
 	return COMBINATORS.find((item) => item.id === id) ?? null;
 }
 
+const ACHIEVEMENT_SYMBOLS: readonly string[] = ["λ", "★", "◈", "∞", "✦", "◆", "▲", "⚙"];
+
+function hashVisualKey(id: string): number {
+	let hash = 0;
+	for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+	return Math.abs(hash);
+}
+
+function deriveShapeAndAccent(absHash: number): {
+	readonly shape: "circle" | "square" | "diamond" | "hex";
+	readonly accent: string;
+} {
+	return {
+		shape: (["circle", "square", "diamond", "hex"] as const)[absHash % 4],
+		accent: `hsl(${(absHash * 137) % 360}, 68%, 52%)`,
+	};
+}
+
 export function deriveGadgetVisuals(id: string): {
 	readonly symbol: string;
 	readonly shape: "circle" | "square" | "diamond" | "hex";
 	readonly accent: string;
 } {
-	let hash = 0;
-	for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) | 0;
-	const absHash = Math.abs(hash);
 	return {
 		symbol: id.length > 0 ? id[0].toUpperCase() : "?",
-		shape: (["circle", "square", "diamond", "hex"] as const)[absHash % 4],
-		accent: `hsl(${(absHash * 137) % 360}, 68%, 52%)`,
+		...deriveShapeAndAccent(hashVisualKey(id)),
+	};
+}
+
+export function deriveAchievementVisuals(id: string): {
+	readonly symbol: string;
+	readonly shape: "circle" | "square" | "diamond" | "hex";
+	readonly accent: string;
+} {
+	const absHash = hashVisualKey(id);
+	return {
+		symbol: ACHIEVEMENT_SYMBOLS[absHash % ACHIEVEMENT_SYMBOLS.length],
+		...deriveShapeAndAccent(absHash),
 	};
 }
 

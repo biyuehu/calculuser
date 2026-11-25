@@ -5,6 +5,7 @@ import {
 	CHAPTERS,
 	COMBINATORS,
 	LEVELS,
+	deriveAchievementVisuals,
 	getGadgetMeta,
 	isOrderUnlocked,
 	isToolUnlocked,
@@ -112,12 +113,9 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 						</button>
 					</div>
 
-					<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-						<span class="folio-status-badge">★ {totalStars()}</span>
-						<button type="button" class="icon-btn" onClick={handleClose}>
-							✕
-						</button>
-					</div>
+					<button type="button" class="icon-btn" onClick={handleClose}>
+						✕
+					</button>
 				</header>
 
 				<main class="folio-body">
@@ -316,12 +314,27 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 					<Show when={activeTab() === "achievements"}>
 						<div class="overview-chapters-list">
 							<div class="chapter-block">
-								<div style={{ display: "flex", "align-items": "center", "justify-content": "space-between" }}>
-									<h3 class="chapter-title">工坊成就</h3>
+								<h3 class="chapter-title">工坊进度</h3>
+								<div style={{ display: "flex", "flex-wrap": "wrap", gap: "8px" }}>
 									<span class="folio-status-badge">
-										{Object.keys(props.unlockedAchievements).length} / {ACHIEVEMENTS.length}
+										★ 星数 {totalStars()} / {LEVELS.filter((level) => level.mode !== "sandbox").length * 3}
+									</span>
+									<span class="folio-status-badge">
+										▦ 订单 {props.clearedStars.size} / {LEVELS.filter((level) => level.mode !== "sandbox").length}
+									</span>
+									<span class="folio-status-badge">
+										⚙ 零件{" "}
+										{COMBINATORS.filter((tool) => isToolUnlocked(tool.id, props.clearedStars, props.judgeMode)).length}{" "}
+										/ {COMBINATORS.length}
+									</span>
+									<span class="folio-status-badge">
+										◈ 成就 {Object.keys(props.unlockedAchievements).length} / {ACHIEVEMENTS.length}
 									</span>
 								</div>
+							</div>
+
+							<div class="chapter-block">
+								<h3 class="chapter-title">工坊成就</h3>
 								<div
 									class="compendium-grid"
 									style={{ "grid-template-columns": "repeat(auto-fill, minmax(250px, 1fr))" }}
@@ -329,15 +342,18 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 									<For each={ACHIEVEMENTS}>
 										{(item) => {
 											const unlocked = (): boolean => props.unlockedAchievements[item.id] !== void 0;
+											const visual = deriveAchievementVisuals(item.id);
 											return (
 												<div
 													class={`compendium-cell ${!unlocked() ? "locked-cell" : ""}`}
 													style={!unlocked() ? { opacity: 0.45, filter: "grayscale(1)" } : {}}
 												>
 													<div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-														<span class={`achievement-badge ${unlocked() ? "unlocked" : ""}`}>
-															{unlocked() ? "★" : "☆"}
-														</span>
+														<Show when={unlocked()} fallback={<span class="achievement-badge-locked">☆</span>}>
+															<span class={`gadget-glyph ${visual.shape}`} style={{ background: visual.accent }}>
+																{visual.symbol}
+															</span>
+														</Show>
 														<span style={{ "font-weight": 700, "font-size": "13px" }}>{item.title}</span>
 													</div>
 													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>

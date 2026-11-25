@@ -115,12 +115,14 @@ export function Root(): JSX.Element {
 	const continueCode = createMemo((): string => (isSandbox() ? "∞" : getOrderCode(LEVELS[orderIndex()].id)));
 
 	const selectOrder = (index: number): void => {
+		syncRegistryWithUnlocked(registry, clearedStars(), settings().judgeMode);
 		setIsSandbox(false);
 		setOrderIndex(index);
 		saveSession({ lastOrderId: LEVELS[index].id, screen: "workbench" });
 	};
 
 	const selectSandbox = (): void => {
+		registerAllCombinators(registry);
 		setIsSandbox(true);
 		saveSession({ lastOrderId: "sandbox", screen: "workbench" });
 	};

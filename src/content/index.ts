@@ -3,7 +3,7 @@ import { loadAchievements, loadSettings, saveAchievement } from "../storage";
 import { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
-import type { GadgetMeta, SandboxOrder, ToolDefinition } from "./types";
+import type { GadgetMeta, OrderLevel, SandboxOrder, ToolDefinition } from "./types";
 
 export * from "./types";
 export { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
@@ -22,8 +22,13 @@ export const SANDBOX_ORDER: SandboxOrder = {
 	note: "支持任意自由组合子、开槽与规约观察",
 };
 
+export function getOrderUnlockedTools(order: OrderLevel): readonly GadgetId[] {
+	if (order.mode !== "build" || order.unlocksToolId === void 0) return [];
+	return typeof order.unlocksToolId === "string" ? [order.unlocksToolId] : order.unlocksToolId;
+}
+
 function getToolSource(toolId: string): string | null {
-	return LEVELS.find((item) => item.mode === "build" && item.unlocksToolId === toolId)?.id ?? null;
+	return LEVELS.find((item) => getOrderUnlockedTools(item).includes(toolId))?.id ?? null;
 }
 
 export function isOrderUnlocked(
@@ -47,7 +52,7 @@ export function isToolAvailableForOrder(
 	judgeMode: boolean,
 ): boolean {
 	for (let i = 0; i < BUILTIN_COUNT; i += 1) if (COMBINATORS[i].id === toolId) return true;
-	const sourceIdx = LEVELS.findIndex((item) => item.mode === "build" && item.unlocksToolId === toolId);
+	const sourceIdx = LEVELS.findIndex((item) => getOrderUnlockedTools(item).includes(toolId));
 	const currentIdx = LEVELS.findIndex((item) => item.id === orderId);
 	if (sourceIdx < 0 || currentIdx < 0 || sourceIdx >= currentIdx) return false;
 	return judgeMode || clearedStars.has(LEVELS[sourceIdx].id);

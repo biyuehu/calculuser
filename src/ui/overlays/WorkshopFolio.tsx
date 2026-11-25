@@ -7,6 +7,7 @@ import {
 	LEVELS,
 	deriveAchievementVisuals,
 	getGadgetMeta,
+	getOrderUnlockedTools,
 	isOrderUnlocked,
 	isToolUnlocked,
 } from "../../content";
@@ -184,11 +185,8 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 															{(() => {
 																if (!unlocked) return <span class="card-icon">🔒</span>;
 																if (stars !== void 0) {
-																	const meta = getGadgetMeta(
-																		order.mode === "build" && order.unlocksToolId !== void 0
-																			? order.unlocksToolId
-																			: order.id,
-																	);
+																	const unlockedTools = getOrderUnlockedTools(order);
+																	const meta = getGadgetMeta(unlockedTools[0] ?? order.id);
 																	return (
 																		<>
 																			<span class={`gadget-glyph sm ${meta.shape}`} style={{ background: meta.accent }}>

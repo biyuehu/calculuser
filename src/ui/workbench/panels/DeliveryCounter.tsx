@@ -12,7 +12,7 @@ interface DeliveryCounterProps {
 	readonly isLastOrder: boolean;
 	readonly rejected: boolean;
 	readonly rejectReason?: string;
-	readonly unlocksToolId?: string;
+	readonly unlocksToolIds?: readonly string[];
 	readonly onDeliver: () => void;
 	readonly onNextOrder: () => void;
 }
@@ -96,9 +96,9 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 				<span style={{ "font-size": "11.5px", color: "var(--text-secondary)", "text-align": "center" }}>
 					{props.note}
 				</span>
-				<Show when={props.unlocksToolId}>
+				<For each={props.unlocksToolIds ?? []}>
 					{(toolId) => {
-						const meta = getGadgetMeta(toolId());
+						const meta = getGadgetMeta(toolId);
 						return (
 							<div class="unlock-reward-tag">
 								<span
@@ -111,7 +111,7 @@ export function DeliveryCounter(props: DeliveryCounterProps): JSX.Element {
 							</div>
 						);
 					}}
-				</Show>
+				</For>
 				<Show when={!props.isLastOrder}>
 					<button
 						type="button"

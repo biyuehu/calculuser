@@ -1,6 +1,6 @@
 import { type JSX, Show, createEffect, createMemo, createSignal } from "solid-js";
 import { playFailSound, playSnapSound } from "../../audio/synth";
-import { type OrderLevel, unlockAchievement } from "../../content";
+import { type OrderLevel, getOrderUnlockedTools, unlockAchievement } from "../../content";
 import {
 	PRINT_NAMES,
 	type Path,
@@ -473,7 +473,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					isLastOrder={props.isLastOrder}
 					rejected={props.order.mode !== "sandbox" && (session.rejected() !== null || session.typeError() !== null)}
 					rejectReason={session.typeError() ?? (session.rejected() !== null ? "未能通过客人测试用例" : void 0)}
-					unlocksToolId={props.order.mode === "build" ? props.order.unlocksToolId : void 0}
+					unlocksToolIds={getOrderUnlockedTools(props.order)}
 					onDeliver={props.order.mode === "sandbox" ? session.startOrStepPlay : session.deliverOrder}
 					onNextOrder={props.onNextOrder}
 				/>

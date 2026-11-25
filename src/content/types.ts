@@ -41,7 +41,7 @@ export interface BuildOrder {
 	readonly atoms: readonly string[];
 	readonly parSize: number;
 	readonly tests: readonly JudgeTestCase[];
-	readonly unlocksToolId?: GadgetId;
+	readonly unlocksToolId?: GadgetId | readonly GadgetId[];
 	readonly note: string;
 }
 

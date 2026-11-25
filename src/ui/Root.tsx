@@ -10,6 +10,7 @@ import {
 	SANDBOX_ORDER,
 	getContinueOrderIndex,
 	getOrderCode,
+	getOrderUnlockedTools,
 	getToolDefinition,
 	getUnlockedAchievements,
 	isToolUnlocked,
@@ -62,15 +63,12 @@ function syncRegistryWithUnlocked(registry: Registry, stars: ReadonlyMap<string,
 			registry.delete(key);
 	}
 	for (const order of LEVELS)
-		if (
-			order.mode === "build" &&
-			order.unlocksToolId !== void 0 &&
-			isToolUnlocked(order.unlocksToolId, stars, isJudge)
-		) {
-			const tool = getToolDefinition(order.unlocksToolId);
-			if (tool !== null && !registry.has(tool.id))
-				registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
-		}
+		for (const toolId of getOrderUnlockedTools(order))
+			if (isToolUnlocked(toolId, stars, isJudge)) {
+				const tool = getToolDefinition(toolId);
+				if (tool !== null && !registry.has(tool.id))
+					registerGadget(registry, tool.id, parseLambda(tool.defText), "level");
+			}
 }
 
 export function Root(): JSX.Element {

@@ -5,6 +5,7 @@ import {
 	COMBINATORS,
 	LEVELS,
 	type OrderLevel,
+	getOrderUnlockedTools,
 	isToolAvailableForOrder,
 	unlockAchievement,
 } from "../content";
@@ -105,7 +106,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		if (order.mode !== "build") return 0;
 		const currentIdx = LEVELS.findIndex((item) => item.id === order.id);
 		return COMBINATORS.slice(BUILTIN_COUNT).filter((tool) => {
-			const sourceIdx = LEVELS.findIndex((item) => item.mode === "build" && item.unlocksToolId === tool.id);
+			const sourceIdx = LEVELS.findIndex((item) => getOrderUnlockedTools(item).includes(tool.id));
 			return sourceIdx >= 0 && sourceIdx < currentIdx && !isToolAvailableForOrder(tool.id, order.id, stars, isJudge);
 		}).length;
 	});

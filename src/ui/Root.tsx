@@ -1,5 +1,4 @@
 import { type JSX, Show, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
-import { getUnlockedAchievements, subscribeAchievements, unlockAchievement } from "../achievements";
 import { playPassSound, setMasterVolume } from "../audio/synth";
 import {
 	type AchievementDefinition,
@@ -12,7 +11,10 @@ import {
 	getContinueOrderIndex,
 	getOrderCode,
 	getToolDefinition,
+	getUnlockedAchievements,
 	isToolUnlocked,
+	subscribeAchievements,
+	unlockAchievement,
 } from "../content";
 import { type Registry, createRegistry, parseLambda, registerGadget } from "../engine";
 import {
@@ -168,6 +170,16 @@ export function Root(): JSX.Element {
 
 	let toastExitTimer: number | undefined;
 	let toastClearTimer: number | undefined;
+	let toastGapTimer: number | undefined;
+
+	const clearToastTimers = (): void => {
+		if (toastExitTimer !== void 0) window.clearTimeout(toastExitTimer);
+		if (toastClearTimer !== void 0) window.clearTimeout(toastClearTimer);
+		if (toastGapTimer !== void 0) window.clearTimeout(toastGapTimer);
+		toastExitTimer = void 0;
+		toastClearTimer = void 0;
+		toastGapTimer = void 0;
+	};
 
 	const showNextToast = (): void => {
 		if (activeToast() !== null || toastQueue().length === 0) return;
@@ -175,26 +187,31 @@ export function Root(): JSX.Element {
 		setToastQueue(rest);
 		setToastExiting(false);
 		setActiveToast(next);
-		playPassSound();
-		const exitDelay = settings().reducedMotion ? 1600 : 3000;
-		const clearDelay = settings().reducedMotion ? 1700 : 3320;
+		clearToastTimers();
+		const exitDelay = settings().reducedMotion ? 1600 : 2800;
+		const clearDelay = settings().reducedMotion ? 1700 : 3120;
 		toastExitTimer = window.setTimeout(() => setToastExiting(true), exitDelay);
 		toastClearTimer = window.setTimeout(() => {
 			setActiveToast(null);
-			showNextToast();
+			if (toastQueue().length > 0)
+				toastGapTimer = window.setTimeout(showNextToast, settings().reducedMotion ? 60 : 180);
 		}, clearDelay);
+		try {
+			playPassSound();
+		} catch {
+			// Audio context may be blocked before first user gesture
+		}
 	};
 
 	createEffect(() => {
 		const unsubscribe = subscribeAchievements((def) => {
 			setUnlockedAchievements(getUnlockedAchievements());
 			setToastQueue((prev) => [...prev, def]);
-			showNextToast();
+			if (activeToast() === null && toastGapTimer === void 0) showNextToast();
 		});
 		onCleanup(() => {
 			unsubscribe();
-			if (toastExitTimer !== void 0) window.clearTimeout(toastExitTimer);
-			if (toastClearTimer !== void 0) window.clearTimeout(toastClearTimer);
+			clearToastTimers();
 		});
 	});
 

@@ -1138,21 +1138,22 @@ body {
 /* Dialogue Box Bottom HUD */
 .dialogue-box {
 	position: absolute;
-	bottom: 24px;
-	width: 680px;
+	bottom: 28px;
+	width: 860px;
 	max-width: 92vw;
-	height: 128px;
+	height: 176px;
 	box-sizing: border-box;
 	background: rgba(255, 255, 255, 0.95);
 	backdrop-filter: blur(14px);
 	border: 1.5px solid var(--border-strong);
 	border-left: 6px solid var(--accent-clay);
-	border-radius: 12px;
-	padding: 16px 22px;
+	border-radius: 14px;
+	padding: 20px 28px;
 	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+	gap: 8px;
 	z-index: 10;
 	cursor: pointer;
 }
@@ -1166,15 +1167,15 @@ body {
 .dialogue-speaker-pill {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	font-weight: 700;
-	font-size: 13px;
+	font-size: 15px;
 	color: var(--text-primary);
 }
 
 .dialogue-speaker-dot {
-	width: 8px;
-	height: 8px;
+	width: 9px;
+	height: 9px;
 	border-radius: 50%;
 	background: var(--accent-clay);
 }
@@ -1189,8 +1190,8 @@ body {
 	background: var(--surface-2);
 	border: 1px solid var(--border-subtle);
 	border-radius: 6px;
-	padding: 3px 10px;
-	font-size: 11px;
+	padding: 4px 12px;
+	font-size: 12px;
 	font-weight: 600;
 	color: var(--text-muted);
 	cursor: pointer;
@@ -1209,8 +1210,8 @@ body {
 }
 
 .dialogue-text {
-	font-size: 14.5px;
-	line-height: 1.6;
+	font-size: 16.5px;
+	line-height: 1.7;
 	color: var(--text-primary);
 	margin: 0;
 	flex: 1;
@@ -1228,7 +1229,7 @@ body {
 }
 
 .dialogue-prompt-hint {
-	font-size: 11px;
+	font-size: 12px;
 	color: var(--text-muted);
 	font-weight: 500;
 }
@@ -1236,13 +1237,13 @@ body {
 /* Floating Dialogue Choices */
 .dialogue-choices-floating {
 	position: absolute;
-	bottom: calc(100% + 12px);
+	bottom: calc(100% + 16px);
 	right: 0;
-	width: 380px;
+	width: 460px;
 	max-width: 90vw;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 10px;
 	z-index: 20;
 	pointer-events: auto;
 	animation: dialogueChoicesFloatIn 0.22s var(--ease-smooth);
@@ -1262,17 +1263,17 @@ body {
 .dialogue-choice-btn {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 14px;
 	width: 100%;
-	padding: 10px 14px;
+	padding: 13px 18px;
 	background: rgba(255, 255, 255, 0.95);
 	backdrop-filter: blur(12px);
 	border: 1.5px solid var(--border-subtle);
 	border-left: 4px solid var(--accent-clay);
-	border-radius: 8px;
+	border-radius: 10px;
 	color: var(--text-primary);
 	font-family: var(--font-sans);
-	font-size: 13.5px;
+	font-size: 15px;
 	font-weight: 500;
 	text-align: left;
 	cursor: pointer;
@@ -1292,13 +1293,13 @@ body {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 20px;
-	height: 20px;
-	border-radius: 4px;
+	width: 24px;
+	height: 24px;
+	border-radius: 5px;
 	background: var(--surface-2);
 	border: 1px solid var(--border-subtle);
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 700;
 	color: var(--accent-clay);
 	flex-shrink: 0;
@@ -1312,11 +1313,11 @@ body {
 
 .dialogue-choice-text {
 	flex: 1;
-	line-height: 1.4;
+	line-height: 1.45;
 }
 
 .dialogue-choice-arrow {
-	font-size: 14px;
+	font-size: 16px;
 	color: var(--text-muted);
 	opacity: 0.6;
 	transform: translateX(0);

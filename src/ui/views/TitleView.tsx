@@ -36,9 +36,7 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 			<div class={`title-card ${isStarting() ? "title-exit" : ""}`}>
 				<header class="title-header">
 					<img src="/logo.png" alt="Calculuser Logo" class="title-logo" />
-					<h1 class="title-wordmark" data-text="Calculuser">
-						Calculuser
-					</h1>
+					<h1 class="title-wordmark">Calculuser</h1>
 					<div class="title-ornament" aria-hidden="true">
 						<span class="title-ornament-line" />
 						<span class="title-ornament-glyph">λ</span>

@@ -1,5 +1,6 @@
 import { type Accessor, createMemo, createSignal } from "solid-js";
 import { playFailSound, playSnapSound, playUndoSound } from "../audio/synth";
+import { unlockAchievement } from "../content";
 import {
 	type DraftTerm,
 	PRINT_NAMES,
@@ -123,11 +124,13 @@ export function useDraftWorkbench(options: UseDraftWorkbenchOptions): DraftWorkb
 		const f = () => ((_) => showNotice(`已达到最大插槽深度限制（${PRINT_NAMES.length} 层）`))(playFailSound());
 		if (currentScope().length >= PRINT_NAMES.length) {
 			f();
+			unlockAchievement("max_lam_depth");
 			return;
 		}
 		const available = PRINT_NAMES.find((candidate) => !currentScope().includes(candidate));
 		if (available === void 0) {
 			f();
+			unlockAchievement("max_lam_depth");
 			return;
 		}
 		applyReplacement({ kind: "lam", param: available, body: { kind: "hole" } });

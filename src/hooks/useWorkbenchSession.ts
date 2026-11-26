@@ -1,5 +1,5 @@
 import { type Accessor, createEffect, createMemo, onCleanup, onMount, untrack } from "solid-js";
-import type { OrderLevel } from "../content";
+import { type OrderLevel, unlockAchievement } from "../content";
 import {
 	type DraftTerm,
 	type GadgetId,
@@ -111,12 +111,26 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		return order.mode === "run" && delivery.deliveredStars() === null && tapePlay.tapeIndex() >= order.stepBudget;
 	});
 
+	let undoCount = 0;
+
+	const recordUndoAction = (): void => {
+		undoCount += 1;
+		if (undoCount >= 10) unlockAchievement("undo_maniac");
+	};
+
 	const undo = (): void => {
 		if (options.order().mode === "run" || tapePlay.playTerm() !== null) {
+			if (tapePlay.canUndoTape()) recordUndoAction();
 			tapePlay.undoTape();
 			return;
 		}
+		if (draftBench.canUndoDraft()) recordUndoAction();
 		draftBench.undoDraft();
+	};
+
+	const stepBackward = (): void => {
+		if (tapePlay.tapeIndex() > 0) recordUndoAction();
+		tapePlay.stepBackward();
 	};
 
 	const clearBench = (): void => {
@@ -152,6 +166,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 
 	createEffect(() => {
 		const order = options.order();
+		undoCount = 0;
 		draftBench.flushDraft();
 		const stars = untrack(() => options.clearedStars().get(order.id));
 		delivery.resetDelivery();
@@ -202,7 +217,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		fillLam: draftBench.fillLam,
 		updateLamTypeAtPath: draftBench.updateLamTypeAtPath,
 		jumpToTapeIndex: tapePlay.jumpToTapeIndex,
-		stepBackward: tapePlay.stepBackward,
+		stepBackward,
 		stepForward: tapePlay.stepForward,
 		undo,
 		clearBench,

@@ -245,6 +245,12 @@ export function Root(): JSX.Element {
 		syncSceneBgm({ mode: "scene", trackId: resolveOrderBgm(currentOrder(), LEVELS), unlockedIds: unlocked });
 	});
 
+	createEffect(() => {
+		if (screen() !== "title" || showIntro() || showFolio() || showMachinery()) return;
+		const timer = window.setTimeout(() => unlockAchievement("title_linger"), 120_000);
+		onCleanup(() => window.clearTimeout(timer));
+	});
+
 	const handleNextOrderAdvance = (): void => {
 		const beat = LEVEL_DIALOGUES[currentOrder().id];
 		if (beat !== void 0 && (!settings().autoSkipRead || !loadSeenDialogues().has(beat.id))) {

@@ -21,9 +21,20 @@ import {
 	judgeNormalize,
 	judgeOrder,
 } from "../engine";
+import { loadSettings } from "../storage";
 import type { RejectedInfo } from "../ui/workbench/panels/OrderSlip";
 
 const JUDGE_MAX_STEPS = 300;
+
+const ORDER_ACHIEVEMENTS: Readonly<Record<string, string>> = {
+	build_s: "ch2_self_s",
+	pair: "ch3_product_pair",
+	tb_either_right: "ch4_sum_types",
+	pred: "ch5_church_pred",
+	tree_sum: "ch6_tree_fold",
+	fix_y: "ch7_fixpoint_y",
+	rec_fib: "turing_complete",
+};
 
 function collectUsedGadgets(term: Term): readonly GadgetId[] {
 	switch (term.kind) {
@@ -108,7 +119,10 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		unlockAchievement("first_order");
 		if (stars === 3) unlockAchievement("three_star_craft");
 		if (options.xRayMode()) unlockAchievement("xray_inspector");
-		if (order.id === "rec_fib") unlockAchievement("turing_complete");
+		const audioSettings = loadSettings();
+		if (audioSettings.volume === 0 && audioSettings.bgmVolume === 0) unlockAchievement("silent_craft");
+		const orderAchievement = ORDER_ACHIEVEMENTS[order.id];
+		if (orderAchievement !== void 0) unlockAchievement(orderAchievement);
 		const clearedIds = new Set(options.clearedStars().keys());
 		clearedIds.add(order.id);
 		if (LEVELS.every((lvl) => clearedIds.has(lvl.id))) unlockAchievement("all_orders_cleared");
@@ -159,6 +173,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 			setRejected(null);
 			const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
 			recordOrderClear(order, stars);
+			if (partCount < order.parSize) unlockAchievement("code_golf");
 			const usedGadgets = collectUsedGadgets(candidate);
 			if (usedGadgets.length === 0) unlockAchievement("pure_lambda");
 			else if ((order.chapter ?? 1) >= 2 && usedGadgets.every((id) => id === "I" || id === "K" || id === "S")) {
@@ -192,6 +207,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 				setTypeError(null);
 				const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
 				recordOrderClear(order, stars);
+				if (partCount < order.parSize) unlockAchievement("code_golf");
 				if (!termUsesAnyType(candidate)) unlockAchievement("static_typist");
 			} catch (err) {
 				playFailSound();

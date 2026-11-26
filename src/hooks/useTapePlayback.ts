@@ -14,8 +14,9 @@ import {
 
 function playStepEventSound(event: StepEvent, stepCount: number): void {
 	const count = event.kind === "beta" ? event.copies : event.copies.length > 0 ? event.copies[0] : 1;
-	if (event.kind === "beta" ? event.copies >= 4 : event.copies.some((c) => c >= 4)) unlockAchievement("copy_explosion");
-	if (event.kind === "beta" ? event.copies >= 4 : event.copies.some((c) => c >= 4)) unlockAchievement("copy_explosion");
+	const maxCopies = event.kind === "beta" ? event.copies : Math.max(0, ...event.copies);
+	if (maxCopies >= 4) unlockAchievement("copy_explosion");
+	if (maxCopies >= 16) unlockAchievement("mega_explosion");
 	if (count === 0) playDropSound();
 	else if (count >= 2) playSplitSound();
 	else {
@@ -121,6 +122,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		setTape(updatedTape);
 		setTapeIndex(updatedTape.length - 1);
 		setPlayTerm(stepped.next);
+		if (updatedTape.length - 1 > 200) unlockAchievement("marathon_tape");
 	};
 
 	const fastForwardPlay = (): void => {
@@ -142,6 +144,7 @@ export function useTapePlayback(options: UseTapePlaybackOptions): TapePlayback {
 		setTape(recorded);
 		setTapeIndex(recorded.length - 1);
 		setPlayTerm(current);
+		if (recorded.length - 1 > 200) unlockAchievement("marathon_tape");
 	};
 
 	const stopPlay = (): void => {

@@ -45,7 +45,7 @@ export const PROLOGUE_DIALOGUE: DialogueBeat = {
 			[
 				"老师傅信里没说去哪里了吗？",
 				[
-					textLine("没有呢，他只说「等新的工坊主把所有绘图室都重新点亮，自然就会明白」。", "church", "default"),
+					textLine("没有呢，他只说「等新的工坊主把所有绘图室都重新点亮，自然就会明白」。", "church", "confused"),
 					textLine(
 						"而且临走前，他还在最深处的抽屉里锁了几张没标任何类型铭牌的危险草图……以后咱们会见到的。",
 						"church",
@@ -66,11 +66,11 @@ export const TITLE_SECRET_DIALOGUE: DialogueBeat = {
 	lines: [
 		textLine("呜哇——？！你是怎么发现我躲在看板后面的？！", "church", "wow"),
 		textLine("刚才就看见角落里有个淡粉色的小点，戳一下果然是你。", "me", "default"),
-		textLine("唔……我只是在偷偷擦拭门牌上的 λ 徽章，顺便看看你什么时候才肯推门进工坊嘛。", "church", "happy"),
+		textLine("唔……我只是在偷偷擦拭门牌上的 λ 徽章，顺便看看你什么时候才肯推门进工坊嘛。", "church", "speechless"),
 		choicesLine([
 			[
 				"原来招牌后面还藏着偷懒位",
-				textLine("才没有偷懒！这是工坊的隐蔽观测哨，方便提前打量今天会不会来奇怪的委托人。", "church", "wow"),
+				textLine("才没有偷懒！这是工坊的隐蔽观测哨，方便提前打量今天会不会来奇怪的委托人。", "church", "angry"),
 			],
 			["擦得挺亮的，辛苦了", textLine("嘿嘿，被师傅夸奖了！看板上的黄铜边角我也顺手抛过光了。", "church", "happy")],
 		]),
@@ -92,7 +92,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine(
 				"老师傅出远门前把这间绘图室和这台助手机械臂交给你，可客人们可不管工坊刚重启，外面已经排起队了。",
 				"church",
-				"default",
+				"speechless",
 			),
 			choicesLine([
 				[
@@ -194,7 +194,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine(
 				"手头有 A → B 和 B → C，看起来只差临门一脚就能产出 C；但正因为没有任何地方提供最初的原料 A，无论怎么接线都无法凭空变出一个 C。",
 				"church",
-				"default",
+				"confused",
 			),
 			textLine(
 				"在逻辑学与计算机科学中，这叫「柯里–霍华德同构（Curry-Howard Isomorphism）」：每一个类型就是一条数学命题，而能通过校验的程序就是这条命题的证明。",
@@ -239,7 +239,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine(
 				"老师傅在笔记本最后写过一句警告：「切勿把这种自复制结构直接喂给它自己，否则机器会永无止境地吞噬时间」。",
 				"church",
-				"default",
+				"speechless",
 			),
 			textLine("不过眼下先别急着碰那个禁区，第三间绘图室的客人正等着咱们做逻辑开关和打包盒呢。", "church", "happy"),
 		],
@@ -365,7 +365,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine(
 				"加一、加法、乘法、乘方、判零全都顺利拿下。可客人刚送来一张棘手订单：想要一台能把计数器「倒退减一」的机器。",
 				"church",
-				"default",
+				"confused",
 			),
 			textLine(
 				"邱奇数只会把动作往前多套一次，怎么才能反过来剥掉一层呢？秘密在于第三章学过的「打包盒」滑移配对。",
@@ -398,7 +398,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine(
 				"设想一下：假如每一步加工会把一件货物裂变成一条小清单（a → List b），直接用 map 就会叠出「清单套清单」的双层嵌套。",
 				"church",
-				"default",
+				"confused",
 			),
 			choicesLine([
 				[
@@ -432,7 +432,7 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 			textLine(
 				"上面没有画任何类型铭牌，只有一个首尾相连的自吞环。准备好进入最后的奇异点绘图室了吗？",
 				"church",
-				"default",
+				"confused",
 			),
 		],
 	},
@@ -475,6 +475,17 @@ export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 				"happy",
 			),
 			textLine("好，去把最后这台斐波那契数列机也交出去。", "me", "default"),
+		],
+	},
+	rec_fib: {
+		id: "ch7_epilogue",
+		title: "灯火通明之室",
+		lines: [
+			textLine("斐波那契数列机也验收通过了！七间绘图室的灯火已经全部重新点亮。", "church", "happy"),
+			textLine("刚才还以为在序数、链表和不动点里要绕很久呢，结果一眨眼就全都跑通了。", "church", "speechless"),
+			textLine("不过别以为这就结束了——自由沙盒实验台和工坊图鉴里还有的是折腾空间，可不准偷偷溜走。", "church", "angry"),
+			textLine("放心，以后随时回来拼几个新组合子玩。", "me", "default"),
+			textLine("一言为定！那我就在柜台这边继续帮你擦看板、看库存啦，工坊主。", "church", "happy"),
 		],
 	},
 };

@@ -90,7 +90,7 @@ export type OrderLevel = BuildOrder | RunOrder | TypeBuildOrder | SandboxOrder;
 
 export type DialogueSpeaker = "me" | "church" | "guest" | "master";
 
-export type DialogueFace = "default" | "happy" | "wow";
+export type DialogueFace = "default" | "happy" | "wow" | "speechless" | "angry" | "confused";
 
 export interface TextLine {
 	readonly text: string;

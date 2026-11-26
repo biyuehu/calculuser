@@ -30,6 +30,9 @@ const CHARACTER_STANDEES: Partial<Record<DialogueSpeaker, Partial<Record<Dialogu
 		default: "/characters/church_default.png",
 		happy: "/characters/church_happy.png",
 		wow: "/characters/church_wow.png",
+		speechless: "/characters/church_speechless.png",
+		angry: "/characters/church_angry.png",
+		confused: "/characters/church_confused.png",
 	},
 	guest: {
 		default: "/characters/guest_default.svg",
@@ -43,6 +46,9 @@ const PRELOAD_STANDEES = [
 	"/characters/church_default.png",
 	"/characters/church_happy.png",
 	"/characters/church_wow.png",
+	"/characters/church_speechless.png",
+	"/characters/church_angry.png",
+	"/characters/church_confused.png",
 	"/characters/guest_default.svg",
 	"/characters/master_default.svg",
 ] as const;

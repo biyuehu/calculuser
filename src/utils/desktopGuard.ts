@@ -1,4 +1,4 @@
-import { isTauri } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 export const isDesktop = (): boolean => typeof window !== "undefined" && (isTauri() || "__TAURI_INTERNALS__" in window);
@@ -22,6 +22,22 @@ export function setupDesktopGuard(): void {
 	window.addEventListener("dragstart", (event) => {
 		event.preventDefault();
 	});
+
+	window.addEventListener(
+		"click",
+		(event) => {
+			if (!(event.target instanceof Element)) return;
+			const anchor = event.target.closest("a[href]");
+			if (anchor === null) return;
+			const href = anchor.getAttribute("href");
+			if (href === null || (!href.startsWith("https://") && !href.startsWith("http://"))) return;
+			event.preventDefault();
+			void invoke("open_external_url", { url: href }).catch((error) => {
+				console.error("Failed to open external URL:", error);
+			});
+		},
+		{ capture: true },
+	);
 
 	window.addEventListener(
 		"wheel",

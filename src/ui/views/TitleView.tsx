@@ -55,9 +55,10 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 						class="title-primary-btn"
 						style={{
 							"margin-top": "8px",
-							background: "var(--paper-card)",
+							background: "var(--surface-2)",
 							color: "var(--text-primary)",
-							border: "1px solid var(--border-color)",
+							border: "1px solid var(--border-strong)",
+							"box-shadow": "none",
 						}}
 						onClick={props.onOpenSandbox}
 						disabled={isStarting()}

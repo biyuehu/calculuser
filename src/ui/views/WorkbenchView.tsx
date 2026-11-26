@@ -264,7 +264,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					<span>
 						工坊 · {props.order.mode !== "sandbox" && props.order.chapter ? `第 ${props.order.chapter} 章` : "其它"}
 					</span>
-					<span style={{ color: "var(--accent-clay)" }}>{props.order.title}</span>
+					<span style={{ color: "var(--accent-rose)" }}>{props.order.title}</span>
 					<span style={{ color: "var(--text-muted)", "font-size": "11px" }}>▾</span>
 				</button>
 

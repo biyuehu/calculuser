@@ -1,4 +1,5 @@
 import { type JSX, Show, createSignal } from "solid-js";
+import { version } from "../../../package.json";
 import { setBgmVolume } from "../../audio/bgm";
 import { playFailSound, playPassSound, setMasterVolume } from "../../audio/synth";
 import { type SettingsState, exportSaveJson, importSaveJson } from "../../storage";
@@ -547,7 +548,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 									</a>
 								</li>
 								<li>
-									<strong>版本与协议</strong> · v0.1.0 · GPL-3.0 · Copyright © 2026 Arimura Romi
+									<strong>版本与协议</strong> · v{version} · GPL-3.0 · Copyright © 2026 Arimura Romi
 								</li>
 							</ul>
 						</div>

@@ -366,6 +366,9 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 									<span class="folio-status-badge">
 										◈ 成就 {Object.keys(props.unlockedAchievements).length} / {ACHIEVEMENTS.length}
 									</span>
+									<span class="folio-status-badge">
+										♪ 音乐 {props.judgeMode ? BGM_TRACKS.length : props.unlockedMusic.length} / {BGM_TRACKS.length}
+									</span>
 								</div>
 							</div>
 

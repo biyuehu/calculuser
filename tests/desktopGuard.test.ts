@@ -9,7 +9,10 @@ describe("Desktop Guard Layer", () => {
 	it("registers desktop guard listeners when in desktop mode", () => {
 		const listeners = new Map<string, (e: { defaultPrevented: boolean; preventDefault: () => void }) => void>();
 		const mockWindow = {
-			__TAURI_INTERNALS__: {},
+			__TAURI_INTERNALS__: {
+				metadata: { currentWindow: { label: "main" } },
+				invoke: async () => false,
+			},
 			addEventListener: (
 				event: string,
 				handler: (e: { defaultPrevented: boolean; preventDefault: () => void }) => void,
@@ -59,5 +62,20 @@ describe("Desktop Guard Layer", () => {
 		// biome-ignore lint/suspicious/noExplicitAny: mock event
 		(listeners.get("keydown") as any)?.(ctrlREvent);
 		expect(ctrlREvent.defaultPrevented).toBe(true);
+
+		// F11 should be handled in desktop mode
+		const f11Event = {
+			key: "F11",
+			ctrlKey: false,
+			metaKey: false,
+			repeat: false,
+			defaultPrevented: false,
+			preventDefault() {
+				this.defaultPrevented = true;
+			},
+		};
+		// biome-ignore lint/suspicious/noExplicitAny: mock event
+		(listeners.get("keydown") as any)?.(f11Event);
+		expect(f11Event.defaultPrevented).toBe(true);
 	});
 });

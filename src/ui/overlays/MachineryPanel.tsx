@@ -391,6 +391,12 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								</div>
 							</div>
 							<div class="shortcut-row">
+								<span>切换全屏显示</span>
+								<div class="shortcut-key-badge">
+									<span class="key-cap">F11</span>
+								</div>
+							</div>
+							<div class="shortcut-row">
 								<span>画布缩放</span>
 								<div class="shortcut-key-badge">
 									<span class="key-cap">+</span>

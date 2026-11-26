@@ -1,6 +1,16 @@
 import { isTauri } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 export const isDesktop = (): boolean => typeof window !== "undefined" && (isTauri() || "__TAURI_INTERNALS__" in window);
+
+const toggleDesktopFullscreen = async (): Promise<void> => {
+	try {
+		const currentWindow = getCurrentWindow();
+		await currentWindow.setFullscreen(!(await currentWindow.isFullscreen()));
+	} catch (error) {
+		console.error("Failed to toggle desktop fullscreen:", error);
+	}
+};
 
 export function setupDesktopGuard(): void {
 	if (!isDesktop()) return;
@@ -21,37 +31,47 @@ export function setupDesktopGuard(): void {
 		{ passive: false },
 	);
 
-	window.addEventListener("keydown", (event) => {
-		if (import.meta.env.PROD) {
-			if (event.key === "F12") {
+	window.addEventListener(
+		"keydown",
+		(event) => {
+			if (event.key === "F11") {
+				event.preventDefault();
+				if (!event.repeat) void toggleDesktopFullscreen();
+				return;
+			}
+
+			if (import.meta.env.PROD) {
+				if (event.key === "F12") {
+					event.preventDefault();
+					return;
+				}
+				if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "i") {
+					event.preventDefault();
+					return;
+				}
+			}
+
+			if (event.key === "F5") {
 				event.preventDefault();
 				return;
 			}
-			if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "i") {
-				event.preventDefault();
-				return;
-			}
-		}
 
-		if (event.key === "F5") {
-			event.preventDefault();
-			return;
-		}
-
-		if (event.ctrlKey || event.metaKey) {
-			const lowerKey = event.key.toLowerCase();
-			if (
-				lowerKey === "r" ||
-				lowerKey === "p" ||
-				lowerKey === "u" ||
-				lowerKey === "f" ||
-				lowerKey === "0" ||
-				lowerKey === "=" ||
-				lowerKey === "+" ||
-				lowerKey === "-"
-			) {
-				event.preventDefault();
+			if (event.ctrlKey || event.metaKey) {
+				const lowerKey = event.key.toLowerCase();
+				if (
+					lowerKey === "r" ||
+					lowerKey === "p" ||
+					lowerKey === "u" ||
+					lowerKey === "f" ||
+					lowerKey === "0" ||
+					lowerKey === "=" ||
+					lowerKey === "+" ||
+					lowerKey === "-"
+				) {
+					event.preventDefault();
+				}
 			}
-		}
-	});
+		},
+		{ capture: true },
+	);
 }

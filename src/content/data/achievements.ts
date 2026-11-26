@@ -69,4 +69,10 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
 	{ id: "all_orders_cleared", title: "全卷宗制霸", description: "通关工坊全部正式委托订单" },
 	{ id: "full_compendium", title: "零件全图鉴", description: "解锁工坊图鉴中的全部内置组合子零件" },
 	{ id: "secret_peek", title: "看板背后", description: "在主标题界面发现并戳中躲在角落的小丘", hidden: true },
+	{
+		id: "ascension",
+		title: "我要登神",
+		description: "在网页端打开开发者工具，窥探工坊底层的演算源码",
+		hidden: true,
+	},
 ];

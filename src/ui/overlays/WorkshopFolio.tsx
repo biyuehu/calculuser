@@ -14,10 +14,13 @@ import {
 	isOrderUnlocked,
 	isToolUnlocked,
 } from "../../content";
+import { isDesktop } from "../../utils/desktopGuard";
 import { useKeyScope } from "../../utils/keybus";
 import { transitionView } from "../../utils/transition";
 
 type FolioTab = "orders" | "parts" | "achievements" | "music";
+
+const visibleAchievements = isDesktop() ? ACHIEVEMENTS.filter((item) => item.id !== "ascension") : ACHIEVEMENTS;
 
 interface WorkshopFolioProps {
 	readonly initialTab?: FolioTab;
@@ -364,7 +367,8 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 										/ {COMBINATORS.length}
 									</span>
 									<span class="folio-status-badge">
-										◈ 成就 {Object.keys(props.unlockedAchievements).length} / {ACHIEVEMENTS.length}
+										◈ 成就 {visibleAchievements.filter((item) => props.unlockedAchievements[item.id] !== void 0).length}{" "}
+										/ {visibleAchievements.length}
 									</span>
 									<span class="folio-status-badge">
 										♪ 音乐 {props.judgeMode ? BGM_TRACKS.length : props.unlockedMusic.length} / {BGM_TRACKS.length}
@@ -378,7 +382,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 									class="compendium-grid"
 									style={{ "grid-template-columns": "repeat(auto-fill, minmax(250px, 1fr))" }}
 								>
-									<For each={ACHIEVEMENTS}>
+									<For each={visibleAchievements}>
 										{(item) => {
 											const unlocked = (): boolean => props.unlockedAchievements[item.id] !== void 0;
 											const masked = (): boolean => !unlocked() && item.hidden === true;

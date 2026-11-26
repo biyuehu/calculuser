@@ -1924,7 +1924,7 @@ body {
 	font-weight: 800;
 	letter-spacing: 0.04em;
 	line-height: 1.1;
-	background: linear-gradient(175deg, #1e1914 0%, #4b3d30 48%, #8b5e4b 82%, #c58262 100%);
+	background: linear-gradient(175deg, #f3faf8 0%, #bfece0 50%, #d4adb6 86%, #e8cbd1 100%);
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;

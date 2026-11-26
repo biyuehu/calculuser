@@ -238,11 +238,17 @@ export function Root(): JSX.Element {
 
 	createEffect(() => {
 		const unlocked = unlockedMusic();
-		if (showIntro() || showPrologueMonologue() || screen() === "title") {
+		const beat = activeBeat();
+		if (
+			showIntro() ||
+			showPrologueMonologue() ||
+			screen() === "title" ||
+			(beat !== null && beat.id === PROLOGUE_DIALOGUE.id)
+		) {
 			syncSceneBgm({ mode: "scene", trackId: "intro", unlockedIds: unlocked });
 			return;
 		}
-		if (cameraView() === "counter" || activeBeat() !== null) {
+		if (cameraView() === "counter" || beat !== null) {
 			syncSceneBgm({ mode: "scene", trackId: "outro", unlockedIds: unlocked });
 			return;
 		}
@@ -358,6 +364,10 @@ export function Root(): JSX.Element {
 							clearedStars().size === 0 &&
 							!loadSeenDialogues().has(PROLOGUE_DIALOGUE.id)
 						) {
+							setCounterReturnMode("enter_workbench");
+							setActiveBeat(PROLOGUE_DIALOGUE);
+							setCameraView("counter");
+							setScreen("workbench");
 							setShowPrologueMonologue(true);
 							return;
 						}
@@ -391,10 +401,6 @@ export function Root(): JSX.Element {
 					reducedMotion={settings().reducedMotion}
 					onComplete={() => {
 						setShowPrologueMonologue(false);
-						setCounterReturnMode("enter_workbench");
-						setActiveBeat(PROLOGUE_DIALOGUE);
-						setCameraView("counter");
-						setScreen("workbench");
 					}}
 				/>
 			</Show>

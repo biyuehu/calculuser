@@ -18,5 +18,3 @@ if (typeof window !== "undefined" && !isDesktop()) {
 }
 
 ((root) => root !== null && render(() => Root(), root))(document.getElementById("root"));
-
-// TODO: 网页、EXE中等地方的人员与关于信息写了

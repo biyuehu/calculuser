@@ -494,8 +494,7 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 							</p>
 							<p style={{ "margin-top": "8px" }}>
 								游戏中的所有装置均严格遵循 α-等价、β-归约与类型一致性规则，并非黑盒脚本。从基础的 I、K、S
-								组合子起步，经由布尔逻辑、邱奇数（Church Numerals）、不动点递归（Y / Turing
-								Fixpoint）到带类型标注的零件装配与自由沙盒推演，所有高级构件均由基础零件逐层封装而成。
+								组合子起步，经由布尔逻辑、邱奇数、不动点递归到带类型标注的零件装配与自由沙盒推演，所有高级构件均由基础零件逐层封装而成。
 							</p>
 						</div>
 
@@ -528,6 +527,27 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								</li>
 								<li>
 									Benjamin C. Pierce · <em>Types and Programming Languages</em> (TAPL)
+								</li>
+							</ul>
+						</div>
+
+						<div class="archive-references">
+							<div class="archive-ref-title">制作与版权</div>
+							<ul class="archive-ref-list">
+								<li>
+									<strong>制作者</strong> ·{" "}
+									<a href="https://github.com/biyuehu" target="_blank" rel="noreferrer">
+										Arimura Romi
+									</a>
+								</li>
+								<li>
+									<strong>项目主页</strong> ·{" "}
+									<a href="https://github.com/biyuehu/calculuser" target="_blank" rel="noreferrer">
+										https://github.com/biyuehu/calculuser
+									</a>
+								</li>
+								<li>
+									<strong>版本与协议</strong> · v0.1.0 · GPL-3.0 · Copyright © 2026 Arimura Romi
 								</li>
 							</ul>
 						</div>

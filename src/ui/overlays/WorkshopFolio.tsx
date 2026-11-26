@@ -452,6 +452,15 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 										}}
 									</For>
 								</div>
+								<div class="music-credit-banner">
+									<span class="music-credit-brand">
+										POWERED BY{" "}
+										<a href="https://republic-of-narcissus.icu/" target="_blank" rel="noreferrer">
+											Narcisse Musique
+										</a>
+									</span>
+									<span class="music-credit-composer">Composed by JZWSBDEM</span>
+								</div>
 							</div>
 						</div>
 					</Show>

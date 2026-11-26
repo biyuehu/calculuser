@@ -46,7 +46,13 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 				</header>
 
 				<div class="title-actions">
-					<button type="button" class="title-primary-btn" onClick={handleStart} disabled={isStarting()}>
+					<button
+						type="button"
+						class="title-primary-btn"
+						style={{ color: "var(--text-primary)" }}
+						onClick={handleStart}
+						disabled={isStarting()}
+					>
 						<span>▶</span>
 						<span>{props.continueOrderCode === "1.1" ? "开始体验" : `继续关卡 · ${props.continueOrderCode}`}</span>
 					</button>

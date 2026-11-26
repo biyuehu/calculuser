@@ -230,6 +230,28 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 						<Show when={props.beat !== void 0 ? props.beat.title : void 0}>
 							{(title) => <div class="dialogue-scene-title">{title()}</div>}
 						</Show>
+						<div class="dialogue-header-actions dialogue-top-actions">
+							<button
+								type="button"
+								class={`dialogue-skip-btn ${props.autoSkipRead ? "active" : ""}`}
+								onClick={(event) => {
+									event.stopPropagation();
+									props.onToggleAutoSkipRead();
+								}}
+							>
+								{props.autoSkipRead ? "跳过已读 · 开" : "跳过已读 · 关"}
+							</button>
+							<button
+								type="button"
+								class="dialogue-skip-btn"
+								onClick={(event) => {
+									event.stopPropagation();
+									props.onSkip();
+								}}
+							>
+								跳过 ⏭
+							</button>
+						</div>
 						<Show when={currentStandee()}>
 							{(standee) => (
 								<div class={`avatar-standee avatar-${standee().face}`}>
@@ -260,28 +282,6 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 								<div class="dialogue-speaker-pill">
 									<span class="dialogue-speaker-dot" />
 									<span>{SPEAKER_NAMES[currentSpeaker()]}</span>
-								</div>
-								<div class="dialogue-header-actions">
-									<button
-										type="button"
-										class={`dialogue-skip-btn ${props.autoSkipRead ? "active" : ""}`}
-										onClick={(event) => {
-											event.stopPropagation();
-											props.onToggleAutoSkipRead();
-										}}
-									>
-										{props.autoSkipRead ? "自动跳过已读 · 开" : "自动跳过已读 · 关"}
-									</button>
-									<button
-										type="button"
-										class="dialogue-skip-btn"
-										onClick={(event) => {
-											event.stopPropagation();
-											props.onSkip();
-										}}
-									>
-										跳过 ⏭
-									</button>
 								</div>
 							</header>
 

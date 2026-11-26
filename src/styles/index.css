@@ -1629,6 +1629,13 @@ body {
 	gap: 8px;
 }
 
+.dialogue-top-actions {
+	position: absolute;
+	top: 22px;
+	right: 26px;
+	z-index: 10;
+}
+
 .dialogue-skip-btn {
 	background: var(--surface-2);
 	border: 1px solid var(--border-subtle);
@@ -3797,10 +3804,10 @@ html.reduced-motion::view-transition-new(*),
 	inset: 0;
 	z-index: 75;
 	display: flex;
-	align-items: flex-end;
+	align-items: center;
 	justify-content: center;
 	background: radial-gradient(circle at 50% 48%, #102a33 0%, #091a21 62%, #050f14 100%);
-	padding: 32px 32px 56px;
+	padding: 32px;
 	cursor: pointer;
 	user-select: none;
 	animation: titleScreenFadeIn 0.36s var(--ease-smooth);
@@ -3837,6 +3844,10 @@ html.reduced-motion::view-transition-new(*),
 }
 
 .prologue-monologue-hint {
+	position: fixed;
+	bottom: 32px;
+	left: 50%;
+	transform: translateX(-50%);
 	font-size: 12px;
 	color: var(--text-muted);
 	letter-spacing: 0.08em;

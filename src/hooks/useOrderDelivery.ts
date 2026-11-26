@@ -129,8 +129,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		const unlockedTools = new Set<string>(["I", "K", "S"]);
 		for (const lvl of LEVELS)
 			if (clearedIds.has(lvl.id)) for (const id of getOrderUnlockedTools(lvl)) unlockedTools.add(id);
-		if (COMBINATORS.slice(0, BUILTIN_COUNT).every((tool) => unlockedTools.has(tool.id)))
-			unlockAchievement("full_compendium");
+		if (COMBINATORS.every((tool) => unlockedTools.has(tool.id))) unlockAchievement("full_compendium");
 	};
 
 	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {

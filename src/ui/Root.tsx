@@ -1,8 +1,10 @@
 import { type JSX, Show, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
+import { setBgmVolume, syncSceneBgm } from "../audio/bgm";
 import { playPassSound, setMasterVolume } from "../audio/synth";
 import {
 	type AchievementDefinition,
 	BUILTIN_COUNT,
+	type BgmTrackId,
 	COMBINATORS,
 	type DialogueBeat,
 	LEVELS,
@@ -13,8 +15,11 @@ import {
 	getOrderUnlockedTools,
 	getToolDefinition,
 	getUnlockedAchievements,
+	getUnlockedMusicTracks,
 	isToolUnlocked,
+	resolveOrderBgm,
 	subscribeAchievements,
+	subscribeMusicUnlocks,
 	unlockAchievement,
 } from "../content";
 import { type Registry, createRegistry, parseLambda, registerGadget } from "../engine";
@@ -76,6 +81,8 @@ export function Root(): JSX.Element {
 	const initialSettings = loadSettings();
 	const initialSession = loadSession();
 	setMasterVolume(initialSettings.volume);
+	setBgmVolume(initialSettings.bgmVolume);
+	setBgmVolume(initialSettings.bgmVolume);
 
 	const registry: Registry = createRegistry(COMBINATORS.slice(0, BUILTIN_COUNT));
 	const initialStars = new Map(Object.entries(saved.stars));
@@ -92,10 +99,11 @@ export function Root(): JSX.Element {
 	);
 	const [showIntro, setShowIntro] = createSignal<boolean>(screen() === "title" && !loadIntroSeen());
 	const [showFolio, setShowFolio] = createSignal<boolean>(false);
-	const [folioTab, setFolioTab] = createSignal<"orders" | "parts" | "achievements">("orders");
+	const [folioTab, setFolioTab] = createSignal<"orders" | "parts" | "achievements" | "music">("orders");
 	const [unlockedAchievements, setUnlockedAchievements] = createSignal<Readonly<Record<string, number>>>(
 		getUnlockedAchievements(),
 	);
+	const [unlockedMusic, setUnlockedMusic] = createSignal<readonly BgmTrackId[]>(getUnlockedMusicTracks());
 	const [toastQueue, setToastQueue] = createSignal<readonly AchievementDefinition[]>([]);
 	const [activeToast, setActiveToast] = createSignal<AchievementDefinition | null>(null);
 	const [toastExiting, setToastExiting] = createSignal<boolean>(false);
@@ -152,6 +160,10 @@ export function Root(): JSX.Element {
 		setUnlockedAchievements({});
 		setSettings(loadSettings());
 		setMasterVolume(loadSettings().volume);
+		setBgmVolume(loadSettings().bgmVolume);
+		setUnlockedMusic([]);
+		setBgmVolume(loadSettings().bgmVolume);
+		setUnlockedMusic([]);
 		syncRegistryWithUnlocked(registry, new Map(), loadSettings().judgeMode);
 		setShowMachinery(false);
 		setOrderIndex(0);
@@ -159,7 +171,7 @@ export function Root(): JSX.Element {
 		setTimeout(() => window.location.reload(), 100);
 	};
 
-	const toggleFolio = (tab: "orders" | "parts" | "achievements"): void => {
+	const toggleFolio = (tab: "orders" | "parts" | "achievements" | "music"): void => {
 		if (showFolio()) setShowFolio(false);
 		else {
 			setFolioTab(tab);
@@ -208,10 +220,29 @@ export function Root(): JSX.Element {
 			setToastQueue((prev) => [...prev, def]);
 			if (activeToast() === null && toastGapTimer === void 0) showNextToast();
 		});
+		const unsubMusic = subscribeMusicUnlocks(setUnlockedMusic);
 		onCleanup(() => {
 			unsubscribe();
+			unsubMusic();
 			clearToastTimers();
 		});
+	});
+
+	createEffect(() => {
+		const unlocked = unlockedMusic();
+		if (showIntro() || screen() === "title") {
+			syncSceneBgm({ mode: "scene", trackId: "intro", unlockedIds: unlocked });
+			return;
+		}
+		if (cameraView() === "counter" || activeBeat() !== null) {
+			syncSceneBgm({ mode: "scene", trackId: "outro", unlockedIds: unlocked });
+			return;
+		}
+		if (isSandbox()) {
+			syncSceneBgm({ mode: "sandbox", trackId: "tadayohu_hito", unlockedIds: unlocked });
+			return;
+		}
+		syncSceneBgm({ mode: "scene", trackId: resolveOrderBgm(currentOrder(), LEVELS), unlockedIds: unlocked });
 	});
 
 	const handleNextOrderAdvance = (): void => {
@@ -330,6 +361,7 @@ export function Root(): JSX.Element {
 					isSandboxActive={isSandbox()}
 					clearedStars={clearedStars()}
 					unlockedAchievements={unlockedAchievements()}
+					unlockedMusic={unlockedMusic()}
 					judgeMode={settings().judgeMode}
 					reducedMotion={settings().reducedMotion}
 					onSelectOrder={(index) => {

@@ -23,6 +23,7 @@ const DEFAULT_SAVE_DATA: SaveData = {
 	seenDialogues: [],
 	introSeen: false,
 	achievements: {},
+	unlockedMusic: [],
 };
 
 function isValidTerm(val: unknown): val is Term {
@@ -112,6 +113,10 @@ function sanitizeSettings(val: unknown): SettingsState {
 	const r = val as Partial<SettingsState>;
 	return {
 		volume: typeof r.volume === "number" ? r.volume : DEFAULT_SETTINGS.volume,
+		bgmVolume:
+			typeof r.bgmVolume === "number" && r.bgmVolume >= 0 && r.bgmVolume <= 1
+				? r.bgmVolume
+				: DEFAULT_SETTINGS.bgmVolume,
 		reducedMotion: typeof r.reducedMotion === "boolean" ? r.reducedMotion : DEFAULT_SETTINGS.reducedMotion,
 		judgeMode: typeof r.judgeMode === "boolean" ? r.judgeMode : DEFAULT_SETTINGS.judgeMode,
 		autoSkipRead: typeof r.autoSkipRead === "boolean" ? r.autoSkipRead : false,
@@ -169,6 +174,9 @@ function loadSaveData(): SaveData {
 						: [],
 					introSeen: typeof parsed.introSeen === "boolean" ? parsed.introSeen : true,
 					achievements: sanitizeAchievements(parsed.achievements),
+					unlockedMusic: Array.isArray(parsed.unlockedMusic)
+						? parsed.unlockedMusic.filter((item: unknown): item is string => typeof item === "string")
+						: [],
 				};
 	} catch {
 		return DEFAULT_SAVE_DATA;
@@ -246,5 +254,14 @@ export const saveAchievement = (id: string): boolean => {
 	const current = loadAchievements();
 	if (current[id] !== void 0) return false;
 	mutateSaveData((prev) => ({ ...prev, achievements: { ...current, [id]: Date.now() } }));
+	return true;
+};
+
+export const loadUnlockedMusic = (): readonly string[] => loadSaveData().unlockedMusic ?? [];
+
+export const saveUnlockedMusic = (id: string): boolean => {
+	const current = loadUnlockedMusic();
+	if (current.includes(id)) return false;
+	mutateSaveData((prev) => ({ ...prev, unlockedMusic: [...current, id] }));
 	return true;
 };

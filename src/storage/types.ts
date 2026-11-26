@@ -8,6 +8,7 @@ export interface CustomGadgetRecord {
 
 export interface SettingsState {
 	readonly volume: number;
+	readonly bgmVolume: number;
 	readonly reducedMotion: boolean;
 	readonly judgeMode: boolean;
 	readonly autoSkipRead: boolean;
@@ -34,12 +35,14 @@ export interface SaveData {
 	readonly seenDialogues: readonly string[];
 	readonly introSeen?: boolean;
 	readonly achievements?: Record<string, number>;
+	readonly unlockedMusic?: readonly string[];
 }
 
 export const STORAGE_KEY = "calculuser_save";
 
 export const DEFAULT_SETTINGS: SettingsState = {
 	volume: 1,
+	bgmVolume: 0.4,
 	reducedMotion: false,
 	judgeMode: false,
 	autoSkipRead: false,

@@ -1,8 +1,9 @@
 import type { GadgetId } from "../engine";
-import { loadAchievements, loadSettings, saveAchievement } from "../storage";
+import { loadAchievements, loadSettings, loadUnlockedMusic, saveAchievement, saveUnlockedMusic } from "../storage";
 import { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
+import { BGM_TRACKS, type BgmTrackId } from "./data/music";
 import type { GadgetMeta, OrderLevel, SandboxOrder, ToolDefinition } from "./types";
 
 export * from "./types";
@@ -10,6 +11,7 @@ export { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 export { LEVEL_DIALOGUES } from "./data/dialogue";
+export { BGM_TRACKS, type BgmTrackDefinition, type BgmTrackId, resolveOrderBgm } from "./data/music";
 
 export const SANDBOX_ORDER: SandboxOrder = {
 	mode: "sandbox",
@@ -161,4 +163,27 @@ export function getUnlockedAchievements(): Record<string, number> {
 
 export function getAchievementDefinition(id: string): AchievementDefinition | null {
 	return ACHIEVEMENTS.find((item) => item.id === id) ?? null;
+}
+
+type MusicUnlockListener = (unlocked: readonly BgmTrackId[]) => void;
+
+const musicListeners = new Set<MusicUnlockListener>();
+
+export function subscribeMusicUnlocks(listener: MusicUnlockListener): () => void {
+	musicListeners.add(listener);
+	return () => {
+		musicListeners.delete(listener);
+	};
+}
+
+export function getUnlockedMusicTracks(): readonly BgmTrackId[] {
+	const validIds = new Set<string>(BGM_TRACKS.map((t) => t.id));
+	return loadUnlockedMusic().filter((id): id is BgmTrackId => validIds.has(id));
+}
+
+export function unlockMusicTrack(id: BgmTrackId): void {
+	if (loadSettings().judgeMode) return;
+	if (!saveUnlockedMusic(id)) return;
+	const next = getUnlockedMusicTracks();
+	for (const listener of musicListeners) listener(next);
 }

@@ -1,4 +1,5 @@
 import { type JSX, Show, createSignal } from "solid-js";
+import { setBgmVolume } from "../../audio/bgm";
 import { setMasterVolume } from "../../audio/synth";
 import type { SettingsState } from "../../storage";
 import { useKeyScope } from "../../utils/keybus";
@@ -57,6 +58,12 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 	const setVolume = (value: number): void => {
 		setMasterVolume(value);
 		props.onUpdateSettings((prev) => ({ ...prev, volume: value }));
+	};
+
+	const setMusicVolume = (value: number): void => {
+		const clamped = Math.max(0, Math.min(1, value));
+		setBgmVolume(clamped);
+		props.onUpdateSettings((prev) => ({ ...prev, bgmVolume: clamped }));
 	};
 
 	const toggleMotion = (): void => props.onUpdateSettings((prev) => ({ ...prev, reducedMotion: !prev.reducedMotion }));
@@ -141,6 +148,26 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								>
 									饱满
 								</button>
+							</div>
+						</div>
+
+						<div class="control-row">
+							<div>
+								<div class="control-title">背景音乐音量</div>
+								<div class="control-desc">单独调节工坊背景音乐播放响度</div>
+							</div>
+							<div class="bgm-slider-group">
+								<input
+									type="range"
+									min="0"
+									max="1"
+									step="0.01"
+									class="bgm-volume-slider"
+									value={props.settings.bgmVolume}
+									aria-label="背景音乐音量"
+									onInput={(event) => setMusicVolume(Number.parseFloat(event.currentTarget.value))}
+								/>
+								<span class="bgm-volume-value">{Math.round(props.settings.bgmVolume * 100)}%</span>
 							</div>
 						</div>
 

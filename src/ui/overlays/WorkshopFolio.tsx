@@ -1,7 +1,10 @@
-import { For, type JSX, Show, createSignal } from "solid-js";
+import { For, type JSX, Show, createSignal, onCleanup } from "solid-js";
+import { getPreviewingTrackId, startBgmPreview, stopBgmPreview, subscribeBgmPreview } from "../../audio/bgm";
 import {
 	ACHIEVEMENTS,
+	BGM_TRACKS,
 	BUILTIN_COUNT,
+	type BgmTrackId,
 	CHAPTERS,
 	COMBINATORS,
 	LEVELS,
@@ -14,7 +17,7 @@ import {
 import { useKeyScope } from "../../utils/keybus";
 import { transitionView } from "../../utils/transition";
 
-type FolioTab = "orders" | "parts" | "achievements";
+type FolioTab = "orders" | "parts" | "achievements" | "music";
 
 interface WorkshopFolioProps {
 	readonly initialTab?: FolioTab;
@@ -22,6 +25,7 @@ interface WorkshopFolioProps {
 	readonly isSandboxActive?: boolean;
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly unlockedAchievements: Readonly<Record<string, number>>;
+	readonly unlockedMusic: readonly BgmTrackId[];
 	readonly judgeMode: boolean;
 	readonly reducedMotion: boolean;
 	readonly onSelectOrder: (index: number) => void;
@@ -42,11 +46,17 @@ const CHAPTER_GROUPS = [
 	},
 ].filter((group) => group.levels.length > 0);
 
-const TAB_ORDER: readonly FolioTab[] = ["orders", "parts", "achievements"];
+const TAB_ORDER: readonly FolioTab[] = ["orders", "parts", "achievements", "music"];
 
 export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<FolioTab>(props.initialTab ?? "orders");
 	const [isClosing, setIsClosing] = createSignal<boolean>(false);
+	const [previewingId, setPreviewingId] = createSignal<BgmTrackId | null>(getPreviewingTrackId());
+	const unsubPreview = subscribeBgmPreview(setPreviewingId);
+	onCleanup(() => {
+		unsubPreview();
+		stopBgmPreview();
+	});
 
 	const handleClose = (): void => {
 		if (isClosing()) return;
@@ -111,6 +121,14 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 						>
 							<span>◈</span>
 							<span>成就</span>
+						</button>
+						<button
+							type="button"
+							class={`folio-tab-btn ${activeTab() === "music" ? "active" : ""}`}
+							onClick={() => setActiveTab("music")}
+						>
+							<span>♪</span>
+							<span>音乐</span>
 						</button>
 					</div>
 
@@ -377,6 +395,52 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
 														{item.description}
 													</div>
+												</div>
+											);
+										}}
+									</For>
+								</div>
+							</div>
+						</div>
+					</Show>
+
+					<Show when={activeTab() === "music"}>
+						<div class="folio-compendium">
+							<div class="folio-status-bar">
+								<div class="folio-status-badges">
+									<span class="folio-status-badge">
+										♪ 曲目 {props.judgeMode ? BGM_TRACKS.length : props.unlockedMusic.length} / {BGM_TRACKS.length}
+									</span>
+								</div>
+							</div>
+
+							<div class="chapter-block">
+								<h3 class="chapter-title">工坊留声集</h3>
+								<div class="music-track-list">
+									<For each={BGM_TRACKS}>
+										{(track, index) => {
+											const unlocked = (): boolean => props.judgeMode || props.unlockedMusic.includes(track.id);
+											const isPlaying = (): boolean => previewingId() === track.id;
+											return (
+												<div class={`music-track-row ${!unlocked() ? "music-track-locked" : ""}`}>
+													<div class="music-track-index">{String(index() + 1).padStart(2, "0")}</div>
+													<div class="music-track-meta">
+														<div class="music-track-title-row">
+															<span class="music-track-title">{unlocked() ? track.title : "未知曲目"}</span>
+														</div>
+														<div class="music-track-desc">
+															{unlocked() ? track.description : "推进对应章节或场景后解锁"}
+														</div>
+													</div>
+													<Show when={unlocked()} fallback={<span class="music-track-status">未解锁</span>}>
+														<button
+															type="button"
+															class={`icon-btn sm ${isPlaying() ? "active" : ""}`}
+															onClick={() => (isPlaying() ? stopBgmPreview() : startBgmPreview(track.id))}
+														>
+															{isPlaying() ? "■ 停止" : "▶ 播放"}
+														</button>
+													</Show>
 												</div>
 											);
 										}}

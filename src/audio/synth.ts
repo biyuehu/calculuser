@@ -1,3 +1,5 @@
+const SFX_BASE_BOOST = 2;
+
 let audioContext: AudioContext | null = null;
 let masterGainNode: GainNode | null = null;
 let masterVolume = 1;
@@ -11,8 +13,10 @@ function getAudioContext(): AudioContext | null {
 	if (audioContext === null) {
 		audioContext = new window.AudioContext();
 		masterGainNode = audioContext.createGain();
-		masterGainNode.gain.setValueAtTime(masterVolume, audioContext.currentTime);
-		masterGainNode.connect(audioContext.destination);
+		masterGainNode.gain.setValueAtTime(masterVolume * SFX_BASE_BOOST, audioContext.currentTime);
+		const compressor = audioContext.createDynamicsCompressor();
+		masterGainNode.connect(compressor);
+		compressor.connect(audioContext.destination);
 	}
 	if (audioContext.state === "suspended") void audioContext.resume();
 	return audioContext;
@@ -21,7 +25,7 @@ function getAudioContext(): AudioContext | null {
 export function setMasterVolume(volume: number): void {
 	masterVolume = Math.max(0, Math.min(1, volume));
 	if (masterGainNode !== null && audioContext !== null)
-		masterGainNode.gain.setValueAtTime(masterVolume, audioContext.currentTime);
+		masterGainNode.gain.setValueAtTime(masterVolume * SFX_BASE_BOOST, audioContext.currentTime);
 }
 
 function playTone(frequency: number, duration: number, type: OscillatorType, gainPeak: number): void {

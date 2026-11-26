@@ -6,6 +6,8 @@ import {
 	clearLevelDrafts,
 	clearSave,
 	deleteCustomGadget,
+	exportSaveJson,
+	importSaveJson,
 	loadCustomGadgets,
 	loadLevelDrafts,
 	loadSession,
@@ -145,5 +147,19 @@ describe("Storage Persistence Layer", () => {
 		clearSave();
 		expect(store.size).toBe(0);
 		expect(loadWorkshop().stars["1.1"]).toBeUndefined();
+	});
+
+	it("exports and imports validated save JSON payloads", () => {
+		saveWorkshop(new Map([["identity", 3]]));
+		saveSession({ lastOrderId: "identity", screen: "workbench" });
+		const exported = exportSaveJson();
+		clearSave();
+		expect(loadWorkshop().stars.identity).toBeUndefined();
+
+		expect(importSaveJson("{invalid")).toBe(false);
+		expect(importSaveJson('{"unrelated":123}')).toBe(false);
+		expect(importSaveJson(exported)).toBe(true);
+		expect(loadWorkshop().stars.identity).toBe(3);
+		expect(loadSession().lastOrderId).toBe("identity");
 	});
 });

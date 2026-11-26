@@ -152,32 +152,48 @@ function sanitizeSession(val: unknown): SessionState {
 			: { screen: "title" };
 }
 
+function parseSaveData(raw: string): SaveData | null {
+	try {
+		const parsed = JSON.parse(raw);
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+		const r = parsed as Record<string, unknown>;
+		if (
+			r.workshop === void 0 &&
+			r.settings === void 0 &&
+			r.session === void 0 &&
+			r.drafts === void 0 &&
+			r.achievements === void 0 &&
+			r.unlockedMusic === void 0
+		)
+			return null;
+		return {
+			workshop:
+				r.workshop && typeof r.workshop === "object"
+					? { stars: (r.workshop as { readonly stars?: Record<string, number> }).stars ?? {} }
+					: DEFAULT_SAVE_DATA.workshop,
+			settings: sanitizeSettings(r.settings),
+			uiPrefs: sanitizeUiPrefs(r.uiPrefs),
+			session: sanitizeSession(r.session),
+			drafts: sanitizeDrafts(r.drafts),
+			customGadgets: sanitizeCustomGadgets(r.customGadgets),
+			seenDialogues: Array.isArray(r.seenDialogues)
+				? r.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
+				: [],
+			introSeen: typeof r.introSeen === "boolean" ? r.introSeen : true,
+			achievements: sanitizeAchievements(r.achievements),
+			unlockedMusic: Array.isArray(r.unlockedMusic)
+				? r.unlockedMusic.filter((item: unknown): item is string => typeof item === "string")
+				: [],
+		};
+	} catch {
+		return null;
+	}
+}
+
 function loadSaveData(): SaveData {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
-		if (raw === null) return DEFAULT_SAVE_DATA;
-		const parsed = JSON.parse(raw);
-		return !parsed || typeof parsed !== "object"
-			? DEFAULT_SAVE_DATA
-			: {
-					workshop:
-						parsed.workshop && typeof parsed.workshop === "object"
-							? { stars: parsed.workshop.stars ?? {} }
-							: DEFAULT_SAVE_DATA.workshop,
-					settings: sanitizeSettings(parsed.settings),
-					uiPrefs: sanitizeUiPrefs(parsed.uiPrefs),
-					session: sanitizeSession(parsed.session),
-					drafts: sanitizeDrafts(parsed.drafts),
-					customGadgets: sanitizeCustomGadgets(parsed.customGadgets),
-					seenDialogues: Array.isArray(parsed.seenDialogues)
-						? parsed.seenDialogues.filter((item: unknown): item is string => typeof item === "string")
-						: [],
-					introSeen: typeof parsed.introSeen === "boolean" ? parsed.introSeen : true,
-					achievements: sanitizeAchievements(parsed.achievements),
-					unlockedMusic: Array.isArray(parsed.unlockedMusic)
-						? parsed.unlockedMusic.filter((item: unknown): item is string => typeof item === "string")
-						: [],
-				};
+		return raw === null ? DEFAULT_SAVE_DATA : (parseSaveData(raw) ?? DEFAULT_SAVE_DATA);
 	} catch {
 		return DEFAULT_SAVE_DATA;
 	}
@@ -264,4 +280,17 @@ export const saveUnlockedMusic = (id: string): boolean => {
 	if (current.includes(id)) return false;
 	mutateSaveData((prev) => ({ ...prev, unlockedMusic: [...current, id] }));
 	return true;
+};
+
+export const exportSaveJson = (): string => JSON.stringify(loadSaveData(), null, 2);
+
+export const importSaveJson = (raw: string): boolean => {
+	const parsed = parseSaveData(raw);
+	if (parsed === null) return false;
+	try {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+		return true;
+	} catch {
+		return false;
+	}
 };

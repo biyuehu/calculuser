@@ -1,7 +1,7 @@
 import { type JSX, Show, createSignal } from "solid-js";
 import { setBgmVolume } from "../../audio/bgm";
-import { setMasterVolume } from "../../audio/synth";
-import type { SettingsState } from "../../storage";
+import { playFailSound, playPassSound, setMasterVolume } from "../../audio/synth";
+import { type SettingsState, exportSaveJson, importSaveJson } from "../../storage";
 import { useKeyScope } from "../../utils/keybus";
 
 interface MachineryPanelProps {
@@ -16,7 +16,40 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 	const [activeTab, setActiveTab] = createSignal<"settings" | "controls" | "about">(props.initialTab ?? "settings");
 	const [isClosing, setIsClosing] = createSignal<boolean>(false);
 	const [confirmingReset, setConfirmingReset] = createSignal<boolean>(false);
+	const [saveNotice, setSaveNotice] = createSignal<string | null>(null);
 	let resetTimer: number | undefined;
+	let fileInputRef: HTMLInputElement | undefined;
+
+	const handleExportSave = (): void => {
+		const blob = new Blob([exportSaveJson()], { type: "application/json;charset=utf-8" });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement("a");
+		const now = new Date();
+		const pad = (n: number): string => String(n).padStart(2, "0");
+		const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+		anchor.href = url;
+		anchor.download = `calculuser_save_${stamp}.json`;
+		anchor.click();
+		URL.revokeObjectURL(url);
+		playPassSound();
+		setSaveNotice("已导出存档文件");
+	};
+
+	const handleImportFile = async (event: Event): Promise<void> => {
+		const input = event.currentTarget as HTMLInputElement;
+		const file = input.files !== null ? input.files[0] : void 0;
+		input.value = "";
+		if (file === void 0) return;
+		const text = await file.text();
+		if (!importSaveJson(text)) {
+			playFailSound();
+			setSaveNotice("存档文件格式无效");
+			return;
+		}
+		playPassSound();
+		setSaveNotice("存档已导入，正在刷新…");
+		window.setTimeout(() => window.location.reload(), 200);
+	};
 
 	const handleResetClick = (): void => {
 		if (!confirmingReset()) {
@@ -214,6 +247,34 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 						</div>
 
 						<div class="control-row danger-zone">
+							<div>
+								<div class="control-title">存档备份</div>
+								<div class="control-desc">{saveNotice() ?? "导出或导入 JSON 格式的本地存档"}</div>
+							</div>
+							<div class="btn-group">
+								<button type="button" class="icon-btn sm" onClick={handleExportSave}>
+									导出存档
+								</button>
+								<button
+									type="button"
+									class="icon-btn sm"
+									onClick={() => {
+										if (fileInputRef !== void 0) fileInputRef.click();
+									}}
+								>
+									导入存档
+								</button>
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept=".json,application/json"
+									style={{ display: "none" }}
+									onChange={(event) => void handleImportFile(event)}
+								/>
+							</div>
+						</div>
+
+						<div class="control-row ">
 							<div>
 								<div class="control-title" style={{ color: "var(--accent-danger)" }}>
 									重置存档

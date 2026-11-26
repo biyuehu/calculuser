@@ -405,7 +405,6 @@ export function Root(): JSX.Element {
 					onComplete={() => {
 						markIntroSeen();
 						setShowIntro(false);
-						unlockAchievement("first_reduction");
 					}}
 				/>
 			</Show>

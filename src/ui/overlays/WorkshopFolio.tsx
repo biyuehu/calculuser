@@ -381,6 +381,7 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 									<For each={ACHIEVEMENTS}>
 										{(item) => {
 											const unlocked = (): boolean => props.unlockedAchievements[item.id] !== void 0;
+											const masked = (): boolean => !unlocked() && item.hidden === true;
 											const visual = deriveAchievementVisuals(item.id);
 											return (
 												<div
@@ -393,10 +394,12 @@ export function WorkshopFolio(props: WorkshopFolioProps): JSX.Element {
 																{visual.symbol}
 															</span>
 														</Show>
-														<span style={{ "font-weight": 700, "font-size": "13px" }}>{item.title}</span>
+														<span style={{ "font-weight": 700, "font-size": "13px" }}>
+															{masked() ? "？？？" : item.title}
+														</span>
 													</div>
 													<div style={{ "font-size": "11.5px", color: "var(--text-secondary)", "line-height": "1.4" }}>
-														{item.description}
+														{masked() ? "隐藏成就 · 探索工坊中的意外发现" : item.description}
 													</div>
 												</div>
 											);

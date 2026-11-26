@@ -14,7 +14,6 @@ import {
 	type GadgetId,
 	type Registry,
 	type Term,
-	type Ty,
 	checkTypeBuild,
 	draftToTerm,
 	findFirstHole,
@@ -64,26 +63,6 @@ function termHasLam(term: Term): boolean {
 	}
 }
 
-function tyContainsAny(ty: Ty): boolean {
-	if (ty.k === "any") return true;
-	return ty.k === "arrow" ? tyContainsAny(ty.from) || tyContainsAny(ty.to) : false;
-}
-
-function termUsesAnyType(term: Term): boolean {
-	switch (term.kind) {
-		case "var":
-		case "atom":
-		case "gad":
-			return false;
-		case "lam":
-			return (term.ty !== void 0 && tyContainsAny(term.ty)) || termUsesAnyType(term.body);
-		case "ann":
-			return tyContainsAny(term.ty) || termUsesAnyType(term.term);
-		case "app":
-			return termUsesAnyType(term.fn) || termUsesAnyType(term.arg);
-	}
-}
-
 interface UseOrderDeliveryOptions {
 	readonly order: Accessor<OrderLevel>;
 	readonly registry: Registry;
@@ -117,7 +96,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 		setDeliveredStars(stars);
 		options.onRecordStars(order.id, stars);
 		unlockAchievement("first_order");
-		if (stars === 3) unlockAchievement("three_star_craft");
+		if (order.id === "identity" && stars === 1) unlockAchievement("one_star_identity");
 		if (options.xRayMode()) unlockAchievement("xray_inspector");
 		const audioSettings = loadSettings();
 		if (audioSettings.volume === 0 && audioSettings.bgmVolume === 0) unlockAchievement("silent_craft");
@@ -174,7 +153,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 			recordOrderClear(order, stars);
 			if (partCount < order.parSize) unlockAchievement("code_golf");
 			const usedGadgets = collectUsedGadgets(candidate);
-			if (usedGadgets.length === 0) unlockAchievement("pure_lambda");
+			if ((order.chapter ?? 1) >= 2 && usedGadgets.length === 0) unlockAchievement("pure_lambda");
 			else if ((order.chapter ?? 1) >= 2 && usedGadgets.every((id) => id === "I" || id === "K" || id === "S")) {
 				unlockAchievement("ski_purist");
 				if (!termHasLam(candidate) && usedGadgets.every((id) => id === "S" || id === "K"))
@@ -207,7 +186,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 				const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
 				recordOrderClear(order, stars);
 				if (partCount < order.parSize) unlockAchievement("code_golf");
-				if (!termUsesAnyType(candidate)) unlockAchievement("static_typist");
+				unlockAchievement("first_typebuild");
 			} catch (err) {
 				playFailSound();
 				if (order.uninhabited === true) triedNonEmptyUninhabited = true;

@@ -2,13 +2,22 @@ export interface AchievementDefinition {
 	readonly id: string;
 	readonly title: string;
 	readonly description: string;
+	readonly hidden?: boolean;
 }
 
 export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
-	{ id: "first_reduction", title: "初试啼声", description: "完成首次启动的 λ 归约开场仪式" },
 	{ id: "first_order", title: "初入工坊", description: "成功交付第一份工坊委托订单" },
-	{ id: "three_star_craft", title: "精工细作", description: "以三星最佳零件数交付任意构建或类型订单" },
-	{ id: "pure_lambda", title: "纯粹之槽", description: "不使用任何组合子零件，仅凭 λ 开槽与喂入完成构建订单" },
+	{
+		id: "one_star_identity",
+		title: "绕远路大师",
+		description: "在 1.1「直通管」中仅以 1 星评价完成交付",
+		hidden: true,
+	},
+	{
+		id: "pure_lambda",
+		title: "纯粹之槽",
+		description: "不使用任何组合子零件，仅凭 λ 开槽与喂入完成第 2 章及之后的构建订单",
+	},
 	{ id: "ski_purist", title: "SKI 原教旨", description: "仅使用基础零件 I、K、S 完成第 2 章及之后的构建订单" },
 	{
 		id: "sk_purist",
@@ -18,23 +27,34 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
 	{ id: "omega_paradox", title: "自吞悖论", description: "触发步数上限熔断，见证不终止的无限归约环" },
 	{ id: "copy_explosion", title: "分身之术", description: "在单步归约中产生至少 4 份信号拷贝" },
 	{ id: "mega_explosion", title: "指数大爆炸", description: "在单步归约中产生至少 16 份信号拷贝" },
-	{ id: "marathon_tape", title: "永动纸带", description: "单次试机纸带连续推演超过 200 步仍未停机" },
+	{ id: "marathon_tape", title: "永动纸带", description: "单次试机纸带连续推演超过 200 步仍未停机", hidden: true },
 	{ id: "code_golf", title: "极致压缩", description: "在构建或类型订单中，以严格少于标准零件数的方案完成交付" },
-	{ id: "silent_craft", title: "默片工匠", description: "在主音效与背景音乐均为静音的状态下完成一次关卡交付" },
-	{ id: "undo_maniac", title: "时光倒流", description: "在单次关卡会话中累计撤销或纸带步退达到 10 次" },
-	{ id: "title_linger", title: "门前驻足", description: "在主标题界面连续停留超过 2 分钟" },
-	{ id: "static_typist", title: "静态契约", description: "不使用动态类型 ? 完成任意渐进类型构造订单" },
+	{
+		id: "silent_craft",
+		title: "默片工匠",
+		description: "在主音效与背景音乐均为静音的状态下完成一次关卡交付",
+		hidden: true,
+	},
+	{ id: "undo_maniac", title: "时光倒流", description: "在单次关卡会话中累计撤销或纸带步退达到 10 次", hidden: true },
+	{ id: "title_linger", title: "门前驻足", description: "在主标题界面连续停留超过 2 分钟", hidden: true },
+	{ id: "first_typebuild", title: "初识类型", description: "首次完成类型构造订单，让装置结构契合类型铭牌" },
 	{ id: "custom_smith", title: "自研匠人", description: "在自由沙盒中封装并保存第一个自定义组合子零件" },
 	{
 		id: "nested_smith",
 		title: "套娃匠人",
 		description: "在自由沙盒封装自定义组合子时，内部嵌套引用了另一个自定义组合子",
 	},
-	{ id: "uninhabited_proof", title: "不可居留", description: "识破无法构造的假命题类型，以空槽交付完成证明" },
+	{
+		id: "uninhabited_proof",
+		title: "不可居留",
+		description: "识破无法构造的假命题类型，以空槽交付完成证明",
+		hidden: true,
+	},
 	{
 		id: "stubborn_prover",
 		title: "偏要试试",
 		description: "在「断流契约」中尝试提交非空结构触发校验失败后，再以空槽交付",
+		hidden: true,
 	},
 	{ id: "xray_inspector", title: "透视质检", description: "在开启 X-Ray 透视视角的状态下完成任意工坊委托交付" },
 	{ id: "fixpoint_tamer", title: "驯服无限", description: "使用 Y、Z 或 Theta 不动点组合子完成一次安全停机的构建交付" },
@@ -48,5 +68,5 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
 	{ id: "turing_complete", title: "图灵完备", description: "通关第 7 章终局试炼「斐波那契」，重建完整递归计算宇宙" },
 	{ id: "all_orders_cleared", title: "全卷宗制霸", description: "通关工坊全部正式委托订单" },
 	{ id: "full_compendium", title: "零件全图鉴", description: "解锁工坊图鉴中的全部内置组合子零件" },
-	{ id: "secret_peek", title: "看板背后", description: "在主标题界面发现并戳中躲在角落的小丘" },
+	{ id: "secret_peek", title: "看板背后", description: "在主标题界面发现并戳中躲在角落的小丘", hidden: true },
 ];

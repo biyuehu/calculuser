@@ -17,6 +17,7 @@
 		"build": "vite build",
 		"serve": "vite preview",
 		"test": "vitest run",
+		"test:levels": "vitest run tests/levels.test.ts tests/typebuild.test.ts",
 		"lint": "biome check .",
 		"format": "biome format --write .",
 		"prepare": "lefthook install",

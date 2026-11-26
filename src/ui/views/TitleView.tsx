@@ -1,5 +1,5 @@
 import { type JSX, createSignal } from "solid-js";
-import { playSnapSound } from "../../audio/synth";
+import { playSnapSound, playSplitSound } from "../../audio/synth";
 import { useKeyScope } from "../../utils/keybus";
 
 interface TitleViewProps {
@@ -9,6 +9,7 @@ interface TitleViewProps {
 	readonly onOpenWorkshop: () => void;
 	readonly onOpenSettings: () => void;
 	readonly onOpenAbout: () => void;
+	readonly onSecretPeek: () => void;
 }
 
 export function TitleView(props: TitleViewProps): JSX.Element {
@@ -82,6 +83,14 @@ export function TitleView(props: TitleViewProps): JSX.Element {
 					</div>
 				</div>
 			</div>
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+			<span
+				class="title-secret-dot"
+				onClick={() => {
+					playSplitSound();
+					props.onSecretPeek();
+				}}
+			/>
 		</div>
 	);
 }

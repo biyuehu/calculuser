@@ -9,7 +9,10 @@ import {
 	type DialogueBeat,
 	LEVELS,
 	LEVEL_DIALOGUES,
+	PROLOGUE_DIALOGUE,
+	PROLOGUE_MONOLOGUE,
 	SANDBOX_ORDER,
+	TITLE_SECRET_DIALOGUE,
 	getContinueOrderIndex,
 	getOrderCode,
 	getOrderUnlockedTools,
@@ -42,6 +45,7 @@ import { transitionView } from "../utils/transition";
 import { AchievementToast } from "./overlays/AchievementToast";
 import { IntroSequence } from "./overlays/IntroSequence";
 import { MachineryPanel } from "./overlays/MachineryPanel";
+import { PrologueMonologue } from "./overlays/PrologueMonologue";
 import { TooltipLayer } from "./overlays/TooltipLayer";
 import { WorkshopFolio } from "./overlays/WorkshopFolio";
 import { CounterView } from "./views/CounterView";
@@ -122,6 +126,10 @@ export function Root(): JSX.Element {
 	);
 	const [activeBeat, setActiveBeat] = createSignal<DialogueBeat | null>(null);
 	const [cameraView, setCameraView] = createSignal<"bench" | "counter">("bench");
+	const [showPrologueMonologue, setShowPrologueMonologue] = createSignal<boolean>(false);
+	const [counterReturnMode, setCounterReturnMode] = createSignal<"next_order" | "enter_workbench" | "back_to_title">(
+		"next_order",
+	);
 
 	createEffect(() => {
 		if (isSandbox()) registerAllCombinators(registry);
@@ -230,7 +238,7 @@ export function Root(): JSX.Element {
 
 	createEffect(() => {
 		const unlocked = unlockedMusic();
-		if (showIntro() || screen() === "title") {
+		if (showIntro() || showPrologueMonologue() || screen() === "title") {
 			syncSceneBgm({ mode: "scene", trackId: "intro", unlockedIds: unlocked });
 			return;
 		}
@@ -246,7 +254,7 @@ export function Root(): JSX.Element {
 	});
 
 	createEffect(() => {
-		if (screen() !== "title" || showIntro() || showFolio() || showMachinery()) return;
+		if (screen() !== "title" || showIntro() || showPrologueMonologue() || showFolio() || showMachinery()) return;
 		const timer = window.setTimeout(() => unlockAchievement("title_linger"), 120_000);
 		onCleanup(() => window.clearTimeout(timer));
 	});
@@ -254,6 +262,7 @@ export function Root(): JSX.Element {
 	const handleNextOrderAdvance = (): void => {
 		const beat = LEVEL_DIALOGUES[currentOrder().id];
 		if (beat !== void 0 && (!settings().autoSkipRead || !loadSeenDialogues().has(beat.id))) {
+			setCounterReturnMode("next_order");
 			setActiveBeat(beat);
 			setCameraView("counter");
 			return;
@@ -276,8 +285,19 @@ export function Root(): JSX.Element {
 	const dismissCounter = (): void => {
 		const beat = activeBeat();
 		if (beat !== null) markDialogueSeen(beat.id);
+		const returnMode = counterReturnMode();
 		setActiveBeat(null);
 		setCameraView("bench");
+		if (returnMode === "back_to_title") {
+			setCounterReturnMode("next_order");
+			setScreen("title");
+			return;
+		}
+		if (returnMode === "enter_workbench") {
+			setCounterReturnMode("next_order");
+			if (!isSandbox()) selectOrder(orderIndex());
+			return;
+		}
 		if (orderIndex() < LEVELS.length - 1)
 			setTimeout(() => transitionView(() => selectOrder(orderIndex() + 1), "forward"), 360);
 	};
@@ -332,6 +352,15 @@ export function Root(): JSX.Element {
 				<TitleView
 					continueOrderCode={continueCode()}
 					onStart={() => {
+						if (
+							!isSandbox() &&
+							orderIndex() === 0 &&
+							clearedStars().size === 0 &&
+							!loadSeenDialogues().has(PROLOGUE_DIALOGUE.id)
+						) {
+							setShowPrologueMonologue(true);
+							return;
+						}
 						transitionView(() => {
 							if (!isSandbox()) selectOrder(orderIndex());
 							setScreen("workbench");
@@ -346,6 +375,27 @@ export function Root(): JSX.Element {
 					onOpenWorkshop={() => toggleFolio("orders")}
 					onOpenSettings={() => openMachinery("settings")}
 					onOpenAbout={() => openMachinery("about")}
+					onSecretPeek={() => {
+						unlockAchievement("secret_peek");
+						setCounterReturnMode("back_to_title");
+						setActiveBeat(TITLE_SECRET_DIALOGUE);
+						setCameraView("counter");
+						setScreen("workbench");
+					}}
+				/>
+			</Show>
+
+			<Show when={showPrologueMonologue()}>
+				<PrologueMonologue
+					lines={PROLOGUE_MONOLOGUE}
+					reducedMotion={settings().reducedMotion}
+					onComplete={() => {
+						setShowPrologueMonologue(false);
+						setCounterReturnMode("enter_workbench");
+						setActiveBeat(PROLOGUE_DIALOGUE);
+						setCameraView("counter");
+						setScreen("workbench");
+					}}
 				/>
 			</Show>
 

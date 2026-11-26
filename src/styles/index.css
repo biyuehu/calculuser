@@ -1942,7 +1942,7 @@ body {
 
 .title-primary-btn {
 	background: var(--accent-clay);
-	color: #0a2026;
+	color: var(--text-primary);
 	border: none;
 	border-radius: 9px;
 	padding: 10px 32px;
@@ -2078,6 +2078,7 @@ body {
 
 .card-code {
 	font-size: 11px;
+	color: var(--text-primary);
 	font-weight: 700;
 }
 
@@ -3788,4 +3789,71 @@ html.reduced-motion::view-transition-new(*),
 	font-size: 12px;
 	color: var(--text-muted);
 	padding: 0 8px;
+}
+
+/* Prologue Monologue & Title Secret Dot */
+.prologue-monologue-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 75;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	background: radial-gradient(circle at 50% 48%, #102a33 0%, #091a21 62%, #050f14 100%);
+	padding: 32px 32px 56px;
+	cursor: pointer;
+	user-select: none;
+	animation: titleScreenFadeIn 0.36s var(--ease-smooth);
+	transition: opacity 0.32s var(--ease-smooth);
+}
+
+.prologue-monologue-overlay.prologue-exiting {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.prologue-skip-btn {
+	position: fixed;
+	top: 22px;
+	right: 26px;
+}
+
+.prologue-monologue-center {
+	max-width: 680px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 24px;
+	text-align: center;
+}
+
+.prologue-monologue-text {
+	font-size: 19px;
+	line-height: 1.85;
+	letter-spacing: 0.03em;
+	color: var(--text-primary);
+	min-height: 68px;
+}
+
+.prologue-monologue-hint {
+	font-size: 12px;
+	color: var(--text-muted);
+	letter-spacing: 0.08em;
+}
+
+.title-secret-dot {
+	position: fixed;
+	right: 22px;
+	bottom: 18px;
+	width: 3px;
+	height: 3px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: #d4adb6;
+	opacity: 0.2;
+	cursor: pointer;
+	z-index: 45;
+	transition: transform 0.18s var(--ease-overshoot), opacity 0.18s ease;
 }

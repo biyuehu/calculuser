@@ -1,6 +1,80 @@
 import { choicesLine, textLine } from "../types";
 import type { DialogueBeat } from "../types";
 
+export const PROLOGUE_MONOLOGUE: readonly string[] = [
+	"信封上的铭牌已经有些发暗，里面只留下一把铜钥匙和一行短句——「绘图室交给你了。」",
+	"推开久未启用的木门，松节油、旧纸张与黄铜齿轮的气息扑面而来。",
+	"天花板上的暖灯一盏接一盏亮起，照亮了中央那台只剩半截纸带的演算工作台。",
+	"而在柜台一侧，一只裹着斗篷的助手机械臂正垂着脑袋，指示灯微弱地闪烁着。",
+];
+
+export const PROLOGUE_DIALOGUE: DialogueBeat = {
+	id: "prologue_awakening",
+	title: "推门之时",
+	lines: [
+		textLine("工作台旁居然还留着一台人形助手机械臂……指示灯还在闪，应该只是进入低功耗待机了。", "me", "default"),
+		textLine("（试着拨了一下柜台旁的总闸。）", "me", "default"),
+		textLine("呜哇——！系统自检中……主轴电压恢复，视觉传感器上线……咦？你是哪位？！", "church", "wow"),
+		textLine("我是老师傅写信叫来接手工坊的人。", "me", "default"),
+		textLine("……真的吗？我核对一下你的铭牌印章……匹配成功！是 MASTER 铭牌！", "church", "happy"),
+		textLine(
+			"太好了！我还以为这间绘图室要一直这样关着门落灰呢。自我介绍一下，我叫小丘，是老师傅出远门前留下的助手机械臂。",
+			"church",
+			"happy",
+		),
+		textLine(
+			"今后你就坐在工作台前负责用「开槽」和「喂入」拼装装置，我来帮你整理图纸、看管库存，顺便接待门外的客人。",
+			"church",
+			"default",
+		),
+		choicesLine([
+			[
+				"先带我看看手头的第一批零件吧",
+				[
+					textLine("货架上眼下只剩最基础的直通管 I、截留闸 K 和分叉器 S 三种基本零件。", "church", "default"),
+					textLine(
+						"不过别小看它们——只要把接口和信号珠接对，这三枚零件已经足够推演出整个计算世界了。",
+						"church",
+						"happy",
+					),
+				],
+			],
+			[
+				"老师傅信里没说去哪里了吗？",
+				[
+					textLine("没有呢，他只说「等新的工坊主把所有绘图室都重新点亮，自然就会明白」。", "church", "default"),
+					textLine(
+						"而且临走前，他还在最深处的抽屉里锁了几张没标任何类型铭牌的危险草图……以后咱们会见到的。",
+						"church",
+						"wow",
+					),
+				],
+			],
+		]),
+		textLine("「别怕把机器拆了重拼，每一条漂亮的归约纸带，都是从第一个空槽开始的。」", "master", "default"),
+		textLine("总之，以后就由我来指导你啦！", "church", "happy"),
+		textLine("听见柜台外的敲门声了吗？第一位客人已经把委托单递进来了，去工作台试试手吧。", "church", "happy"),
+	],
+};
+
+export const TITLE_SECRET_DIALOGUE: DialogueBeat = {
+	id: "title_secret_peek",
+	title: "看板背后",
+	lines: [
+		textLine("呜哇——？！你是怎么发现我躲在看板后面的？！", "church", "wow"),
+		textLine("刚才就看见角落里有个淡粉色的小点，戳一下果然是你。", "me", "default"),
+		textLine("唔……我只是在偷偷擦拭门牌上的 λ 徽章，顺便看看你什么时候才肯推门进工坊嘛。", "church", "happy"),
+		choicesLine([
+			[
+				"原来招牌后面还藏着偷懒位",
+				textLine("才没有偷懒！这是工坊的隐蔽观测哨，方便提前打量今天会不会来奇怪的委托人。", "church", "wow"),
+			],
+			["擦得挺亮的，辛苦了", textLine("嘿嘿，被师傅夸奖了！看板上的黄铜边角我也顺手抛过光了。", "church", "happy")],
+		]),
+		textLine("好了好了，既然被你抓个正着，我也该回去柜台待命了——准备好了就点「开始体验」吧。", "church", "default"),
+	],
+};
+
 export const LEVEL_DIALOGUES: Readonly<Record<string, DialogueBeat>> = {
 	// ==================== 第一章：密集引导 ====================
 	identity: {

@@ -10,7 +10,12 @@ export * from "./types";
 export { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 export { CHAPTERS, LEVELS } from "./data/levels";
 export { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
-export { LEVEL_DIALOGUES } from "./data/dialogue";
+export {
+	LEVEL_DIALOGUES,
+	PROLOGUE_DIALOGUE,
+	PROLOGUE_MONOLOGUE,
+	TITLE_SECRET_DIALOGUE,
+} from "./data/dialogue";
 export { BGM_TRACKS, type BgmTrackDefinition, type BgmTrackId, resolveOrderBgm } from "./data/music";
 
 export const SANDBOX_ORDER: SandboxOrder = {

@@ -9,6 +9,8 @@
 游戏中的所有装置均严格遵循 α-等价、β-归约与类型一致性规则，并非黑盒脚本。从基础的 I、K、S
 组合子起步，经由布尔逻辑、邱奇数、不动点递归到带类型标注的零件装配与自由沙盒推演，所有高级构件均由基础零件逐层封装而成。
 
+> 如需查阅全关卡参考解法、成就获取条件及背景音乐解锁说明，请前往 [GUIDE.md](GUIDE.md)。
+
 ## 同行的码
 
 本作围绕「同行」主题展开双重释义：
@@ -57,8 +59,26 @@ bun run tauri:build:portable
 bun run check
 bun run lint
 bun run format
+bun run test:levels
 bun test
 ```
+
+## 制作信息
+
+- **制作人 & 策划**：[Arimura Romi](https://github.com/biyuehu)
+- **程序**：[Arimura Romi](https://github.com/biyuehu)
+- **文案**：[Gemini](https://gemini.google.com/)、[Arimura Romi](https://github.com/biyuehu)
+- **音乐**：[JZWSBDEM](https://github.com/jzwsbdem)（[Narcisse Musique](https://republic-of-narcissus.icu/)）
+- **美术**：[YCH](https://github.com/AAA-pig)
+- **测试**：[Arimura Romi](https://github.com/biyuehu)、[YCH](https://github.com/AAA-pig)
+- **理论参考**：
+  - Alonzo Church (1936) · *An Unsolvable Problem of Elementary Number Theory*
+  - Moses Schönfinkel & Haskell Curry · *Combinatory Logic*
+  - Jeremy G. Siek & Walid Taha (2006) · *Gradual Typing for Functional Languages*
+  - Benjamin C. Pierce · *Types and Programming Languages* (TAPL)
+- **特别鸣谢**：
+  - 感谢 SolidJS、Vite、Tauri、Biome 与 Vitest 等开源项目社区
+  - 感谢所有参与测试、试玩并提出宝贵建议的朋友
 
 ## 开源协议
 

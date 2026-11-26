@@ -76,6 +76,7 @@ export function useWorkbenchSession(options: WorkbenchSessionOptions): Workbench
 		judgeMode: options.judgeMode,
 		clearedStars: options.clearedStars,
 		onRecordStars: options.onRecordStars,
+		xRayMode: options.xRayMode,
 	});
 
 	const draftBench = useDraftWorkbench({

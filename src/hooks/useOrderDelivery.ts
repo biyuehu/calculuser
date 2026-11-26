@@ -40,6 +40,19 @@ function collectUsedGadgets(term: Term): readonly GadgetId[] {
 	}
 }
 
+function termHasLam(term: Term): boolean {
+	switch (term.kind) {
+		case "lam":
+			return true;
+		case "ann":
+			return termHasLam(term.term);
+		case "app":
+			return termHasLam(term.fn) || termHasLam(term.arg);
+		default:
+			return false;
+	}
+}
+
 function tyContainsAny(ty: Ty): boolean {
 	if (ty.k === "any") return true;
 	return ty.k === "arrow" ? tyContainsAny(ty.from) || tyContainsAny(ty.to) : false;
@@ -66,6 +79,7 @@ interface UseOrderDeliveryOptions {
 	readonly judgeMode: Accessor<boolean>;
 	readonly clearedStars: Accessor<ReadonlyMap<string, number>>;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
+	readonly xRayMode: Accessor<boolean>;
 }
 
 interface OrderDelivery {
@@ -86,6 +100,24 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 	const [rejected, setRejected] = createSignal<RejectedInfo | null>(null);
 	const [typeError, setTypeError] = createSignal<string | null>(null);
 	const [deliveredStars, setDeliveredStars] = createSignal<number | null>(null);
+	let triedNonEmptyUninhabited = false;
+
+	const recordOrderClear = (order: OrderLevel, stars: number): void => {
+		setDeliveredStars(stars);
+		options.onRecordStars(order.id, stars);
+		unlockAchievement("first_order");
+		if (stars === 3) unlockAchievement("three_star_craft");
+		if (options.xRayMode()) unlockAchievement("xray_inspector");
+		if (order.id === "rec_fib") unlockAchievement("turing_complete");
+		const clearedIds = new Set(options.clearedStars().keys());
+		clearedIds.add(order.id);
+		if (LEVELS.every((lvl) => clearedIds.has(lvl.id))) unlockAchievement("all_orders_cleared");
+		const unlockedTools = new Set<string>(["I", "K", "S"]);
+		for (const lvl of LEVELS)
+			if (clearedIds.has(lvl.id)) for (const id of getOrderUnlockedTools(lvl)) unlockedTools.add(id);
+		if (COMBINATORS.slice(0, BUILTIN_COUNT).every((tool) => unlockedTools.has(tool.id)))
+			unlockAchievement("full_compendium");
+	};
 
 	const shelfUnlockedIds = createMemo((): readonly GadgetId[] => {
 		const stars = options.clearedStars();
@@ -126,25 +158,24 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 			playPassSound();
 			setRejected(null);
 			const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
-			setDeliveredStars(stars);
-			options.onRecordStars(order.id, stars);
-			unlockAchievement("first_order");
-			if (stars === 3) unlockAchievement("three_star_craft");
+			recordOrderClear(order, stars);
 			const usedGadgets = collectUsedGadgets(candidate);
 			if (usedGadgets.length === 0) unlockAchievement("pure_lambda");
-			else if ((order.chapter ?? 1) >= 2 && usedGadgets.every((id) => id === "I" || id === "K" || id === "S"))
+			else if ((order.chapter ?? 1) >= 2 && usedGadgets.every((id) => id === "I" || id === "K" || id === "S")) {
 				unlockAchievement("ski_purist");
+				if (!termHasLam(candidate) && usedGadgets.every((id) => id === "S" || id === "K"))
+					unlockAchievement("sk_purist");
+			}
+			if (usedGadgets.some((id) => id === "Y" || id === "Z" || id === "Theta")) unlockAchievement("fixpoint_tamer");
 			return;
 		}
 		if (order.mode === "typebuild") {
 			if (order.uninhabited === true && draft.kind === "hole") {
 				playPassSound();
 				setTypeError(null);
-				setDeliveredStars(3);
-				options.onRecordStars(order.id, 3);
-				unlockAchievement("first_order");
-				unlockAchievement("three_star_craft");
+				recordOrderClear(order, 3);
 				unlockAchievement("uninhabited_proof");
+				if (triedNonEmptyUninhabited) unlockAchievement("stubborn_prover");
 				return;
 			}
 			try {
@@ -160,13 +191,11 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 				playPassSound();
 				setTypeError(null);
 				const stars = partCount <= order.parSize ? 3 : partCount <= order.parSize + 2 ? 2 : 1;
-				setDeliveredStars(stars);
-				options.onRecordStars(order.id, stars);
-				unlockAchievement("first_order");
-				if (stars === 3) unlockAchievement("three_star_craft");
+				recordOrderClear(order, stars);
 				if (!termUsesAnyType(candidate)) unlockAchievement("static_typist");
 			} catch (err) {
 				playFailSound();
+				if (order.uninhabited === true) triedNonEmptyUninhabited = true;
 				setTypeError(err instanceof Error ? err.message : String(err));
 			}
 		}
@@ -193,6 +222,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 	};
 
 	const syncInitialDelivery = (initialDraft: DraftTerm, recordedStars?: number): void => {
+		triedNonEmptyUninhabited = false;
 		setRejected(null);
 		setTypeError(null);
 		setDeliveredStars(recordedStars !== void 0 && evaluateDraftPassed(initialDraft) ? recordedStars : null);
@@ -200,9 +230,7 @@ export function useOrderDelivery(options: UseOrderDeliveryOptions): OrderDeliver
 
 	const deliverRunSuccess = (): void => {
 		playPassSound();
-		setDeliveredStars(3);
-		options.onRecordStars(options.order().id, 3);
-		unlockAchievement("first_order");
+		recordOrderClear(options.order(), 3);
 	};
 
 	const deliverRunExceeded = (): void => {

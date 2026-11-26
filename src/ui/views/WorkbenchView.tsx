@@ -5,6 +5,7 @@ import {
 	PRINT_NAMES,
 	type Path,
 	type Registry,
+	type Term,
 	type Ty,
 	collectBaseTypes,
 	draftToTerm,
@@ -74,6 +75,22 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 
 	const handleSaveGadget = (id: string, name?: string): void => {
 		const rawTerm = draftToTerm(session.draft(), []);
+		const customIds = new Set(Object.keys(customGadgets()));
+		const usesCustom = (term: Term): boolean => {
+			switch (term.kind) {
+				case "gad":
+					return customIds.has(term.id);
+				case "lam":
+					return usesCustom(term.body);
+				case "ann":
+					return usesCustom(term.term);
+				case "app":
+					return usesCustom(term.fn) || usesCustom(term.arg);
+				default:
+					return false;
+			}
+		};
+		const nested = usesCustom(rawTerm);
 		const term = inlineCustomGadgets(rawTerm, props.registry);
 		const record: CustomGadgetRecord = name !== void 0 ? { id, name, term } : { id, term };
 		saveCustomGadget(record);
@@ -82,6 +99,7 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 		setShowSaveGadgetModal(false);
 		playSnapSound(2);
 		unlockAchievement("custom_smith");
+		if (nested) unlockAchievement("nested_smith");
 	};
 
 	const handleExpandGadget = (gadget: CustomGadgetRecord): void => {

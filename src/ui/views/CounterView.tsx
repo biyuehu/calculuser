@@ -63,6 +63,8 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 	const [activeLines, setActiveLines] = createSignal<readonly DialogueLine[]>([]);
 	const [lineIndex, setLineIndex] = createSignal<number>(0);
 	const [charCount, setCharCount] = createSignal<number>(0);
+	const [churchEntering, setChurchEntering] = createSignal<boolean>(false);
+	let lastStandeeSpeaker: DialogueSpeaker | null = null;
 
 	createEffect(() => {
 		const beat = props.beat;
@@ -122,6 +124,14 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 		}
 		return visible;
 	};
+
+	createEffect(() => {
+		const standee = currentStandee();
+		const speaker = standee !== null ? standee.speaker : null;
+		if (speaker === "church" && lastStandeeSpeaker !== "church") setChurchEntering(true);
+		else if (speaker !== "church") setChurchEntering(false);
+		lastStandeeSpeaker = speaker;
+	});
 
 	createEffect(() => {
 		const text = currentText();
@@ -185,10 +195,25 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 			onKeyDown={(event) => (event.key === "Enter" || event.key === " ") && handleAdvance()}
 		>
 			<div class="counter-grid-overlay" aria-hidden="true" />
-			<div class="counter-window-arch" aria-hidden="true">
-				<div class="counter-window-mullion-v" />
-				<div class="counter-window-mullion-h" />
+			<div class="counter-frame-ornament" aria-hidden="true">
+				<span class="counter-corner tl" />
+				<span class="counter-corner tr" />
+				<span class="counter-corner bl" />
+				<span class="counter-corner br" />
 			</div>
+			<svg class="counter-window-triangle" viewBox="0 0 420 380" fill="none" aria-hidden="true">
+				<polygon
+					points="16,14 404,14 210,362"
+					fill="rgba(115, 226, 200, 0.08)"
+					stroke="rgba(115, 226, 200, 0.24)"
+					stroke-width="2"
+				/>
+				<polygon points="44,28 376,28 210,328" stroke="rgba(212, 173, 182, 0.16)" stroke-width="1.2" />
+				<g class="counter-lambda-crest" stroke="rgba(217, 235, 230, 0.36)" stroke-width="3.2" stroke-linecap="round">
+					<path d="M188 76 Q204 76 212 104 L236 184" />
+					<path d="M210 122 L176 184" />
+				</g>
+			</svg>
 			<div class="counter-sunbeam counter-sunbeam-a" aria-hidden="true" />
 			<div class="counter-sunbeam counter-sunbeam-b" aria-hidden="true" />
 			<div class="counter-backdrop-glow" aria-hidden="true" />
@@ -213,6 +238,14 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 				<span class="counter-mote m2" />
 				<span class="counter-mote m3" />
 				<span class="counter-mote m4" />
+				<span class="counter-star st1">✦</span>
+				<span class="counter-star st2">✦</span>
+				<span class="counter-star st3">✦</span>
+				<span class="counter-star st4">✦</span>
+				<span class="counter-star st5">✦</span>
+				<span class="counter-star st6">✦</span>
+				<span class="counter-star st7">✦</span>
+				<span class="counter-star st8">✦</span>
 			</div>
 
 			<div class="counter-desk">
@@ -254,7 +287,11 @@ export function CounterView(props: CounterViewProps): JSX.Element {
 						</div>
 						<Show when={currentStandee()}>
 							{(standee) => (
-								<div class={`avatar-standee avatar-${standee().face}`}>
+								<div
+									class={`avatar-standee avatar-${standee().face} ${
+										standee().speaker === "church" && churchEntering() ? "avatar-church-enter" : ""
+									}`}
+								>
 									<img
 										src={standee().src}
 										alt={SPEAKER_NAMES[standee().speaker]}

@@ -30,6 +30,14 @@
 	"bundle": {
 		"active": true,
 		"targets": "all",
+		"publisher": "Arimura Romi",
+		"copyright": "Copyright © 2026 Arimura Romi",
+		"license": "GPL-3.0",
+		"licenseFile": "../LICENSE",
+		"homepage": "https://github.com/biyuehu/calculuser",
+		"category": "PuzzleGame",
+		"shortDescription": "基于 λ 演算与渐进类型理论的逻辑推演解谜游戏",
+		"longDescription": "Calculuser 是一款基于无类型/渐进类型 λ 演算与 SKI 组合子逻辑的工坊建造与推演解谜游戏。",
 		"icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
 		"android": {
 			"debugApplicationIdSuffix": ".debug"

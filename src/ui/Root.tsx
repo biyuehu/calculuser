@@ -337,6 +337,7 @@ export function Root(): JSX.Element {
 							judgeMode={settings().judgeMode}
 							clearedStars={clearedStars()}
 							xRayMode={settings().xRayMode}
+							compactCanvas={settings().compactCanvas}
 							onToggleXRay={toggleXRay}
 							isLastOrder={orderIndex() === LEVELS.length - 1}
 							onRecordStars={recordStars}

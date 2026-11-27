@@ -36,6 +36,7 @@ interface WorkbenchViewProps {
 	readonly judgeMode: boolean;
 	readonly clearedStars: ReadonlyMap<string, number>;
 	readonly xRayMode: boolean;
+	readonly compactCanvas: boolean;
 	readonly isLastOrder: boolean;
 	readonly onRecordStars: (orderId: string, stars: number) => void;
 	readonly onToggleXRay: () => void;
@@ -368,7 +369,11 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 					class="canvas-transform-layer"
 					style={{ transform: `translate(${panX()}px, ${panY()}px) scale(${zoom()})` }}
 				>
-					<div class={`workbench-assembly ${levelTransitioning() ? "level-transitioning" : ""}`}>
+					<div
+						class={`workbench-assembly ${levelTransitioning() ? "level-transitioning" : ""} ${
+							props.compactCanvas ? "compact-canvas" : ""
+						}`}
+					>
 						<Show
 							when={session.playTerm()}
 							fallback={
@@ -398,11 +403,17 @@ export function WorkbenchView(props: WorkbenchViewProps): JSX.Element {
 				<Show when={session.isXRay()}>
 					<div
 						class="xray-pill"
+						onWheel={(event) => event.stopPropagation()}
 						style={{
 							left:
 								props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox"
 									? `${ui.shelfWidth() + 24}px`
 									: "16px",
+							"max-width": `min(640px, max(220px, calc(100% - ${
+								(props.order.mode === "build" || props.order.mode === "typebuild" || props.order.mode === "sandbox"
+									? ui.shelfWidth() + 24
+									: 16) + (ui.orderSlipCollapsed() ? 180 : ui.orderSlipWidth() + 32)
+							}px)))`,
 						}}
 					>
 						透视：{session.xRayText()}

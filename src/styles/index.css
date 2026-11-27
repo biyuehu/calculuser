@@ -209,6 +209,8 @@ body {
 
 .workbench-assembly {
 	position: relative;
+	flex-shrink: 0;
+	width: max-content;
 	pointer-events: auto;
 	padding: 36px;
 	border-radius: 16px;
@@ -217,6 +219,33 @@ body {
 
 .workbench-assembly.level-transitioning {
 	animation: levelSwitchAssemble 0.36s var(--ease-overshoot);
+}
+
+.workbench-assembly.compact-canvas .gadget-token-label {
+	display: none;
+}
+
+.workbench-assembly.compact-canvas .gadget-token {
+	padding: 4px 6px;
+	gap: 0;
+}
+
+.workbench-assembly.compact-canvas .machine-lam {
+	border-radius: 9px;
+}
+
+.workbench-assembly.compact-canvas .machine-socket {
+	padding: 5px;
+}
+
+.workbench-assembly.compact-canvas .machine-chamber {
+	padding: 6px 8px;
+}
+
+.workbench-assembly.compact-canvas .machine-app {
+	padding: 4px 6px;
+	gap: 4px;
+	border-radius: 8px;
 }
 
 /* Left Narrow Shelf */
@@ -730,6 +759,7 @@ body {
 .machine-lam {
 	display: inline-flex;
 	align-items: stretch;
+	flex-shrink: 0;
 	border-radius: 11px;
 	border: 2px solid var(--socket-color, #4e7a86);
 	background: var(--surface-1);
@@ -739,6 +769,7 @@ body {
 .machine-socket {
 	display: flex;
 	align-items: center;
+	flex-shrink: 0;
 	gap: 4px;
 	padding: 8px;
 	background: var(--surface-2);
@@ -750,11 +781,13 @@ body {
 	padding: 9px 11px;
 	display: inline-flex;
 	align-items: center;
+	flex-shrink: 0;
 }
 
 .machine-app {
 	display: inline-flex;
 	align-items: center;
+	flex-shrink: 0;
 	gap: 6px;
 	padding: 6px 9px;
 	border-radius: 10px;
@@ -781,6 +814,7 @@ body {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
@@ -802,6 +836,7 @@ body {
 	height: 22px;
 	border-radius: 50%;
 	display: inline-block;
+	flex-shrink: 0;
 	box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.35), inset 3px 3px 6px rgba(255, 255, 255, 0.8), 0 2px 6px
 		rgba(28, 26, 23, 0.22);
 }
@@ -810,6 +845,8 @@ body {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
+	white-space: nowrap;
 	min-width: 28px;
 	height: 28px;
 	padding: 0 8px;
@@ -826,6 +863,8 @@ body {
 .gadget-token {
 	display: inline-flex;
 	align-items: center;
+	flex-shrink: 0;
+	white-space: nowrap;
 	gap: 6px;
 	padding: 4px 10px;
 	border-radius: 8px;
@@ -840,6 +879,7 @@ body {
 .slot-hole {
 	min-width: 34px;
 	height: 34px;
+	flex-shrink: 0;
 	border-radius: 8px;
 	border: 2px dashed var(--accent-clay);
 	background: var(--accent-clay-subtle);
@@ -877,6 +917,13 @@ body {
 	position: absolute;
 	left: 14px;
 	top: 14px;
+	max-width: min(640px, calc(100% - 28px));
+	max-height: 132px;
+	overflow-y: auto;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	line-height: 1.45;
+	user-select: text;
 	background: rgba(46, 94, 83, 0.94);
 	border: 1px solid #5eead4;
 	border-radius: 8px;

@@ -110,6 +110,9 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 	const toggleAutoSkipRead = (): void =>
 		props.onUpdateSettings((prev) => ({ ...prev, autoSkipRead: !prev.autoSkipRead }));
 
+	const toggleCompactCanvas = (): void =>
+		props.onUpdateSettings((prev) => ({ ...prev, compactCanvas: !prev.compactCanvas }));
+
 	return (
 		<div
 			class={`modal-backdrop ${isClosing() ? "modal-exit" : ""}`}
@@ -216,6 +219,20 @@ export function MachineryPanel(props: MachineryPanelProps): JSX.Element {
 								onClick={toggleMotion}
 							>
 								{props.settings.reducedMotion ? "已开启" : "已关闭"}
+							</button>
+						</div>
+
+						<div class="control-row">
+							<div>
+								<div class="control-title">紧凑画布</div>
+								<div class="control-desc">隐藏画布中零件的中文名称，仅保留符号（悬停可查看）</div>
+							</div>
+							<button
+								type="button"
+								class={`icon-btn ${props.settings.compactCanvas ? "active" : ""}`}
+								onClick={toggleCompactCanvas}
+							>
+								{props.settings.compactCanvas ? "已开启" : "已关闭"}
 							</button>
 						</div>
 

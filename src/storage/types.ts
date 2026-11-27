@@ -13,6 +13,7 @@ export interface SettingsState {
 	readonly judgeMode: boolean;
 	readonly autoSkipRead: boolean;
 	readonly xRayMode: boolean;
+	readonly compactCanvas: boolean;
 }
 
 export interface UiPreferences {
@@ -47,6 +48,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
 	judgeMode: false,
 	autoSkipRead: false,
 	xRayMode: false,
+	compactCanvas: false,
 };
 
 export const DEFAULT_SESSION: SessionState = { screen: "title" };

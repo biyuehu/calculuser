@@ -121,6 +121,7 @@ function sanitizeSettings(val: unknown): SettingsState {
 		judgeMode: typeof r.judgeMode === "boolean" ? r.judgeMode : DEFAULT_SETTINGS.judgeMode,
 		autoSkipRead: typeof r.autoSkipRead === "boolean" ? r.autoSkipRead : false,
 		xRayMode: typeof r.xRayMode === "boolean" ? r.xRayMode : DEFAULT_SETTINGS.xRayMode,
+		compactCanvas: typeof r.compactCanvas === "boolean" ? r.compactCanvas : DEFAULT_SETTINGS.compactCanvas,
 	};
 }
 

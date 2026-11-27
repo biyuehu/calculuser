@@ -56,11 +56,11 @@ export function DraftNode(props: DraftNodeProps): JSX.Element {
 					case "gad": {
 						const meta = getGadgetMeta(node.id);
 						return (
-							<span class="gadget-token" onContextMenu={handleDismantle}>
+							<span class="gadget-token" title={meta.name} onContextMenu={handleDismantle}>
 								<span class={`gadget-glyph ${meta.shape}`} style={{ background: meta.accent }}>
 									{meta.symbol}
 								</span>
-								<span>{meta.name}</span>
+								<span class="gadget-token-label">{meta.name}</span>
 							</span>
 						);
 					}

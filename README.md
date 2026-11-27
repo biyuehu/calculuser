@@ -1,7 +1,7 @@
 # Calculuser
 
 <div align="center">
-  <img src="public/logo.png" width="190" />
+  <img src="screenshots/image.png" height="210" />
 </div>
 
 一款基于渐进式类型 λ 演算（Gradual Typing Lambda Calculus）与组合子逻辑（Combinatory Logic, SKI）的逻辑构造与推演解谜类游戏。玩家在工坊中装配组合子与 λ 抽象装置，通过信号喂入与归约完成各章节来客的委托。支持 Web 端与 Windows 桌面端运行。

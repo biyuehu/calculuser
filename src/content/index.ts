@@ -1,10 +1,23 @@
-import type { GadgetId } from "../engine";
+import { type GadgetId, type Term, parseLambda } from "../engine";
 import { loadAchievements, loadSettings, loadUnlockedMusic, saveAchievement, saveUnlockedMusic } from "../storage";
 import { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";
 import { BUILTIN_COUNT, COMBINATORS } from "./data/combinators";
 import { LEVELS } from "./data/levels";
 import { BGM_TRACKS, type BgmTrackId } from "./data/music";
+import solutionsData from "./data/solutions.json";
 import type { GadgetMeta, OrderLevel, SandboxOrder, ToolDefinition } from "./types";
+
+export const LEVEL_SOLUTIONS: Readonly<Record<string, string>> = solutionsData;
+
+export function parseSolutionTerm(source: string): Term {
+	const mapGadget = (term: Term): Term => {
+		if (term.kind === "gad" && term.id === "Kp") return { kind: "gad", id: "K'" };
+		if (term.kind === "lam") return { ...term, body: mapGadget(term.body) };
+		if (term.kind === "app") return { kind: "app", fn: mapGadget(term.fn), arg: mapGadget(term.arg) };
+		return term;
+	};
+	return mapGadget(parseLambda(source));
+}
 
 export * from "./types";
 export { ACHIEVEMENTS, type AchievementDefinition } from "./data/achievements";

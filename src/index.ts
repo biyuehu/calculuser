@@ -1,8 +1,9 @@
 import { render } from "solid-js/web";
 import "./styles/index.css";
 import { version } from "../package.json";
-import { ACHIEVEMENTS, BGM_TRACKS, LEVELS, unlockAchievement } from "./content";
-import { markIntroSeen, saveAchievement, saveUnlockedMusic, saveWorkshop } from "./storage";
+import { ACHIEVEMENTS, BGM_TRACKS, LEVELS, LEVEL_SOLUTIONS, parseSolutionTerm, unlockAchievement } from "./content";
+import { termToDraft } from "./engine";
+import { markIntroSeen, saveAchievement, saveLevelDraft, saveUnlockedMusic, saveWorkshop } from "./storage";
 import { Root } from "./ui/Root";
 import { isDesktop, setupDesktopGuard } from "./utils/desktopGuard";
 
@@ -36,6 +37,9 @@ if (typeof window !== "undefined" && !isDesktop()) {
 	);
 	(window as Window & { HIMENO_SENA_SUKI_DESU?: () => void }).HIMENO_SENA_SUKI_DESU = (): void => {
 		saveWorkshop(new Map(LEVELS.map((level) => [level.id, 3])));
+		for (const [orderId, source] of Object.entries(LEVEL_SOLUTIONS))
+			saveLevelDraft(orderId, termToDraft(parseSolutionTerm(source)));
+		saveLevelDraft("tb_uninhabited", { kind: "hole" });
 		for (const item of ACHIEVEMENTS) saveAchievement(item.id);
 		for (const track of BGM_TRACKS) saveUnlockedMusic(track.id);
 		markIntroSeen();

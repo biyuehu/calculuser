@@ -1,16 +1,17 @@
 # Calculuser
 
 <div align="center">
-  <img src="screenshots/image.png" height="210" />
+
+  <img src="screenshots/image.png" height="160" />
+
+  [【全解锁参考】](GUIDE.md) | [【游戏下载】](https://github.com/biyuehu/calculuser/releases) | [【交流群】](https://qm.qq.com/q/Z5z0OC3G8u)
+
 </div>
 
 一款基于渐进式类型 λ 演算（Gradual Typing Lambda Calculus）与组合子逻辑（Combinatory Logic, SKI）的逻辑构造与推演解谜类游戏。玩家在工坊中装配组合子与 λ 抽象装置，通过信号喂入与归约完成各章节来客的委托。支持 Web 端与 Windows 桌面端运行。
 
 游戏中的所有装置均严格遵循 α-等价、β-归约与类型一致性规则，并非黑盒脚本。从基础的 I、K、S
 组合子起步，经由布尔逻辑、邱奇数、不动点递归到带类型标注的零件装配与自由沙盒推演，所有高级构件均由基础零件逐层封装而成。
-
-> 桌面端安装包与 Web 发行版可前往 [GitHub Releases](https://github.com/biyuehu/calculuser/releases) 下载。  
-> 如需查阅全关卡参考解法、成就获取条件及背景音乐解锁说明，请前往 [GUIDE.md](GUIDE.md)。
 
 ## 同行的码
 

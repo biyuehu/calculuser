@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "calculuser"
 version = "0.1.0"
 description = "Calculuser - 基于 λ 演算与渐进类型理论的工坊建造与逻辑推演解谜游戏"
 authors = ["Arimura Romi <biyuehuya@gmail.com>"]
